@@ -49,6 +49,14 @@ docker exec <manager> /var/ossec/framework/python/bin/python3 /tmp/wazuh_logtest
 - **One alert per event.** Wazuh reports the deepest matching rule only. Where one event satisfies
   several LLMD rules, a child rule carries all their groups (`llmd_004,llmd_006,llmd_007` on 100732).
   Filter dashboards on `rule.groups: llmd_*`, not on rule IDs.
+- **Frequency counts final rules only.** A `frequency` rule with `if_matched_sid` counts only events
+  whose final rule is that sid; events that went on to a more specific child are not counted, and
+  `if_matched_group` did not change that in our tests. Keep counted base rules free of children
+  where you can.
+- **No nested correlation.** A rule with `if_matched_group` under another correlation rule was
+  never evaluated, while the same rule under a plain parent worked.
+- **Change detection works.** `frequency="2"` with `same_field` + `different_field` reliably
+  detects a changed MCP tool description (LLMD-014), within the rule's timeframe.
 - **Regex quirks.** Patterns are PCRE2 without UTF mode. Non-ASCII characters are written as UTF-8
   byte sequences (Unicode tag characters are `\xF3\xA0[\x80\x81][\x80-\xBF]`), and character
   classes containing quotes did not match under 4.14, so they are avoided.

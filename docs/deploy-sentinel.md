@@ -63,14 +63,22 @@ python deploy/sentinel/ingest.py datasets/sample.jsonl --shift-to-now
 scheduled rules' look-back windows: the rules are deployed for real traffic, the dataset is checked
 with the next step. First ingestion into a new table can take 5 to 15 minutes to become queryable.
 
+**Schema changes: wait before sending.** After adding columns to the table and the DCR, both
+updates report `Succeeded` immediately, but ingestion keeps using the old schema for several
+minutes. Rows sent in that window are accepted and land with the new columns empty, without any
+error. (Observed in the author's lab: the first upload after adding 8 columns came through with
+`tool_desc_sha256` empty on all 552 rows; the same upload 15 minutes later was complete.)
+
 ## 4b. Check every rule against the live workspace
 
 ```bash
-python deploy/sentinel/verify_live.py $WS_GUID
+python deploy/sentinel/ingest.py datasets/sample.jsonl --shift-to-now --app-name check-1
+python deploy/sentinel/verify_live.py $WS_GUID --app-name check-1
 ```
 
 Runs each rule query over the last two days and compares the hits with `datasets/labels.json`, the
-same way the Kustainer tests do.
+same way the Kustainer tests do. `--app-name` tags one upload and scopes the check to it, so earlier
+test uploads in the same table do not interfere.
 
 ## 5. Analytic rules
 

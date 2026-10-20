@@ -35,10 +35,14 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("jsonl")
     p.add_argument("--shift-to-now", action="store_true")
+    p.add_argument("--app-name", help="overwrite app_name, to tell test runs apart (see verify_live.py)")
     args = p.parse_args()
 
     with open(args.jsonl, encoding="utf-8") as f:
         events = [json.loads(line) for line in f if line.strip()]
+    if args.app_name:
+        for e in events:
+            e["app_name"] = args.app_name
     if args.shift_to_now and events:
         delta = datetime.now(timezone.utc) - max(_parse(e["TimeGenerated"]) for e in events)
         for e in events:

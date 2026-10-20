@@ -276,10 +276,10 @@
       "kind": "Scheduled",
       "properties": {
         "displayName": "LLMD-005 Auto-loading image with query string to external host in model output",
-        "description": "The model emitted a markdown image or HTML img tag that points to a non-corporate host and\ncarries a query string. Chat clients that render markdown fetch the image without a click, so\nwhatever is in the query string (often conversation content) reaches the attacker's server.\nClickable links are deliberately out of scope here because they are too common in normal\nanswers; see docs/coverage.md.",
+        "description": "The model emitted a markdown image or HTML img tag that points to a non-corporate host and\ncarries a query string. Chat clients that render markdown fetch the image without a click, so\nwhatever is in the query string (often conversation content) reaches the attacker's server.\nReference-style images (\"![x][r]\" with a separate \"[r]: URL\" line) are included: that variant\nbypassed link redaction in EchoLeak (CVE-2025-32711, Microsoft 365 Copilot). Clickable links are\ndeliberately out of scope because they are too common in normal answers; see docs/coverage.md.",
         "severity": "High",
         "enabled": true,
-        "query": "let corporate_domain = \"acme-freight.hu\";\nLLMAppLogs_CL\n| where event_type == \"completion\"\n| where completion contains \"](http\" or completion contains \"<img\"\n| extend ImageUrls = extract_all(@\"(?:!\\[[^\\]]*\\]\\(|<img[^>]+src=[\"\"']?)(https?://[^)\\s\"\"'>]+)\", completion)\n| mv-expand ImageUrl = ImageUrls to typeof(string)\n| extend Host = tolower(tostring(parse_url(ImageUrl).Host)), Query = tostring(parse_url(ImageUrl)[\"Query Parameters\"])\n| where ImageUrl contains \"?\"\n// Exact match or a true subdomain; \"has\" or \"contains\" would accept acme-freight.hu.evil.com\n| where not(Host == corporate_domain or Host endswith strcat(\".\", corporate_domain))\n| project TimeGenerated, user_id, src_ip, session_id, request_id, Host, ImageUrl, Query, completion",
+        "query": "let corporate_domain = \"acme-freight.hu\";\nLLMAppLogs_CL\n| where event_type == \"completion\"\n| where completion contains \"](http\" or completion contains \"<img\" or completion contains \"]: http\"\n| extend InlineUrls = extract_all(@\"(?:!\\[[^\\]]*\\]\\(|<img[^>]+src=[\"\"']?)(https?://[^)\\s\"\"'>]+)\", completion)\n// Reference-style images (![alt][ref] + a \"[ref]: URL\" line) slipped past link redaction in EchoLeak\n| extend RefImage = completion matches regex @\"!\\[[^\\]]*\\]\\[[^\\]]+\\]\"\n| extend RefUrls = iff(RefImage, extract_all(@\"(?m)^\\s*\\[[^\\]]+\\]:\\s*(https?://\\S+)\", completion), dynamic([]))\n| extend ImageUrls = array_concat(InlineUrls, RefUrls)\n| mv-expand ImageUrl = ImageUrls to typeof(string)\n| extend Host = tolower(tostring(parse_url(ImageUrl).Host)), Query = tostring(parse_url(ImageUrl)[\"Query Parameters\"])\n| where ImageUrl contains \"?\"\n// Exact match or a true subdomain; \"has\" or \"contains\" would accept acme-freight.hu.evil.com\n| where not(Host == corporate_domain or Host endswith strcat(\".\", corporate_domain))\n| project TimeGenerated, user_id, src_ip, session_id, request_id, Host, ImageUrl, Query, completion",
         "queryFrequency": "PT5M",
         "queryPeriod": "PT5M",
         "triggerOperator": "GreaterThan",
@@ -759,6 +759,575 @@
         ],
         "customDetails": {
           "SessionId": "session_id"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "bdd273cd-13a0-5a22-b0e4-21244dac59bd",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-013 Persistent instruction written to agent long-term memory",
+        "description": "The agent saved something to long-term memory that is either a standing instruction to act\n(\"always send a copy of every email to ...\") or was written in a turn where untrusted content\n(external upload, earlier memory) was in context. Memory turns a one-off prompt injection into\na persistent one that fires in later sessions, as shown by Rehberger's \"SpAIware\" against ChatGPT\nmemory (2024) and Unit 42's Amazon Bedrock Agents research (2025). Triage: read memory_text,\nfind the source document of the turn, purge the memory entry.",
+        "severity": "High",
+        "enabled": true,
+        "query": "let persistent_action = @\"(?i)\\b(always|from now on|in (all )?future|every time|whenever)\\b[^.\\n]{0,80}\\b(send|e-?mail|forward|bcc|cc|copy|call|run|execute|share|upload|post)\\b\";\nlet untrusted_turns = LLMAppLogs_CL\n    | where event_type == \"retrieval\" and doc_source != \"internal-wiki\"\n    | distinct request_id;\nLLMAppLogs_CL\n| where event_type == \"memory_write\"\n| extend PersistentAction = memory_text matches regex persistent_action,\n         WrittenWithUntrustedContext = request_id in (untrusted_turns)\n| where PersistentAction or WrittenWithUntrustedContext\n| project TimeGenerated, user_id, src_ip, session_id, request_id, PersistentAction,\n          WrittenWithUntrustedContext, memory_text",
+        "queryFrequency": "PT15M",
+        "queryPeriod": "PT15M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Persistence"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "MemoryText": "memory_text"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "1ac1bfa7-31f3-5ea7-a852-9dc883e9b363",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-014 MCP tool description changed after first use (rug pull)",
+        "description": "The same MCP server and tool name now advertise a description with a different SHA-256 than the\nfirst one seen in the lookback. The model obeys tool descriptions, so a silent change is a silent\nchange of instructions, after the user approved the server. Described as a \"rug pull\" by Invariant\nLabs (2025); CVE-2025-54136 (\"MCPoison\", Cursor) is the same class at the config level. In\nproduction keep approved hashes in a watchlist instead of relying on the first hash in the\nlookback, and treat every hit as \"re-review this tool before anyone uses it again\".",
+        "severity": "High",
+        "enabled": true,
+        "query": "let trigger_window = 1h;\nlet registry = LLMAppLogs_CL | where event_type == \"tool_registry\";\nlet approved = registry\n    | summarize arg_min(TimeGenerated, tool_desc_sha256) by tool_key\n    | project tool_key, FirstSeen = TimeGenerated, ApprovedHash = tool_desc_sha256;\nregistry\n| where TimeGenerated > ago(trigger_window)\n| join kind=inner approved on tool_key\n| where tool_desc_sha256 != ApprovedHash\n| project TimeGenerated, user_id, src_ip, session_id, mcp_server, tool_name, tool_key, FirstSeen,\n          ApprovedHash, NewHash = tool_desc_sha256, NewDescription = tool_description",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "P14D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Persistence",
+          "InitialAccess"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "CloudApplication",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "mcp_server"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "ToolKey": "tool_key",
+          "ApprovedHash": "ApprovedHash",
+          "NewHash": "NewHash"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "d5baf458-596a-5a9e-984c-3d938a2cdb1f",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-015 Hidden instructions in an MCP tool description (tool poisoning)",
+        "description": "An MCP server advertises a tool whose description contains instructions for the model rather than\ndocumentation for a developer: <IMPORTANT> blocks, \"do not tell the user\", \"before using this tool\nread ...\", \"first call send_email\", references to ~/.ssh, .env or mcp.json. The model sees the full\ndescription, the user usually sees only the tool name. Pattern set follows Invariant Labs' tool\npoisoning disclosure (2025); MCPTox (arXiv 2508.14925) measured attack success up to 72.8% on real\nservers. Fires once per session that loads the tool; dedupe on tool_desc_sha256 in the incident.",
+        "severity": "High",
+        "enabled": true,
+        "query": "let poisoning = @\"(?i)<important>|\\b(do not|don't|never)\\s+(tell|mention|inform|reveal|show)\\b|\\bbefore (using|calling) this tool\\b|\\b(first|always)\\s+call\\b|\\b(read|send|include|pass|forward)\\b[^.\\n]{0,60}(\\.ssh|id_rsa|\\.env\\b|credentials|mcp\\.json|conversation|user's (last |previous )?message)|\\b(ignore|override)\\b[^.\\n]{0,30}\\binstructions\\b\";\nLLMAppLogs_CL\n| where event_type == \"tool_registry\"\n| where tool_description matches regex poisoning\n| project TimeGenerated, user_id, src_ip, session_id, mcp_server, tool_name, tool_key, tool_desc_sha256,\n          MatchedText = extract(poisoning, 0, tool_description), tool_description",
+        "queryFrequency": "PT15M",
+        "queryPeriod": "PT15M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "CloudApplication",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "mcp_server"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "ToolKey": "tool_key",
+          "DescriptionHash": "tool_desc_sha256",
+          "MatchedText": "MatchedText"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "6dc25b12-1cb5-5358-96a8-77fc8b490560",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-016 Destructive agent tool executed without human approval",
+        "description": "A tool classified as destructive (delete, drop, overwrite) ran with tool_approval = auto: no human\nwas asked. Approval prompts are the main brake on an agent that has been steered; when they are\noff, one injected instruction is enough to destroy data. The fix is configuration (require\napproval for the destructive class); the alert tells you where that is missing and what ran.",
+        "severity": "High",
+        "enabled": true,
+        "query": "LLMAppLogs_CL\n| where event_type == \"tool_call\" and tool_risk == \"destructive\" and tool_approval == \"auto\" and tool_status == \"ok\"\n| summarize TimeGenerated = min(TimeGenerated), Calls = count(), Targets = make_set(tool_target, 50),\n            Tools = make_set(tool_name)\n    by session_id, user_id, src_ip, request_id",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "src_ip"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "Calls": "Calls",
+          "Targets": "Targets"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "5da54d45-b370-595e-86cc-106189c0aa5f",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-017 Dangerous shell command issued by an agent",
+        "description": "An agent's shell tool was given a reverse shell, a remote script piped into a shell, a base64\npayload piped into a shell, a setuid change or a recursive delete of /. Fires regardless of\napproval: a human clicking \"allow\" on a curl | sh is still a curl | sh. The 2026 \"Agentjacking\"\nresearch (Tenet Security) got coding agents to run attacker packages through exactly this kind of\n\"fix\" command. Staged payloads (the command only runs a file dropped earlier) are not caught.",
+        "severity": "High",
+        "enabled": true,
+        "query": "let dangerous = @\"/dev/(tcp|udp)/|\\bbash\\s+-i\\b|\\bnc(at)?\\b[^|;]{0,40}\\s-(e|c)\\b|\\bmkfifo\\b|\\bsocat\\b|\\b(curl|wget)\\b[^|;]{0,200}\\|\\s*(sudo\\s+)?(ba|z|da)?sh\\b|base64\\s+(-d|--decode)[^|;]{0,80}\\|\\s*(ba)?sh\\b|\\bchmod\\s+[ugo]*\\+s\\b|\\brm\\s+-[a-zA-Z]*r[a-zA-Z]*\\s+/(\\s|$|\\*)|\\bpython[0-9.]*\\s+-c\\s+[^|]{0,80}socket\";\nLLMAppLogs_CL\n| where event_type == \"tool_call\" and tool_risk == \"exec\"\n| where tool_args matches regex dangerous\n| project TimeGenerated, user_id, src_ip, session_id, request_id, tool_name, tool_approval,\n          MatchedText = extract(dangerous, 0, tool_args), tool_args",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Execution",
+          "CommandAndControl"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "src_ip"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "Approval": "tool_approval",
+          "MatchedText": "MatchedText"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "bd2700b5-6f20-53e6-a3af-edb495f70662",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-018 Credential material targeted through agent tools",
+        "description": "An agent tool was pointed at files that hold credentials: cloud CLI credentials, SSH keys, .env\nfiles, .git-credentials, kube and docker configs, and MCP client configuration (mcp.json holds the\ntokens for every connected server). Counts denied attempts too: a denied read of ~/.aws/credentials\nis still someone trying. CVE-2026-75130 (Context7 MCP) used poisoned instructions to make agents\nexfiltrate .env files.",
+        "severity": "High",
+        "enabled": true,
+        "query": "let cred_paths = @\"(?i)(\\.aws/(credentials|config)|\\.ssh/|\\bid_(rsa|ed25519|ecdsa)\\b|(^|[/\\s\"\"])\\.env\\b|\\.git-credentials|\\.netrc|\\.kube/config|\\.docker/config\\.json|mcp\\.json|/etc/shadow|\\.azure/|gcloud/credentials)\";\nLLMAppLogs_CL\n| where event_type == \"tool_call\" and tool_name in (\"read_file\", \"run_shell\", \"write_file\", \"http_get\")\n| where tool_target matches regex cred_paths or tool_args matches regex cred_paths\n| summarize TimeGenerated = min(TimeGenerated), Attempts = count(), Denied = countif(tool_status == \"denied\"),\n            Targets = make_set(tool_args, 20)\n    by session_id, user_id, src_ip",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "CredentialAccess"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "src_ip"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "Attempts": "Attempts",
+          "Denied": "Denied"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "3c703332-0150-5869-84eb-a3261707bd6e",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-019 Private data read and sent out in the same turn (lethal trifecta)",
+        "description": "Within one user turn the agent read a private file and then sent data to an external party: an\nemail or HTTP request outside the corporate domain and allowlist, or a call to a third-party MCP\nserver. Simon Willison's \"lethal trifecta\" (2025) names the three ingredients of agent data theft:\nprivate data, untrusted content, external communication. This rule fires on the last two in\nsequence; the untrusted leg is covered by LLMD-002, -007, -015 and -021. The GitHub MCP exploit\n(Invariant Labs, 2025) and the Supabase MCP leak (General Analysis, 2025) both have this shape.",
+        "severity": "High",
+        "enabled": true,
+        "query": "let corporate_domain = \"acme-freight.hu\";\nlet http_allowlist = dynamic([\"learn.microsoft.com\", \"github.com\"]);\nlet private_reads = LLMAppLogs_CL\n    | where event_type == \"tool_call\" and tool_name == \"read_file\" and tool_status == \"ok\"\n    | project ReadAt = TimeGenerated, request_id, ReadTarget = tool_target;\nLLMAppLogs_CL\n| where event_type == \"tool_call\" and tool_status == \"ok\"\n| extend Target = tolower(tool_target)\n| where tool_risk == \"external\"\n    or (tool_name in (\"send_email\", \"http_get\")\n        and not(Target == corporate_domain or Target endswith strcat(\".\", corporate_domain))\n        and not(tool_name == \"http_get\" and Target in (http_allowlist)))\n| project SentAt = TimeGenerated, request_id, session_id, user_id, src_ip, tool_name, Target\n| join kind=inner private_reads on request_id\n| where SentAt >= ReadAt\n| summarize TimeGenerated = min(SentAt), PrivateReads = make_set(ReadTarget), Sinks = make_set(Target),\n            SinkTools = make_set(tool_name)\n    by session_id, user_id, src_ip, request_id",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Exfiltration",
+          "Collection"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "src_ip"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "PrivateReads": "PrivateReads",
+          "Sinks": "Sinks"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "82ff8e1d-1664-5df1-a01d-5e40d00e11a8",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-020 Agent modifies its own or another agent's configuration",
+        "description": "An agent wrote to AI-agent configuration: editor agent settings (.vscode/settings.json, .cursor/),\nClaude Code settings, MCP client configs (mcp.json), or instruction files that agents auto-load\n(AGENTS.md, CLAUDE.md, copilot-instructions.md). This is how an injection becomes privilege\nescalation: CVE-2025-53773 (GitHub Copilot) had the agent set chat.tools.autoApprove (\"YOLO mode\")\nand then run commands; CVE-2025-54135 (Cursor) had it write a new .cursor/mcp.json. DisablesApproval\nmarks writes that switch approval prompts off.",
+        "severity": "High",
+        "enabled": true,
+        "query": "let agent_config = @\"(?i)(\\.vscode/(settings|mcp)\\.json|\\.cursor/|\\.claude/(settings[^/]*\\.json|agents/|commands/)|(^|/)mcp\\.json|\\.continue/config|copilot-instructions\\.md|(^|/)(AGENTS|CLAUDE|GEMINI)\\.md|\\.windsurf/|\\.kiro/)\";\nlet shell_write_to_config = @\"(?i)(>>?|\\btee\\b|\\bsed\\s+-i\\b|\\bcp\\b|\\bmv\\b)[^|;]{0,80}(\\.vscode/|\\.cursor/|\\.claude/|mcp\\.json|AGENTS\\.md|CLAUDE\\.md|copilot-instructions\\.md)\";\nlet approval_off = @\"(?i)autoApprove|dangerously|\\byolo\\b|bypassPermissions|--no-confirm\";\nLLMAppLogs_CL\n| where event_type == \"tool_call\"\n| where (tool_name == \"write_file\" and tool_target matches regex agent_config)\n    or (tool_name == \"run_shell\" and tool_args matches regex shell_write_to_config)\n| extend DisablesApproval = tool_args matches regex approval_off\n| project TimeGenerated, user_id, src_ip, session_id, request_id, tool_name, tool_target, tool_approval,\n          DisablesApproval, tool_args",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "PrivilegeEscalation",
+          "DefenseEvasion"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "File",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "tool_target"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "DisablesApproval": "DisablesApproval"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "47881cd4-1e20-5a64-a520-f3db153d07e6",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-021 Instructions aimed at the agent inside a tool result",
+        "description": "A tool returned text addressed to the AI rather than data: instruction-override phrasing, \"AI\nagent: ...\", \"no need to ask the user\", or a \"to fix this error run `curl ... | sh`\" remediation.\nTool output goes straight into the model's context with the same authority as retrieved\ndocuments. ATLAS calls this AI Agent Tool Poisoning: Runtime Response; the 2026 \"Agentjacking\"\nresearch (fake Sentry errors) and CVE-2026-75130 (Context7 MCP) are real cases. Correlate with\nLLMD-017 in the same session: instruction in, command out.",
+        "severity": "High",
+        "enabled": true,
+        "query": "let injection = @\"(?i)\\b(ignore|disregard|forget|override)\\b[^.\\n]{0,30}\\b(previous|prior|above|earlier|preceding|system)\\b[^.\\n]{0,20}\\b(instructions?|prompts?|rules|directions|guidelines)\\b|\\bnew instructions?\\s*:\";\nlet addressed_to_agent = @\"(?i)\\b(note|message|instructions?) (to|for) the (ai|assistant|ai assistant|llm|model|agent)\\b|\\bassistant instructions\\s*:|\\b(ai|llm) (assistant|agent)\\s*:|\\bno need to (ask|tell|inform) the user\\b|\\bdo not (tell|mention|inform)\\b[^.\\n]{0,20}\\buser\\b\";\nlet remediation = @\"(?i)\\bto fix (this|the) (error|issue|problem)\\b[^.\\n]{0,40}\\brun\\b|`[^`]*\\b(curl|wget|npx|npm (i|install)|pip install|bash|sh -c)\\b[^`]*`\";\nLLMAppLogs_CL\n| where event_type == \"tool_call\" and isnotempty(tool_result)\n| where tool_result matches regex injection or tool_result matches regex addressed_to_agent\n    or tool_result matches regex remediation\n| project TimeGenerated, user_id, src_ip, session_id, request_id, tool_name, mcp_server, tool_target,\n          tool_result",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "InitialAccess",
+          "Execution"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "CloudApplication",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "mcp_server"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "ToolName": "tool_name"
         },
         "eventGroupingSettings": {
           "aggregationKind": "AlertPerResult"

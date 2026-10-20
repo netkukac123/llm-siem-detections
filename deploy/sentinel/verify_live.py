@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -37,15 +38,21 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("workspace", help="workspace customer ID (GUID)")
     p.add_argument("--timespan", default="P2D")
+    p.add_argument("--app-name", help="only look at events ingested with this app_name (ingest.py --app-name)")
     args = p.parse_args()
 
-    total = run(args.workspace, "LLMAppLogs_CL | count", args.timespan)
+    def scoped(query: str) -> str:
+        if not args.app_name:
+            return query
+        return re.sub(r"\bLLMAppLogs_CL\b", f'(LLMAppLogs_CL | where app_name == "{args.app_name}")', query)
+
+    total = run(args.workspace, scoped("LLMAppLogs_CL | count"), args.timespan)
     print(f"LLMAppLogs_CL rows in window: {total[0]['Count']}")
 
     failures = 0
     for path in sorted((ROOT / "detections" / "sentinel").glob("LLMD-*.yaml")):
         rule_id = path.name[:8]
-        rows = run(args.workspace, rule_query(path), args.timespan)
+        rows = run(args.workspace, scoped(rule_query(path)), args.timespan)
         exp = expectation(rule_id)
         if rows and "session_id" in rows[0]:
             hits, want = {r["session_id"] for r in rows}, set(exp.sessions)

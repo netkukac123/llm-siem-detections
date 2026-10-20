@@ -4,14 +4,15 @@ Every claim on this page is backed by a scenario in `simulate/scenarios.py` and 
 test suites: the KQL rules run on the real Kusto engine (Kustainer) and the Wazuh rules run through
 `wazuh-logtest` on wazuh-manager 4.14.7. The full grid is in [coverage-matrix.md](coverage-matrix.md).
 
-Reference dataset: 55 scenarios, 293 events. 37 benign scenarios (including deliberate near misses
+Reference dataset: 70 scenarios, 552 events. 40 benign scenarios (including deliberate near misses
 such as *"How do I ignore the previous VPN profile..."*, *"My manager said to disregard the old
-expense rules"* and a pasted SHA-256 checksum), 13 attacks, 5 evasions.
+expense rules"*, a pasted SHA-256 checksum, an approved delete, an approved `df -h` and an ordinary
+memory preference), 24 attacks, 6 evasions.
 
 | | Result on the reference dataset |
 |---|---|
-| Attacks with at least one correct alert | 13 / 13 |
-| Evasions with no alert at all | 2 / 5 (`evade-spaced-secret`, `evade-slow-consumption`) |
+| Attacks with at least one correct alert | 24 / 24 |
+| Evasions with no alert at all | 3 / 6 (`evade-spaced-secret`, `evade-slow-consumption`, `evade-staged-command`) |
 | False positives on benign sessions | 0 (one benign session correctly raises LLMD-002, see below) |
 
 A synthetic dataset written by the same person who wrote the rules proves that the rules do what
@@ -85,6 +86,60 @@ users paste tokens into the assistant.
 **LLMD-012 System prompt extraction attempt.** Low severity on its own. Worth having for
 correlation: LLMD-012 followed by LLMD-003 in the same session is a confirmed, intentional leak.
 
+## Agentic and MCP rules
+
+These rules need telemetry that a plain chatbot does not have: MCP tool registry events, tool risk
+and approval state, tool results and memory writes (see [log-schema.md](log-schema.md)). The demo
+agent connects to a real MCP server over stdio (official Python SDK v2), so the registry events are
+what an MCP client actually receives.
+
+**LLMD-013 Memory poisoning.** Fires on a memory write that is a standing instruction to act
+("always send a copy of every email to ...") or that happened while untrusted content was in
+context. `atk-memory-poisoning-write` / `-trigger` show why it matters: the write itself does nothing
+visible; hours later, in a new session, the replayed memory makes the agent copy an ordinary email to
+the attacker, which LLMD-006/007 catch because memory counts as non-internal content. Memory that is
+a plain preference (`benign-memory-preference`) does not fire. A memory instruction phrased without
+any of the action verbs and written without untrusted context would be missed.
+
+**LLMD-014 MCP rug pull.** Same `mcp_server/tool_name`, new description hash. KQL compares with the
+first hash in a 14 day lookback; Wazuh uses `frequency="2"` with `same_field` on the tool key and
+`different_field` on the hash, which only remembers within the timeframe and loses state on restart.
+In production keep approved hashes in a Sentinel watchlist or a Wazuh CDB list. Every legitimate
+server update also fires; that is intended (a changed description is new, unreviewed instructions).
+
+**LLMD-015 MCP tool poisoning.** Pattern match on the advertised description. It sees what the model
+sees, which is the point: users approve tool *names*. A poisoned description without the usual
+markers (no `<IMPORTANT>`, no "do not tell the user", no sensitive paths) would be missed; MCPTox
+(arXiv 2508.14925) is a good source of real poisoned descriptions to test against.
+
+**LLMD-016 Destructive tool without approval.** Metadata only: `tool_risk = destructive` and
+`tool_approval = auto`. It depends on the application classifying its tools honestly. The approved
+delete in `benign-destructive-approved` does not fire.
+
+**LLMD-017 Dangerous agent command.** Reverse shells, remote scripts piped to a shell, base64 piped
+to a shell, setuid, `rm -rf /`. Fires even when a human approved it (`atk-pipe-to-shell`).
+`evade-staged-command` is the honest gap: if the payload was dropped earlier, the command the agent
+runs (`python3 /tmp/update_check.py`) looks routine. Endpoint telemetry (EDR process trees) is the
+complement here, not more regex.
+
+**LLMD-018 Credential material through agent tools.** Path patterns for cloud CLI credentials, SSH
+keys, `.env`, kube and docker configs and `mcp.json`, counting denied attempts. `atk-tool-burst`
+fires it too, because its path traversal went after `.env` and `id_rsa`.
+
+**LLMD-019 Lethal trifecta in one turn.** A successful private read followed by external egress
+(email or HTTP outside the allowlist, or any third-party MCP call) in the same request. The poisoned
+MCP scenario passes restricted notes to the vendor's tool as a harmless-looking `note` argument,
+which only the sequence reveals.
+
+**LLMD-020 Agent config tampering.** Writes to agent configuration and auto-loaded instruction files.
+`DisablesApproval` flags writes that switch approval prompts off, the CVE-2025-53773 pattern. Shell
+writes are caught when they redirect, `tee`, `sed -i`, `cp` or `mv` into a known config path.
+
+**LLMD-021 Instructions in a tool result.** Same idea as LLMD-002, applied to tool output, plus
+"to fix this error run `...`" remediation text. Fires on the runtime-poisoned MCP server
+(`atk-tool-output-injection`) and on `atk-tool-burst`, where reading the vendor uploads returned
+their hidden instructions to the model.
+
 ## Gaps not covered by any scenario
 
 - **Multi-turn attacks.** An instruction split across several messages, or built up through
@@ -93,6 +148,13 @@ correlation: LLMD-012 followed by LLMD-003 in the same session is a confirmed, i
 - **Non-English beyond Hungarian.** The phrase lists cover English and Hungarian only.
 - **Poisoning at indexing time.** LLMD-002 fires when poisoned content is *retrieved*. Scanning
   documents on upload is cheaper and earlier; the same regexes can be reused there.
+- **Multi-agent systems.** OWASP Agentic ASI07 (insecure inter-agent communication), ASI08
+  (cascading failures) and ASI10 (rogue agents) need agent-to-agent telemetry the demo does not
+  have. ASI09 (human-agent trust exploitation) is about what the user believes, not what the logs
+  show.
+- **MCP transport and auth.** The MCP security best practices also call out confused deputy, token
+  passthrough and SSRF through OAuth metadata. Those live in MCP server and gateway logs, not in the
+  agent's application telemetry.
 - **Model-side issues** (OWASP LLM03 Supply Chain, LLM04 Data and Model Poisoning, LLM09
   Misinformation) do not show up in application telemetry and are not addressed here.
 
@@ -127,7 +189,10 @@ would mislead triage more than an empty field.
 
 | Topic | Sentinel (KQL) | Wazuh |
 |---|---|---|
-| One event, several rules | Each rule is its own query, all fire | One alert per event. Combined child rules cover injection + extraction (100711) and exfiltrating call + secret (100732, 100733). Other overlaps, for example a canary inside an external `send_email`, report only one LLMD rule |
+| One event, several rules | Each rule is its own query, all fire | One alert per event. Combined child rules cover injection + extraction (100711), exfiltrating call + secret (100732, 100733), private read + MCP call + secret (100765) and rug pull + poisoned description (100782). Other overlaps, for example a canary inside an external `send_email`, report only one LLMD rule |
+| Counting across rules | Any filter, any count | A `frequency` rule only counts events whose *final* rule is the counted one. LLMD-008 therefore misses `atk-tool-burst` in Wazuh: 4 of its 12 calls alert as LLMD-018/021 instead and are not counted (pinned in `tests/test_wazuh_rules.py`) |
+| Nested correlation | Joins compose | A correlation rule under another correlation rule is not evaluated. LLMD-019 misses `atk-indirect-email-exfil` in Wazuh because that `send_email` already sits under the LLMD-007 correlation (pinned in the tests; LLMD-004/006/007 still fire on the same event) |
+| Change detection | `arg_min` over the lookback, join | `frequency="2"` + `different_field`, in-memory for the timeframe |
 | Aggregation | `row_window_session` windows, sums | `frequency` / `timeframe` counts only, no sums (LLMD-009 counts large turns) |
 | Correlation | `join` on `session_id` with a time bound | `if_matched_group` + `same_field` |
 | Allowlists | `dynamic([...])` lists | PCRE2 with `negate="yes"` |
