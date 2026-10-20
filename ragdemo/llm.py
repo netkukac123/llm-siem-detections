@@ -63,7 +63,7 @@ class ScriptedModel:
 
     @staticmethod
     def _default_answer(messages: list[dict]) -> str:
-        context = next((m["content"] for m in messages if m["role"] == "system" and "CONTEXT" in m["content"]), "")
+        context = next((m["content"] for m in messages if m["role"] == "system" and m["content"].startswith("CONTEXT")), "")
         first_fact = next((ln for ln in context.splitlines() if ln and not ln.startswith(("CONTEXT", "[", "<!--"))), "")
         return f"According to the knowledge base: {first_fact}" if first_fact else "I could not find that in the knowledge base."
 

@@ -48,7 +48,7 @@ def schema_columns() -> list[tuple[str, str]]:
 
 
 def load_table(jsonl: Path, chunk: int = 100) -> None:
-    kql_types = {"datetime": "datetime", "string": "string", "int": "long", "long": "long", "real": "real",
+    kql_types = {"dateTime": "datetime", "string": "string", "int": "long", "long": "long", "real": "real",
                  "dynamic": "dynamic", "boolean": "bool"}
     cols = ", ".join(f"{name}:{kql_types[typ]}" for name, typ in schema_columns())
     _post("mgmt", f".drop table {TABLE} ifexists")

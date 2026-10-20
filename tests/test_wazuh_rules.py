@@ -30,7 +30,8 @@ def _container_running() -> bool:
     return res.stdout.strip() == "true"
 
 
-pytestmark = pytest.mark.skipif(not _container_running(), reason=f"container {CONTAINER} not running")
+pytestmark = pytest.mark.skipif(not (os.environ.get("REQUIRE_ENGINES") or _container_running()),
+                                reason=f"container {CONTAINER} not running")
 
 
 def _docker(*args: str, **kw) -> subprocess.CompletedProcess:

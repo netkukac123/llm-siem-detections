@@ -3,31 +3,131 @@
     "schema": {
       "name": "LLMAppLogs_CL",
       "columns": [
-        {"name": "TimeGenerated", "type": "datetime"},
-        {"name": "app_name", "type": "string"},
-        {"name": "event_type", "type": "string"},
-        {"name": "request_id", "type": "string"},
-        {"name": "session_id", "type": "string"},
-        {"name": "user_id", "type": "string"},
-        {"name": "src_ip", "type": "string"},
-        {"name": "model", "type": "string"},
-        {"name": "prompt", "type": "string"},
-        {"name": "prompt_chars", "type": "long"},
-        {"name": "guardrail_action", "type": "string"},
-        {"name": "guardrail_rule", "type": "string"},
-        {"name": "doc_id", "type": "string"},
-        {"name": "doc_source", "type": "string"},
-        {"name": "doc_title", "type": "string"},
-        {"name": "retrieval_score", "type": "real"},
-        {"name": "chunk_text", "type": "string"},
-        {"name": "tool_name", "type": "string"},
-        {"name": "tool_args", "type": "string"},
-        {"name": "tool_target", "type": "string"},
-        {"name": "tool_status", "type": "string"},
-        {"name": "completion", "type": "string"},
-        {"name": "input_tokens", "type": "long"},
-        {"name": "output_tokens", "type": "long"},
-        {"name": "finish_reason", "type": "string"}
+        {
+          "name": "TimeGenerated",
+          "type": "dateTime",
+          "description": "Event time (UTC)"
+        },
+        {
+          "name": "app_name",
+          "type": "string",
+          "description": "Emitting application"
+        },
+        {
+          "name": "event_type",
+          "type": "string",
+          "description": "prompt | guardrail | retrieval | tool_call | completion"
+        },
+        {
+          "name": "request_id",
+          "type": "string",
+          "description": "One user turn; shared by all events of that turn"
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "Conversation identifier"
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "Authenticated identity (user or service principal)"
+        },
+        {
+          "name": "src_ip",
+          "type": "string",
+          "description": "Client IP as seen by the application"
+        },
+        {
+          "name": "model",
+          "type": "string",
+          "description": "Model or deployment name"
+        },
+        {
+          "name": "prompt",
+          "type": "string",
+          "description": "User prompt, truncated to 2000 characters"
+        },
+        {
+          "name": "prompt_chars",
+          "type": "long",
+          "description": "Full prompt length before truncation"
+        },
+        {
+          "name": "guardrail_action",
+          "type": "string",
+          "description": "allow | block"
+        },
+        {
+          "name": "guardrail_rule",
+          "type": "string",
+          "description": "Guardrail rule or category that decided"
+        },
+        {
+          "name": "doc_id",
+          "type": "string",
+          "description": "Retrieved document identifier"
+        },
+        {
+          "name": "doc_source",
+          "type": "string",
+          "description": "Provenance of the retrieved document (internal-wiki, external-upload, ...)"
+        },
+        {
+          "name": "doc_title",
+          "type": "string",
+          "description": "Retrieved document title"
+        },
+        {
+          "name": "retrieval_score",
+          "type": "real",
+          "description": "Retriever relevance score"
+        },
+        {
+          "name": "chunk_text",
+          "type": "string",
+          "description": "Retrieved text as placed into the context, truncated"
+        },
+        {
+          "name": "tool_name",
+          "type": "string",
+          "description": "Agent tool invoked"
+        },
+        {
+          "name": "tool_args",
+          "type": "string",
+          "description": "Tool arguments as JSON, truncated"
+        },
+        {
+          "name": "tool_target",
+          "type": "string",
+          "description": "Normalized destination: email domain, URL host or file path"
+        },
+        {
+          "name": "tool_status",
+          "type": "string",
+          "description": "ok | denied | error"
+        },
+        {
+          "name": "completion",
+          "type": "string",
+          "description": "Final model answer for the turn, truncated"
+        },
+        {
+          "name": "input_tokens",
+          "type": "long",
+          "description": "Prompt tokens summed over all model calls of the turn"
+        },
+        {
+          "name": "output_tokens",
+          "type": "long",
+          "description": "Completion tokens summed over all model calls of the turn"
+        },
+        {
+          "name": "finish_reason",
+          "type": "string",
+          "description": "Model finish reason of the last call"
+        }
       ]
     },
     "retentionInDays": 30,

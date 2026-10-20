@@ -1,0 +1,14 @@
+[project]
+name = "llm-siem-detections"
+version = "0.1.0"
+description = "SIEM detections for attacks on LLM applications (Microsoft Sentinel KQL and Wazuh), with a vulnerable RAG demo app that generates the telemetry."
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest", "pyyaml"]
+sentinel = ["azure-identity", "azure-monitor-ingestion", "pyyaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

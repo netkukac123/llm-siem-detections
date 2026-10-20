@@ -6,7 +6,7 @@ documented `known_miss` gaps must stay silent.
 """
 from __future__ import annotations
 
-from pathlib import Path
+import os
 
 import pytest
 
@@ -15,7 +15,8 @@ from .groundtruth import DATASET, ROOT, RULE_IDS, describe, expectation
 
 RULE_FILES = {p.name[:8]: p for p in (ROOT / "detections" / "sentinel").glob("LLMD-*.yaml")}
 
-pytestmark = pytest.mark.skipif(not kusto.available(), reason=f"Kustainer not reachable at {kusto.KUSTO_URL}")
+pytestmark = pytest.mark.skipif(not (os.environ.get("REQUIRE_ENGINES") or kusto.available()),
+                                reason=f"Kustainer not reachable at {kusto.KUSTO_URL}")
 
 
 @pytest.fixture(scope="module", autouse=True)

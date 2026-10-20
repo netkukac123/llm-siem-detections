@@ -1,0 +1,39 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  detections:
+    runs-on: ubuntu-latest
+    services:
+      kustainer:
+        image: mcr.microsoft.com/azuredataexplorer/kustainer-linux:latest
+        env:
+          ACCEPT_EULA: "Y"
+        ports:
+          - 8080:8080
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install pytest pyyaml
+
+      - name: Start wazuh-manager
+        run: |
+          docker run -d --name wazuh-llmd wazuh/wazuh-manager:4.14.7
+          timeout 300 bash -c 'until docker exec wazuh-llmd test -S /var/ossec/queue/sockets/logtest; do sleep 5; done'
+
+      - name: Wait for Kustainer
+        run: |
+          timeout 300 bash -c 'until curl -sf -X POST http://127.0.0.1:8080/v1/rest/query \
+            -H "Content-Type: application/json" -d "{\"db\":\"NetDefaultDB\",\"csl\":\"print 1\"}" > /dev/null; do sleep 5; done'
+
+      - name: Tests (unit, KQL on Kustainer, Wazuh logtest)
+        env:
+          REQUIRE_ENGINES: "1"
+        run: python -m pytest -v
