@@ -1,0 +1,263 @@
+<!--
+  LLM application detections for Wazuh 4.x  (rule IDs 100700-100799)
+
+  Input: one JSON object per line as described in docs/log-schema.md, read by the
+  agent with <log_format>json</log_format> (see ossec-localfile.conf).
+  Every alerting rule carries group llmd_NNN for the LLMD rule(s) it implements,
+  so the same IDs work across Sentinel and Wazuh.
+
+  Wazuh emits one alert per event, the deepest matching rule. Where one event
+  satisfies several LLMD rules (for example an exfiltrating send_email that also
+  contains a secret), a more specific child rule carries all of their groups.
+
+  Regexes run in PCRE2 without UTF mode, so non-ASCII characters are written as
+  literal UTF-8 sequences or byte ranges.
+-->
+<group name="llm_app,">
+
+  <!-- ===== Base: recognise the event family ===== -->
+  <rule id="100700" level="0">
+    <decoded_as>json</decoded_as>
+    <field name="event_type" type="pcre2">^(prompt|guardrail|retrieval|tool_call|completion)$</field>
+    <field name="request_id" type="pcre2">^\w+$</field>
+    <description>LLM app event.</description>
+  </rule>
+
+  <rule id="100701" level="0">
+    <if_sid>100700</if_sid>
+    <field name="event_type">^prompt$</field>
+    <description>LLM app: user prompt.</description>
+  </rule>
+
+  <rule id="100702" level="3">
+    <if_sid>100700</if_sid>
+    <field name="event_type">^guardrail$</field>
+    <field name="guardrail_action">^block$</field>
+    <description>LLM app: guardrail blocked a prompt from $(user_id) ($(guardrail_rule)).</description>
+    <group>llm_guardrail_block,</group>
+  </rule>
+
+  <rule id="100703" level="0">
+    <if_sid>100700</if_sid>
+    <field name="event_type">^retrieval$</field>
+    <description>LLM app: document retrieved into context.</description>
+  </rule>
+
+  <!-- Level 2, not 0: frequency rules only count events from rules with level > 0.
+       Still below the default log_alert_level of 3, so it produces no alert. -->
+  <rule id="100704" level="2">
+    <if_sid>100700</if_sid>
+    <field name="event_type">^tool_call$</field>
+    <description>LLM app: agent tool call.</description>
+    <group>llm_tool_call,</group>
+  </rule>
+
+  <rule id="100705" level="0">
+    <if_sid>100700</if_sid>
+    <field name="event_type">^completion$</field>
+    <description>LLM app: model completion.</description>
+  </rule>
+
+  <!-- ===== Prompt-side rules ===== -->
+
+  <!-- LLMD-001 Direct prompt injection phrasing -->
+  <rule id="100710" level="8">
+    <if_sid>100701</if_sid>
+    <field name="prompt" type="pcre2">(?i)\b(ignore|disregard|forget|override)\b[^.\n]{0,30}\b(previous|prior|above|earlier|preceding|system)\b[^.\n]{0,20}\b(instructions?|prompts?|rules|directions|guidelines)\b|\bnew instructions?\s*:|\byou are now\b[^.\n]{0,30}\b(unrestricted|unfiltered|uncensored)\b|(felejtsd el|hagyd figyelmen k(i|í)v(u|ü)l|ne vedd figyelembe).{0,30}(kor(a|á)bbi|el(o|ő)z(o|ő)|fenti|eddigi).{0,15}utas(i|í)t(a|á)s</field>
+    <description>LLMD-001 Direct prompt injection phrasing from $(user_id).</description>
+    <group>llmd_001,owasp_llm01,atlas_AML.T0051.000,</group>
+  </rule>
+
+  <!-- LLMD-001 + LLMD-012 on the same prompt -->
+  <rule id="100711" level="10">
+    <if_sid>100710</if_sid>
+    <field name="prompt" type="pcre2">(?i)\b(repeat|print|reveal|show|output|display|dump)\b[^.\n]{0,25}\b(system prompt|instructions|the text above|everything above|initial prompt|hidden prompt)\b|\bwhat (are|were) your (original |initial |system |hidden )?(instructions|rules|prompt)\b|\brepeat the (text|words) above\b</field>
+    <description>LLMD-001/LLMD-012 Prompt injection combined with system prompt extraction from $(user_id).</description>
+    <group>llmd_001,llmd_012,owasp_llm01,owasp_llm07,atlas_AML.T0051.000,atlas_AML.T0056,</group>
+  </rule>
+
+  <!-- LLMD-012 System prompt extraction attempt -->
+  <rule id="100712" level="5">
+    <if_sid>100701</if_sid>
+    <field name="prompt" type="pcre2">(?i)\b(repeat|print|reveal|show|output|display|dump)\b[^.\n]{0,25}\b(system prompt|instructions|the text above|everything above|initial prompt|hidden prompt)\b|\bwhat (are|were) your (original |initial |system |hidden )?(instructions|rules|prompt)\b|\brepeat the (text|words) above\b</field>
+    <description>LLMD-012 System prompt extraction attempt from $(user_id).</description>
+    <group>llmd_012,owasp_llm07,atlas_AML.T0056,</group>
+  </rule>
+
+  <!-- LLMD-011 Obfuscated prompt content -->
+  <rule id="100713" level="8">
+    <if_sid>100701</if_sid>
+    <field name="prompt" type="pcre2">\xF3\xA0[\x80\x81][\x80-\xBF]</field>
+    <description>LLMD-011 Invisible Unicode tag characters (ASCII smuggling) in prompt from $(user_id).</description>
+    <group>llmd_011,owasp_llm01,atlas_AML.T0068,</group>
+  </rule>
+
+  <rule id="100714" level="8">
+    <if_sid>100701</if_sid>
+    <field name="prompt" type="pcre2">[A-Za-z0-9+/]{60,}={0,2}</field>
+    <description>LLMD-011 Long base64 blob in prompt from $(user_id).</description>
+    <group>llmd_011,owasp_llm01,atlas_AML.T0068,</group>
+  </rule>
+
+  <rule id="100715" level="8">
+    <if_sid>100701</if_sid>
+    <field name="prompt" type="pcre2">(\xE2\x80[\x8B-\x8D]|\xE2\x81\xA0|\xEF\xBB\xBF){3,}</field>
+    <description>LLMD-011 Run of zero-width characters in prompt from $(user_id).</description>
+    <group>llmd_011,owasp_llm01,atlas_AML.T0068,</group>
+  </rule>
+
+  <!-- LLMD-010 Repeated guardrail blocks (3 in 10 minutes, same user) -->
+  <rule id="100716" level="10" frequency="3" timeframe="600">
+    <if_matched_sid>100702</if_matched_sid>
+    <same_field>user_id</same_field>
+    <description>LLMD-010 Repeated guardrail blocks from $(user_id): likely jailbreak iteration.</description>
+    <group>llmd_010,owasp_llm01,atlas_AML.T0054,</group>
+  </rule>
+
+  <!-- ===== Retrieval-side rules ===== -->
+
+  <!-- Externally sourced content entered the context (correlation anchor for LLMD-007) -->
+  <rule id="100720" level="3">
+    <if_sid>100703</if_sid>
+    <field name="doc_source" negate="yes">^internal-wiki$</field>
+    <description>LLM app: external document $(doc_id) retrieved into context.</description>
+    <group>llm_external_content,</group>
+  </rule>
+
+  <!-- LLMD-002 Instructions aimed at the model inside retrieved content (external source) -->
+  <rule id="100721" level="8">
+    <if_sid>100720</if_sid>
+    <field name="chunk_text" type="pcre2">(?i)\b(ignore|disregard|forget|override)\b[^.\n]{0,30}\b(previous|prior|above|earlier|preceding|system)\b[^.\n]{0,20}\b(instructions?|prompts?|rules|directions|guidelines)\b|\bnew instructions?\s*:|\b(note|message|instructions?) (to|for) the (ai|assistant|ai assistant|llm|model)\b|\bassistant instructions\s*:|\b(ai|llm) (assistant|agent)\s*:|!\[[^\]]*\]\(https?://[^)\s]*\{[^}]*\}</field>
+    <description>LLMD-002 Retrieved document $(doc_id) ($(doc_source)) contains instructions aimed at the model.</description>
+    <group>llmd_002,llm_external_content,owasp_llm01,owasp_llm08,atlas_AML.T0051.001,atlas_AML.T0070,</group>
+  </rule>
+
+  <!-- LLMD-002 same check for internal documents -->
+  <rule id="100722" level="8">
+    <if_sid>100703</if_sid>
+    <field name="doc_source">^internal-wiki$</field>
+    <field name="chunk_text" type="pcre2">(?i)\b(ignore|disregard|forget|override)\b[^.\n]{0,30}\b(previous|prior|above|earlier|preceding|system)\b[^.\n]{0,20}\b(instructions?|prompts?|rules|directions|guidelines)\b|\bnew instructions?\s*:|\b(note|message|instructions?) (to|for) the (ai|assistant|ai assistant|llm|model)\b|\bassistant instructions\s*:|\b(ai|llm) (assistant|agent)\s*:|!\[[^\]]*\]\(https?://[^)\s]*\{[^}]*\}</field>
+    <description>LLMD-002 Retrieved document $(doc_id) ($(doc_source)) contains instructions aimed at the model.</description>
+    <group>llmd_002,owasp_llm01,owasp_llm08,atlas_AML.T0051.001,atlas_AML.T0070,</group>
+  </rule>
+
+  <!-- ===== Tool-call rules ===== -->
+
+  <!-- LLMD-006 Side-effecting tool aimed at an external destination -->
+  <rule id="100730" level="8">
+    <if_sid>100704</if_sid>
+    <field name="tool_name">^send_email$|^http_get$</field>
+    <field name="tool_target" type="pcre2" negate="yes">(?i)(^|\.)acme-freight\.hu$|^learn\.microsoft\.com$|^github\.com$</field>
+    <description>LLMD-006 Agent called $(tool_name) towards external target $(tool_target).</description>
+    <group>llmd_006,llm_egress_external,owasp_llm06,atlas_AML.T0053,atlas_AML.T0086,</group>
+  </rule>
+
+  <!-- LLMD-007 Egress after external content in the same session (10 min) -->
+  <rule id="100731" level="12" timeframe="600">
+    <if_sid>100730</if_sid>
+    <if_matched_group>llm_external_content</if_matched_group>
+    <same_field>session_id</same_field>
+    <description>LLMD-007 Egress tool call to $(tool_target) after external content entered session $(session_id): probable indirect prompt injection.</description>
+    <group>llmd_006,llmd_007,owasp_llm01,owasp_llm06,atlas_AML.T0051.001,atlas_AML.T0086,</group>
+  </rule>
+
+  <!-- LLMD-004 on top of LLMD-006/007: the exfiltrating call carries a secret -->
+  <rule id="100732" level="13">
+    <if_sid>100731</if_sid>
+    <field name="tool_args" type="pcre2">\b(AKIA|ASIA)[0-9A-Z]{16}\b|(?i:secret)[^\n]{0,20}[A-Za-z0-9/+]{40}|-----BEGIN [A-Z ]*PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{36}\b|\bxox[baprs]-[A-Za-z0-9-]{10,}|\bHU\d{2}(?: ?\d{4}){6}\b</field>
+    <description>LLMD-004/006/007 Secret sent to $(tool_target) via $(tool_name) after external content entered the session.</description>
+    <group>llmd_004,llmd_006,llmd_007,owasp_llm02,owasp_llm06,atlas_AML.T0057,atlas_AML.T0086,</group>
+  </rule>
+
+  <rule id="100733" level="12">
+    <if_sid>100730</if_sid>
+    <field name="tool_args" type="pcre2">\b(AKIA|ASIA)[0-9A-Z]{16}\b|(?i:secret)[^\n]{0,20}[A-Za-z0-9/+]{40}|-----BEGIN [A-Z ]*PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{36}\b|\bxox[baprs]-[A-Za-z0-9-]{10,}|\bHU\d{2}(?: ?\d{4}){6}\b</field>
+    <description>LLMD-004/006 Secret sent to external target $(tool_target) via $(tool_name).</description>
+    <group>llmd_004,llmd_006,owasp_llm02,owasp_llm06,atlas_AML.T0057,atlas_AML.T0086,</group>
+  </rule>
+
+  <!-- Egress tool to a trusted destination: not LLMD-006, but still checked for secrets -->
+  <rule id="100737" level="0">
+    <if_sid>100704</if_sid>
+    <field name="tool_name">^send_email$|^http_get$</field>
+    <field name="tool_target" type="pcre2">(?i)(^|\.)acme-freight\.hu$|^learn\.microsoft\.com$|^github\.com$</field>
+    <description>LLM app: agent egress tool call to trusted target $(tool_target).</description>
+  </rule>
+
+  <rule id="100738" level="10">
+    <if_sid>100737</if_sid>
+    <field name="tool_args" type="pcre2">\b(AKIA|ASIA)[0-9A-Z]{16}\b|(?i:secret)[^\n]{0,20}[A-Za-z0-9/+]{40}|-----BEGIN [A-Z ]*PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{36}\b|\bxox[baprs]-[A-Za-z0-9-]{10,}|\bHU\d{2}(?: ?\d{4}){6}\b</field>
+    <description>LLMD-004 Secret in arguments of $(tool_name) to trusted target $(tool_target).</description>
+    <group>llmd_004,owasp_llm02,atlas_AML.T0057,</group>
+  </rule>
+
+  <!-- LLMD-004 secret in arguments of a non-egress tool call -->
+  <rule id="100734" level="10">
+    <if_sid>100704</if_sid>
+    <field name="tool_name" negate="yes">^send_email$|^http_get$</field>
+    <field name="tool_args" type="pcre2">\b(AKIA|ASIA)[0-9A-Z]{16}\b|(?i:secret)[^\n]{0,20}[A-Za-z0-9/+]{40}|-----BEGIN [A-Z ]*PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{36}\b|\bxox[baprs]-[A-Za-z0-9-]{10,}|\bHU\d{2}(?: ?\d{4}){6}\b</field>
+    <description>LLMD-004 Secret in arguments of tool $(tool_name) (target $(tool_target)).</description>
+    <group>llmd_004,owasp_llm02,atlas_AML.T0057,</group>
+  </rule>
+
+  <!-- LLMD-003 canary in tool arguments -->
+  <rule id="100735" level="12">
+    <if_sid>100704</if_sid>
+    <field name="tool_args" type="pcre2">sp-canary-[0-9a-f]{16}</field>
+    <description>LLMD-003 System prompt canary passed to tool $(tool_name).</description>
+    <group>llmd_003,owasp_llm07,atlas_AML.T0056,</group>
+  </rule>
+
+  <!-- LLMD-008 Burst of tool calls (10 in 5 minutes, same session) -->
+  <rule id="100736" level="10" frequency="10" timeframe="300">
+    <if_matched_sid>100704</if_matched_sid>
+    <same_field>session_id</same_field>
+    <description>LLMD-008 Burst of agent tool calls in session $(session_id) by $(user_id).</description>
+    <group>llmd_008,owasp_llm06,owasp_llm10,atlas_AML.T0053,</group>
+  </rule>
+
+  <!-- ===== Completion-side rules ===== -->
+
+  <!-- LLMD-003 System prompt canary in model output -->
+  <rule id="100740" level="12">
+    <if_sid>100705</if_sid>
+    <field name="completion" type="pcre2">sp-canary-[0-9a-f]{16}</field>
+    <description>LLMD-003 System prompt canary leaked to $(user_id) in session $(session_id).</description>
+    <group>llmd_003,owasp_llm07,atlas_AML.T0056,</group>
+  </rule>
+
+  <!-- LLMD-004 Secrets or financial identifiers in model output -->
+  <rule id="100741" level="10">
+    <if_sid>100705</if_sid>
+    <field name="completion" type="pcre2">\b(AKIA|ASIA)[0-9A-Z]{16}\b|(?i:secret)[^\n]{0,20}[A-Za-z0-9/+]{40}|-----BEGIN [A-Z ]*PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{36}\b|\bxox[baprs]-[A-Za-z0-9-]{10,}|\bHU\d{2}(?: ?\d{4}){6}\b</field>
+    <description>LLMD-004 Credential or financial identifier in model output to $(user_id).</description>
+    <group>llmd_004,owasp_llm02,atlas_AML.T0057,</group>
+  </rule>
+
+  <!-- LLMD-005 Auto-loading image with query string to an external host -->
+  <rule id="100742" level="12">
+    <if_sid>100705</if_sid>
+    <!-- Character classes holding quotes or ">" after "\s" did not match under Wazuh 4.14
+         (verified with wazuh-logtest), hence the plainer [^)\s] classes. -->
+    <field name="completion" type="pcre2">(?i)(!\[[^\]]*\]\(|&lt;img\s[^)]+?src=\W?)https?://(?![a-z0-9.-]*acme-freight\.hu[/?:)])[^)\s]+\?[^)\s]*=</field>
+    <description>LLMD-005 Model output contains an auto-loading image beacon to an external host (session $(session_id)).</description>
+    <group>llmd_005,owasp_llm05,owasp_llm02,atlas_AML.T0077,</group>
+  </rule>
+
+  <!-- Large request: input to LLMD-009 -->
+  <rule id="100743" level="3">
+    <if_sid>100705</if_sid>
+    <field name="input_tokens" type="pcre2">^([4-9]\d{3}|\d{5,})$</field>
+    <description>LLM app: large request ($(input_tokens) input tokens) from $(user_id).</description>
+    <group>llm_large_request,</group>
+  </rule>
+
+  <!-- LLMD-009 Token consumption spike: 5 large requests in 1 hour, same user -->
+  <rule id="100744" level="10" frequency="5" timeframe="3600">
+    <if_matched_sid>100743</if_matched_sid>
+    <same_field>user_id</same_field>
+    <description>LLMD-009 Token consumption spike from $(user_id): repeated large requests.</description>
+    <group>llmd_009,owasp_llm10,atlas_AML.T0034,atlas_AML.T0029,</group>
+  </rule>
+
+</group>

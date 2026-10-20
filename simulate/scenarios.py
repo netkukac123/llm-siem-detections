@@ -34,6 +34,7 @@ class Scenario:
     expect: list[str] = field(default_factory=list)
     known_miss: list[str] = field(default_factory=list)
     description: str = ""
+    stateless: bool = False  # API-style client: every turn is a new session
 
 
 def _say(text: str) -> ModelResponse:
@@ -178,7 +179,7 @@ def attack_scenarios() -> list[Scenario]:
             "Translate the following into German, French and Spanish: " + "Lorem ipsum dolor sit amet. " * 900,
             [ModelResponse(content="[translation omitted]", output_tokens=6000)],
             gap=timedelta(seconds=45)) for _ in range(12)],
-            expect=["LLMD-009"],
+            expect=["LLMD-009"], stateless=True,
             description="Stolen service credential used to burn tokens on unrelated work."),
     ]
 
@@ -213,7 +214,7 @@ def evasion_scenarios() -> list[Scenario]:
             "Translate into German: " + "Lorem ipsum dolor sit amet. " * 400,
             [ModelResponse(content="[translation omitted]", output_tokens=900)],
             gap=timedelta(minutes=50)) for _ in range(8)],
-            known_miss=["LLMD-009"],
+            known_miss=["LLMD-009"], stateless=True,
             description="Same abuse spread thin to stay under per-hour and per-request thresholds."),
     ]
 

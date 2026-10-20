@@ -43,12 +43,14 @@ def main() -> None:
     labels = []
     for sc in all_scenarios():
         clock.current = DAY_START + timedelta(minutes=rng.randint(0, 9 * 60))
-        session_id = f"s-{uuid.uuid4().hex[:12]}"
+        sessions: list[str] = []
         for turn in sc.turns:
+            if sc.stateless or not sessions:
+                sessions.append(f"s-{uuid.uuid4().hex[:12]}")
             model.script(*turn.model)
-            app.handle(turn.message, session_id=session_id, user_id=sc.user_id, src_ip=sc.src_ip)
+            app.handle(turn.message, session_id=sessions[-1], user_id=sc.user_id, src_ip=sc.src_ip)
             clock.advance(turn.gap)
-        labels.append({"scenario": sc.id, "kind": sc.kind, "session_id": session_id, "user_id": sc.user_id,
+        labels.append({"scenario": sc.id, "kind": sc.kind, "session_ids": sessions, "user_id": sc.user_id,
                        "expect": sc.expect, "known_miss": sc.known_miss, "description": sc.description})
 
     events = [json.loads(line) for line in buf.getvalue().splitlines()]

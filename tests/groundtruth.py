@@ -26,14 +26,14 @@ def expectation(rule_id: str) -> Expectation:
     lab = labels()
     hit = [l for l in lab if rule_id in l["expect"]]
     return Expectation(
-        sessions=frozenset(l["session_id"] for l in hit),
+        sessions=frozenset(s for l in hit for s in l["session_ids"]),
         users=frozenset(l["user_id"] for l in hit),
-        known_miss_sessions=frozenset(l["session_id"] for l in lab if rule_id in l["known_miss"]),
+        known_miss_sessions=frozenset(s for l in lab if rule_id in l["known_miss"] for s in l["session_ids"]),
     )
 
 
 def scenario_by_session() -> dict[str, str]:
-    return {l["session_id"]: l["scenario"] for l in labels()}
+    return {s: l["scenario"] for l in labels() for s in l["session_ids"]}
 
 
 def describe(sessions: set[str] | frozenset[str]) -> list[str]:
