@@ -1,0 +1,48 @@
+id: 47881cd4-1e20-5a64-a520-f3db153d07e6
+name: LLMD-021 Instructions aimed at the agent inside a tool result
+description: |
+  A tool returned text addressed to the AI rather than data: instruction-override phrasing, "AI
+  agent: ...", "no need to ask the user", or a "to fix this error run `curl ... | sh`" remediation.
+  Tool output goes straight into the model's context with the same authority as retrieved
+  documents. ATLAS calls this AI Agent Tool Poisoning: Runtime Response; the 2026 "Agentjacking"
+  research (fake Sentry errors) and CVE-2026-75130 (Context7 MCP) are real cases. Correlate with
+  LLMD-017 in the same session: instruction in, command out.
+severity: High
+requiredDataConnectors: []
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+  - Execution
+relevantTechniques: []
+tags:
+  - OWASP-ASI01:2026 Agent Goal Hijack
+  - OWASP-ASI04:2026 Agentic Supply Chain Vulnerabilities
+  - ATLAS AML.T0110.002 AI Agent Tool Poisoning Runtime Response
+  - ATLAS AML.T0051.001 LLM Prompt Injection Indirect
+query: |
+  let injection = @"(?i)\b(ignore|disregard|forget|override)\b[^.\n]{0,30}\b(previous|prior|above|earlier|preceding|system)\b[^.\n]{0,20}\b(instructions?|prompts?|rules|directions|guidelines)\b|\bnew instructions?\s*:";
+  let addressed_to_agent = @"(?i)\b(note|message|instructions?) (to|for) the (ai|assistant|ai assistant|llm|model|agent)\b|\bassistant instructions\s*:|\b(ai|llm) (assistant|agent)\s*:|\bno need to (ask|tell|inform) the user\b|\bdo not (tell|mention|inform)\b[^.\n]{0,20}\buser\b";
+  let remediation = @"(?i)\bto fix (this|the) (error|issue|problem)\b[^.\n]{0,40}\brun\b|`[^`]*\b(curl|wget|npx|npm (i|install)|pip install|bash|sh -c)\b[^`]*`";
+  LLMAppLogs_CL
+  | where event_type == "tool_call" and isnotempty(tool_result)
+  | where tool_result matches regex injection or tool_result matches regex addressed_to_agent
+      or tool_result matches regex remediation
+  | project TimeGenerated, user_id, src_ip, session_id, request_id, tool_name, mcp_server, tool_target,
+            tool_result
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: CloudApplication
+    fieldMappings:
+      - identifier: Name
+        columnName: mcp_server
+customDetails:
+  SessionId: session_id
+  ToolName: tool_name
+version: 1.0.0
+kind: Scheduled

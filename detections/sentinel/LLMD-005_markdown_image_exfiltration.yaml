@@ -4,8 +4,9 @@ description: |
   The model emitted a markdown image or HTML img tag that points to a non-corporate host and
   carries a query string. Chat clients that render markdown fetch the image without a click, so
   whatever is in the query string (often conversation content) reaches the attacker's server.
-  Clickable links are deliberately out of scope here because they are too common in normal
-  answers; see docs/coverage.md.
+  Reference-style images ("![x][r]" with a separate "[r]: URL" line) are included: that variant
+  bypassed link redaction in EchoLeak (CVE-2025-32711, Microsoft 365 Copilot). Clickable links are
+  deliberately out of scope because they are too common in normal answers; see docs/coverage.md.
 severity: High
 requiredDataConnectors: []
 queryFrequency: 5m
@@ -23,8 +24,12 @@ query: |
   let corporate_domain = "acme-freight.hu";
   LLMAppLogs_CL
   | where event_type == "completion"
-  | where completion contains "](http" or completion contains "<img"
-  | extend ImageUrls = extract_all(@"(?:!\[[^\]]*\]\(|<img[^>]+src=[""']?)(https?://[^)\s""'>]+)", completion)
+  | where completion contains "](http" or completion contains "<img" or completion contains "]: http"
+  | extend InlineUrls = extract_all(@"(?:!\[[^\]]*\]\(|<img[^>]+src=[""']?)(https?://[^)\s""'>]+)", completion)
+  // Reference-style images (![alt][ref] + a "[ref]: URL" line) slipped past link redaction in EchoLeak
+  | extend RefImage = completion matches regex @"!\[[^\]]*\]\[[^\]]+\]"
+  | extend RefUrls = iff(RefImage, extract_all(@"(?m)^\s*\[[^\]]+\]:\s*(https?://\S+)", completion), dynamic([]))
+  | extend ImageUrls = array_concat(InlineUrls, RefUrls)
   | mv-expand ImageUrl = ImageUrls to typeof(string)
   | extend Host = tolower(tostring(parse_url(ImageUrl).Host)), Query = tostring(parse_url(ImageUrl)["Query Parameters"])
   | where ImageUrl contains "?"

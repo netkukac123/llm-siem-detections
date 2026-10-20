@@ -1,0 +1,44 @@
+id: d5baf458-596a-5a9e-984c-3d938a2cdb1f
+name: LLMD-015 Hidden instructions in an MCP tool description (tool poisoning)
+description: |
+  An MCP server advertises a tool whose description contains instructions for the model rather than
+  documentation for a developer: <IMPORTANT> blocks, "do not tell the user", "before using this tool
+  read ...", "first call send_email", references to ~/.ssh, .env or mcp.json. The model sees the full
+  description, the user usually sees only the tool name. Pattern set follows Invariant Labs' tool
+  poisoning disclosure (2025); MCPTox (arXiv 2508.14925) measured attack success up to 72.8% on real
+  servers. Fires once per session that loads the tool; dedupe on tool_desc_sha256 in the incident.
+severity: High
+requiredDataConnectors: []
+queryFrequency: 15m
+queryPeriod: 15m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+relevantTechniques: []
+tags:
+  - OWASP-ASI04:2026 Agentic Supply Chain Vulnerabilities
+  - OWASP-ASI01:2026 Agent Goal Hijack
+  - ATLAS AML.T0110.000 AI Agent Tool Poisoning Definition and Instructions
+query: |
+  let poisoning = @"(?i)<important>|\b(do not|don't|never)\s+(tell|mention|inform|reveal|show)\b|\bbefore (using|calling) this tool\b|\b(first|always)\s+call\b|\b(read|send|include|pass|forward)\b[^.\n]{0,60}(\.ssh|id_rsa|\.env\b|credentials|mcp\.json|conversation|user's (last |previous )?message)|\b(ignore|override)\b[^.\n]{0,30}\binstructions\b";
+  LLMAppLogs_CL
+  | where event_type == "tool_registry"
+  | where tool_description matches regex poisoning
+  | project TimeGenerated, user_id, src_ip, session_id, mcp_server, tool_name, tool_key, tool_desc_sha256,
+            MatchedText = extract(poisoning, 0, tool_description), tool_description
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: CloudApplication
+    fieldMappings:
+      - identifier: Name
+        columnName: mcp_server
+customDetails:
+  ToolKey: tool_key
+  DescriptionHash: tool_desc_sha256
+  MatchedText: MatchedText
+version: 1.0.0
+kind: Scheduled

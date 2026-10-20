@@ -18,6 +18,7 @@ relevantTechniques: []
 tags:
   - OWASP-LLM06:2025 Excessive Agency
   - OWASP-LLM10:2025 Unbounded Consumption
+  - OWASP-ASI02:2026 Tool Misuse and Exploitation
   - ATLAS AML.T0053 AI Agent Tool Invocation
 query: |
   let threshold = 10;

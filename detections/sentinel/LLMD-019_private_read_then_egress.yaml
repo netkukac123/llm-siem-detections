@@ -1,0 +1,58 @@
+id: 3c703332-0150-5869-84eb-a3261707bd6e
+name: LLMD-019 Private data read and sent out in the same turn (lethal trifecta)
+description: |
+  Within one user turn the agent read a private file and then sent data to an external party: an
+  email or HTTP request outside the corporate domain and allowlist, or a call to a third-party MCP
+  server. Simon Willison's "lethal trifecta" (2025) names the three ingredients of agent data theft:
+  private data, untrusted content, external communication. This rule fires on the last two in
+  sequence; the untrusted leg is covered by LLMD-002, -007, -015 and -021. The GitHub MCP exploit
+  (Invariant Labs, 2025) and the Supabase MCP leak (General Analysis, 2025) both have this shape.
+severity: High
+requiredDataConnectors: []
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Exfiltration
+  - Collection
+relevantTechniques: []
+tags:
+  - OWASP-ASI02:2026 Tool Misuse and Exploitation
+  - OWASP-ASI01:2026 Agent Goal Hijack
+  - ATLAS AML.T0085.001 Data from AI Services AI Agent Tools
+  - ATLAS AML.T0086 Exfiltration via AI Agent Tool Invocation
+query: |
+  let corporate_domain = "acme-freight.hu";
+  let http_allowlist = dynamic(["learn.microsoft.com", "github.com"]);
+  let private_reads = LLMAppLogs_CL
+      | where event_type == "tool_call" and tool_name == "read_file" and tool_status == "ok"
+      | project ReadAt = TimeGenerated, request_id, ReadTarget = tool_target;
+  LLMAppLogs_CL
+  | where event_type == "tool_call" and tool_status == "ok"
+  | extend Target = tolower(tool_target)
+  | where tool_risk == "external"
+      or (tool_name in ("send_email", "http_get")
+          and not(Target == corporate_domain or Target endswith strcat(".", corporate_domain))
+          and not(tool_name == "http_get" and Target in (http_allowlist)))
+  | project SentAt = TimeGenerated, request_id, session_id, user_id, src_ip, tool_name, Target
+  | join kind=inner private_reads on request_id
+  | where SentAt >= ReadAt
+  | summarize TimeGenerated = min(SentAt), PrivateReads = make_set(ReadTarget), Sinks = make_set(Target),
+              SinkTools = make_set(tool_name)
+      by session_id, user_id, src_ip, request_id
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: src_ip
+customDetails:
+  SessionId: session_id
+  PrivateReads: PrivateReads
+  Sinks: Sinks
+version: 1.0.0
+kind: Scheduled

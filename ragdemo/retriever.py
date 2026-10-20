@@ -48,7 +48,7 @@ class Retriever:
         df = Counter(t for tf in self._tf for t in tf)
         self._idf = {t: math.log(1 + len(docs) / n) for t, n in df.items()}
 
-    def search(self, query: str, k: int = 2, min_score: float = 3.5) -> list[tuple[Document, float]]:
+    def search(self, query: str, k: int = 2, min_score: float = 3.6) -> list[tuple[Document, float]]:
         q = _tokens(query)
         scored = []
         for doc, tf in zip(self.docs, self._tf):

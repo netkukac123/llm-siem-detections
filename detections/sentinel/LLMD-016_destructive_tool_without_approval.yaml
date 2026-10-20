@@ -1,0 +1,40 @@
+id: 6dc25b12-1cb5-5358-96a8-77fc8b490560
+name: LLMD-016 Destructive agent tool executed without human approval
+description: |
+  A tool classified as destructive (delete, drop, overwrite) ran with tool_approval = auto: no human
+  was asked. Approval prompts are the main brake on an agent that has been steered; when they are
+  off, one injected instruction is enough to destroy data. The fix is configuration (require
+  approval for the destructive class); the alert tells you where that is missing and what ran.
+severity: High
+requiredDataConnectors: []
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Impact
+relevantTechniques: []
+tags:
+  - OWASP-ASI02:2026 Tool Misuse and Exploitation
+  - ATLAS AML.T0101 Data Destruction via AI Agent Tool Invocation
+query: |
+  LLMAppLogs_CL
+  | where event_type == "tool_call" and tool_risk == "destructive" and tool_approval == "auto" and tool_status == "ok"
+  | summarize TimeGenerated = min(TimeGenerated), Calls = count(), Targets = make_set(tool_target, 50),
+              Tools = make_set(tool_name)
+      by session_id, user_id, src_ip, request_id
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: src_ip
+customDetails:
+  SessionId: session_id
+  Calls: Calls
+  Targets: Targets
+version: 1.0.0
+kind: Scheduled

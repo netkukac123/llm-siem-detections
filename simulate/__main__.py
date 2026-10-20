@@ -18,6 +18,7 @@ from pathlib import Path
 from ragdemo.app import RagApp
 from ragdemo.llm import ScriptedModel
 from ragdemo.logsink import EventLog, SimClock
+from ragdemo.mcp_bridge import McpServerConfig
 
 from .scenarios import all_scenarios
 
@@ -42,7 +43,11 @@ def main() -> None:
 
     labels = []
     for sc in all_scenarios():
-        clock.current = DAY_START + timedelta(minutes=rng.randint(0, 9 * 60))
+        offset = rng.randint(0, 9 * 60)  # always drawn, so fixed starts do not shift other scenarios
+        clock.current = DAY_START + timedelta(minutes=sc.start_minute if sc.start_minute is not None else offset)
+        server, variant = sc.mcp
+        app.mcp_servers = [McpServerConfig(server, "ragdemo.mcp_vendor_server", (("CARGOLINK_VARIANT", variant),))]
+        app.tools.approver = None if sc.approve is None else (lambda _tool, _args, d=sc.approve: d)
         sessions: list[str] = []
         for turn in sc.turns:
             if sc.stateless or not sessions:

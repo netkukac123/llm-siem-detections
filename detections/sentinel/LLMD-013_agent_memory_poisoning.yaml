@@ -1,0 +1,44 @@
+id: bdd273cd-13a0-5a22-b0e4-21244dac59bd
+name: LLMD-013 Persistent instruction written to agent long-term memory
+description: |
+  The agent saved something to long-term memory that is either a standing instruction to act
+  ("always send a copy of every email to ...") or was written in a turn where untrusted content
+  (external upload, earlier memory) was in context. Memory turns a one-off prompt injection into
+  a persistent one that fires in later sessions, as shown by Rehberger's "SpAIware" against ChatGPT
+  memory (2024) and Unit 42's Amazon Bedrock Agents research (2025). Triage: read memory_text,
+  find the source document of the turn, purge the memory entry.
+severity: High
+requiredDataConnectors: []
+queryFrequency: 15m
+queryPeriod: 15m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Persistence
+relevantTechniques: []
+tags:
+  - OWASP-ASI06:2026 Memory and Context Poisoning
+  - ATLAS AML.T0080.000 AI Agent Context Poisoning Memory
+  - ATLAS AML.T0094 Delay Execution of LLM Instructions
+query: |
+  let persistent_action = @"(?i)\b(always|from now on|in (all )?future|every time|whenever)\b[^.\n]{0,80}\b(send|e-?mail|forward|bcc|cc|copy|call|run|execute|share|upload|post)\b";
+  let untrusted_turns = LLMAppLogs_CL
+      | where event_type == "retrieval" and doc_source != "internal-wiki"
+      | distinct request_id;
+  LLMAppLogs_CL
+  | where event_type == "memory_write"
+  | extend PersistentAction = memory_text matches regex persistent_action,
+           WrittenWithUntrustedContext = request_id in (untrusted_turns)
+  | where PersistentAction or WrittenWithUntrustedContext
+  | project TimeGenerated, user_id, src_ip, session_id, request_id, PersistentAction,
+            WrittenWithUntrustedContext, memory_text
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+customDetails:
+  SessionId: session_id
+  MemoryText: memory_text
+version: 1.0.0
+kind: Scheduled

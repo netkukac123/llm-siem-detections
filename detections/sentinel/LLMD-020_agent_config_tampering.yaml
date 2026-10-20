@@ -1,0 +1,48 @@
+id: 82ff8e1d-1664-5df1-a01d-5e40d00e11a8
+name: LLMD-020 Agent modifies its own or another agent's configuration
+description: |
+  An agent wrote to AI-agent configuration: editor agent settings (.vscode/settings.json, .cursor/),
+  Claude Code settings, MCP client configs (mcp.json), or instruction files that agents auto-load
+  (AGENTS.md, CLAUDE.md, copilot-instructions.md). This is how an injection becomes privilege
+  escalation: CVE-2025-53773 (GitHub Copilot) had the agent set chat.tools.autoApprove ("YOLO mode")
+  and then run commands; CVE-2025-54135 (Cursor) had it write a new .cursor/mcp.json. DisablesApproval
+  marks writes that switch approval prompts off.
+severity: High
+requiredDataConnectors: []
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - PrivilegeEscalation
+  - DefenseEvasion
+relevantTechniques: []
+tags:
+  - OWASP-ASI03:2026 Identity and Privilege Abuse
+  - OWASP-ASI05:2026 Unexpected Code Execution
+  - ATLAS AML.T0081 Modify AI Agent Configuration
+query: |
+  let agent_config = @"(?i)(\.vscode/(settings|mcp)\.json|\.cursor/|\.claude/(settings[^/]*\.json|agents/|commands/)|(^|/)mcp\.json|\.continue/config|copilot-instructions\.md|(^|/)(AGENTS|CLAUDE|GEMINI)\.md|\.windsurf/|\.kiro/)";
+  let shell_write_to_config = @"(?i)(>>?|\btee\b|\bsed\s+-i\b|\bcp\b|\bmv\b)[^|;]{0,80}(\.vscode/|\.cursor/|\.claude/|mcp\.json|AGENTS\.md|CLAUDE\.md|copilot-instructions\.md)";
+  let approval_off = @"(?i)autoApprove|dangerously|\byolo\b|bypassPermissions|--no-confirm";
+  LLMAppLogs_CL
+  | where event_type == "tool_call"
+  | where (tool_name == "write_file" and tool_target matches regex agent_config)
+      or (tool_name == "run_shell" and tool_args matches regex shell_write_to_config)
+  | extend DisablesApproval = tool_args matches regex approval_off
+  | project TimeGenerated, user_id, src_ip, session_id, request_id, tool_name, tool_target, tool_approval,
+            DisablesApproval, tool_args
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: File
+    fieldMappings:
+      - identifier: Name
+        columnName: tool_target
+customDetails:
+  SessionId: session_id
+  DisablesApproval: DisablesApproval
+version: 1.0.0
+kind: Scheduled

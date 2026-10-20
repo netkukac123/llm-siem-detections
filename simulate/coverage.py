@@ -13,7 +13,7 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
-RULE_IDS = [f"LLMD-{i:03d}" for i in range(1, 13)]
+RULE_IDS = [f"LLMD-{i:03d}" for i in range(1, 22)]
 
 
 def main() -> None:

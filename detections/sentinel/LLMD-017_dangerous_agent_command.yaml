@@ -1,0 +1,44 @@
+id: 5da54d45-b370-595e-86cc-106189c0aa5f
+name: LLMD-017 Dangerous shell command issued by an agent
+description: |
+  An agent's shell tool was given a reverse shell, a remote script piped into a shell, a base64
+  payload piped into a shell, a setuid change or a recursive delete of /. Fires regardless of
+  approval: a human clicking "allow" on a curl | sh is still a curl | sh. The 2026 "Agentjacking"
+  research (Tenet Security) got coding agents to run attacker packages through exactly this kind of
+  "fix" command. Staged payloads (the command only runs a file dropped earlier) are not caught.
+severity: High
+requiredDataConnectors: []
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Execution
+  - CommandAndControl
+relevantTechniques: []
+tags:
+  - OWASP-ASI05:2026 Unexpected Code Execution
+  - ATLAS AML.T0102 Generate Malicious Commands
+  - ATLAS AML.T0072 Cyber Communication Channel
+query: |
+  let dangerous = @"/dev/(tcp|udp)/|\bbash\s+-i\b|\bnc(at)?\b[^|;]{0,40}\s-(e|c)\b|\bmkfifo\b|\bsocat\b|\b(curl|wget)\b[^|;]{0,200}\|\s*(sudo\s+)?(ba|z|da)?sh\b|base64\s+(-d|--decode)[^|;]{0,80}\|\s*(ba)?sh\b|\bchmod\s+[ugo]*\+s\b|\brm\s+-[a-zA-Z]*r[a-zA-Z]*\s+/(\s|$|\*)|\bpython[0-9.]*\s+-c\s+[^|]{0,80}socket";
+  LLMAppLogs_CL
+  | where event_type == "tool_call" and tool_risk == "exec"
+  | where tool_args matches regex dangerous
+  | project TimeGenerated, user_id, src_ip, session_id, request_id, tool_name, tool_approval,
+            MatchedText = extract(dangerous, 0, tool_args), tool_args
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: src_ip
+customDetails:
+  SessionId: session_id
+  Approval: tool_approval
+  MatchedText: MatchedText
+version: 1.0.0
+kind: Scheduled

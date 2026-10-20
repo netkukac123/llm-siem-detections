@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATASET = ROOT / "datasets" / "sample.jsonl"
 LABELS = ROOT / "datasets" / "labels.json"
-RULE_IDS = [f"LLMD-{i:03d}" for i in range(1, 13)]
+RULE_IDS = [f"LLMD-{i:03d}" for i in range(1, 22)]
 
 
 @dataclass(frozen=True)

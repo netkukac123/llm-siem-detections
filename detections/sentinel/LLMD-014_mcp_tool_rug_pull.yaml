@@ -1,0 +1,50 @@
+id: 1ac1bfa7-31f3-5ea7-a852-9dc883e9b363
+name: LLMD-014 MCP tool description changed after first use (rug pull)
+description: |
+  The same MCP server and tool name now advertise a description with a different SHA-256 than the
+  first one seen in the lookback. The model obeys tool descriptions, so a silent change is a silent
+  change of instructions, after the user approved the server. Described as a "rug pull" by Invariant
+  Labs (2025); CVE-2025-54136 ("MCPoison", Cursor) is the same class at the config level. In
+  production keep approved hashes in a watchlist instead of relying on the first hash in the
+  lookback, and treat every hit as "re-review this tool before anyone uses it again".
+severity: High
+requiredDataConnectors: []
+queryFrequency: 1h
+queryPeriod: 14d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Persistence
+  - InitialAccess
+relevantTechniques: []
+tags:
+  - OWASP-ASI04:2026 Agentic Supply Chain Vulnerabilities
+  - ATLAS AML.T0109 AI Supply Chain Rug Pull
+  - ATLAS AML.T0110.000 AI Agent Tool Poisoning Definition and Instructions
+query: |
+  let trigger_window = 1h;
+  let registry = LLMAppLogs_CL | where event_type == "tool_registry";
+  let approved = registry
+      | summarize arg_min(TimeGenerated, tool_desc_sha256) by tool_key
+      | project tool_key, FirstSeen = TimeGenerated, ApprovedHash = tool_desc_sha256;
+  registry
+  | where TimeGenerated > ago(trigger_window)
+  | join kind=inner approved on tool_key
+  | where tool_desc_sha256 != ApprovedHash
+  | project TimeGenerated, user_id, src_ip, session_id, mcp_server, tool_name, tool_key, FirstSeen,
+            ApprovedHash, NewHash = tool_desc_sha256, NewDescription = tool_description
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: CloudApplication
+    fieldMappings:
+      - identifier: Name
+        columnName: mcp_server
+customDetails:
+  ToolKey: tool_key
+  ApprovedHash: ApprovedHash
+  NewHash: NewHash
+version: 1.0.0
+kind: Scheduled

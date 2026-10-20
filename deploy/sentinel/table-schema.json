@@ -16,7 +16,7 @@
         {
           "name": "event_type",
           "type": "string",
-          "description": "prompt | guardrail | retrieval | tool_call | completion"
+          "description": "prompt | guardrail | retrieval | tool_call | completion | memory_write | tool_registry"
         },
         {
           "name": "request_id",
@@ -127,6 +127,46 @@
           "name": "finish_reason",
           "type": "string",
           "description": "Model finish reason of the last call"
+        },
+        {
+          "name": "tool_risk",
+          "type": "string",
+          "description": "read | write | egress | destructive | exec | external (MCP)"
+        },
+        {
+          "name": "tool_approval",
+          "type": "string",
+          "description": "not_required | auto | approved | rejected (human in the loop)"
+        },
+        {
+          "name": "tool_result",
+          "type": "string",
+          "description": "Tool output as returned to the model, truncated to 1000 chars"
+        },
+        {
+          "name": "mcp_server",
+          "type": "string",
+          "description": "MCP server that provides the tool (tool_call, tool_registry)"
+        },
+        {
+          "name": "tool_key",
+          "type": "string",
+          "description": "mcp_server/tool_name, stable identity of an MCP tool"
+        },
+        {
+          "name": "tool_desc_sha256",
+          "type": "string",
+          "description": "SHA-256 of the tool description the model was given"
+        },
+        {
+          "name": "tool_description",
+          "type": "string",
+          "description": "Tool description as advertised by the MCP server, truncated"
+        },
+        {
+          "name": "memory_text",
+          "type": "string",
+          "description": "Text written to the agent's long-term memory"
         }
       ]
     },

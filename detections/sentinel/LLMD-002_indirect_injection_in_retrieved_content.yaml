@@ -18,6 +18,7 @@ relevantTechniques: []
 tags:
   - OWASP-LLM01:2025 Prompt Injection
   - OWASP-LLM08:2025 Vector and Embedding Weaknesses
+  - OWASP-ASI01:2026 Agent Goal Hijack
   - ATLAS AML.T0051.001 LLM Prompt Injection Indirect
   - ATLAS AML.T0070 RAG Poisoning
 query: |

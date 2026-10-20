@@ -129,6 +129,38 @@
               {
                 "name": "finish_reason",
                 "type": "string"
+              },
+              {
+                "name": "tool_risk",
+                "type": "string"
+              },
+              {
+                "name": "tool_approval",
+                "type": "string"
+              },
+              {
+                "name": "tool_result",
+                "type": "string"
+              },
+              {
+                "name": "mcp_server",
+                "type": "string"
+              },
+              {
+                "name": "tool_key",
+                "type": "string"
+              },
+              {
+                "name": "tool_desc_sha256",
+                "type": "string"
+              },
+              {
+                "name": "tool_description",
+                "type": "string"
+              },
+              {
+                "name": "memory_text",
+                "type": "string"
               }
             ]
           }
