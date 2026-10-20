@@ -1,0 +1,10 @@
+{
+  "path": "wazuh-logtest socket (manager 4.14.7)",
+  "largest_accepted_bytes": 65319,
+  "smallest_rejected_bytes": 65320,
+  "method": "bisection over single-line JSON events, script .claude/jobs tmp wazuh_size_probe.py (to be copied into research/)",
+  "created": "2026-10-20T21:25:12+00:00",
+  "commit": "a39061f81c96b83c019def0c1a5e086fc4fb40f0",
+  "python": "3.14.8",
+  "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44"
+}

@@ -48,10 +48,10 @@ def schema_columns() -> list[tuple[str, str]]:
     return [(c["name"], c["type"]) for c in cols]
 
 
-def load_table(jsonl: Path, chunk: int = 100) -> None:
+def load_table(jsonl: Path, chunk: int = 100, extra_columns: tuple[tuple[str, str], ...] = ()) -> None:
     kql_types = {"dateTime": "datetime", "string": "string", "int": "long", "long": "long", "real": "real",
                  "dynamic": "dynamic", "boolean": "bool"}
-    cols = ", ".join(f"{name}:{kql_types[typ]}" for name, typ in schema_columns())
+    cols = ", ".join(f"{name}:{kql_types[typ]}" for name, typ in [*schema_columns(), *extra_columns])
     _post("mgmt", f".drop table {TABLE} ifexists")
     _post("mgmt", f".create table {TABLE} ({cols})")
     lines = jsonl.read_text(encoding="utf-8").splitlines()

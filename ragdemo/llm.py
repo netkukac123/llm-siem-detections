@@ -105,19 +105,17 @@ class OpenAICompatModel:
         req = urllib.request.Request(
             f"{self.base_url}/chat/completions", data=body,
             headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"})
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                data = json.load(resp)
-        except urllib.error.HTTPError as exc:
-            raw = exc.read().decode(errors="replace")
-            if exc.code == 400 and "content_filter" in raw:
-                try:
-                    result = json.loads(raw)["error"]["innererror"]["content_filter_result"]
-                    cats = [k for k, v in result.items() if isinstance(v, dict) and v.get("filtered")]
-                except (KeyError, ValueError, TypeError):
-                    cats = []
-                raise ProviderFilterError(cats, raw) from exc
-            raise
+        for attempt in range(6):
+            try:
+                with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                    data = json.load(resp)
+                break
+            except urllib.error.HTTPError as exc:
+                if exc.code == 429 and attempt < 5:  # rate limited: honour Retry-After, then back off
+                    import time
+                    time.sleep(float(exc.headers.get("retry-after", 2 ** attempt * 5)))
+                    continue
+                self._raise_http(exc)
         choice = data["choices"][0]
         msg = choice["message"]
         calls = [ToolCall(tc["function"]["name"], json.loads(tc["function"]["arguments"] or "{}"), tc["id"])
@@ -127,3 +125,15 @@ class OpenAICompatModel:
                              input_tokens=usage.get("prompt_tokens"),
                              output_tokens=usage.get("completion_tokens"),
                              finish_reason=choice.get("finish_reason", "stop"))
+
+    @staticmethod
+    def _raise_http(exc: urllib.error.HTTPError) -> None:
+        raw = exc.read().decode(errors="replace")
+        if exc.code == 400 and "content_filter" in raw:
+            try:
+                result = json.loads(raw)["error"]["innererror"]["content_filter_result"]
+                cats = [k for k, v in result.items() if isinstance(v, dict) and v.get("filtered")]
+            except (KeyError, ValueError, TypeError):
+                cats = []
+            raise ProviderFilterError(cats, raw) from exc
+        raise exc

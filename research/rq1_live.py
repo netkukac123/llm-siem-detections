@@ -30,8 +30,8 @@ OUT = RESULTS / "rq1"
 SERVER_MODULE = "ragdemo.mcp_vendor_server"
 
 
-def _cfg(name: str, variant: str) -> McpServerConfig:
-    return McpServerConfig(name, SERVER_MODULE, (("CARGOLINK_VARIANT", variant),))
+def _cfg(name: str, variant: str, extra_env: tuple = ()) -> McpServerConfig:
+    return McpServerConfig(name, SERVER_MODULE, (("CARGOLINK_VARIANT", variant), *extra_env))
 
 
 AZURE_ENV = Path.home() / ".config" / "llmd" / "azure.env"
@@ -57,16 +57,17 @@ def make_model(model_tag: str, base_url: str, temperature: float, seed: int) -> 
 
 
 def run_once(sc: LiveScenario, model_tag: str, base_url: str, rep: int, temperature: float,
-             corpus_dir: Path | None = None, run_prefix: str = "") -> dict:
+             corpus_dir: Path | None = None, run_prefix: str = "", mcp_env: tuple = (),
+             extended_tool_logging: bool = False) -> dict:
     buf = io.StringIO()
     model = make_model(model_tag, base_url, temperature, 1000 + rep)
-    app = RagApp(EventLog(buf), model, corpus_dir=corpus_dir)
+    app = RagApp(EventLog(buf), model, corpus_dir=corpus_dir, extended_tool_logging=extended_tool_logging)
     user, ip = ("research.user", "10.99.0.10")
     run_id = f"{run_prefix}{sc.id}-{model_tag.replace(':', '_')}-r{rep}"
     if sc.preregister_clean_mcp:
         app.mcp_servers = [_cfg(sc.mcp[0], "clean")]
         app._connect_mcp(RequestContext(session_id=f"{run_id}-baseline", user_id=user, src_ip=ip, model=model.name))
-    app.mcp_servers = [_cfg(*sc.mcp)]
+    app.mcp_servers = [_cfg(*sc.mcp, extra_env=mcp_env)]
     sessions: dict[str, str] = {}
     labels: dict[str, str] = {}
     t0 = time.time()

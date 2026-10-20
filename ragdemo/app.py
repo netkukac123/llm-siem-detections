@@ -37,8 +37,11 @@ RESULT_PREVIEW_CHARS = 1000
 
 class RagApp:
     def __init__(self, log: EventLog, model: ScriptedModel | OpenAICompatModel, top_k: int = 2,
-                 mcp_servers: list[McpServerConfig] | None = None, corpus_dir: Path | None = None):
+                 mcp_servers: list[McpServerConfig] | None = None, corpus_dir: Path | None = None,
+                 extended_tool_logging: bool = False):
         self.log = log
+        # Research option (N1 mitigation H3a): also log the full length and the tail of tool results.
+        self.extended_tool_logging = extended_tool_logging
         self.model = model
         self.retriever = Retriever(load_corpus(corpus_dir) if corpus_dir else load_corpus())
         self.tools = Toolbox(self.retriever)
@@ -115,7 +118,11 @@ class RagApp:
                               tool_args=json.dumps(tc.args, ensure_ascii=False)[:PREVIEW_CHARS],
                               tool_target=result.target, tool_status=result.status, tool_risk=result.risk,
                               tool_approval=result.approval, mcp_server=result.mcp_server,
-                              tool_result=result.output[:RESULT_PREVIEW_CHARS])
+                              tool_result=result.output[:RESULT_PREVIEW_CHARS],
+                              **({"tool_result_chars": len(result.output),
+                                  "tool_result_tail": result.output[-RESULT_PREVIEW_CHARS:]
+                                  if len(result.output) > RESULT_PREVIEW_CHARS else None}
+                                 if self.extended_tool_logging else {}))
                 if tc.name == "remember" and result.status == "ok":
                     self.log.emit("memory_write", ctx, memory_text=str(tc.args.get("note", ""))[:PREVIEW_CHARS])
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": result.output[:PREVIEW_CHARS]})

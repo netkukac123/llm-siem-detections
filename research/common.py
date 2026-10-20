@@ -96,6 +96,23 @@ def rule_query(path: Path) -> str:
     return re.sub(r"let trigger_window = \w+;", "let trigger_window = 3650d;", q)
 
 
+def run_query_on(events: Iterable[dict], queries: dict[str, str], key: str = "session_id",
+                 extra_columns: tuple[tuple[str, str], ...] = ()) -> dict[str, set[str]]:
+    """Like run_rules, but for ad-hoc KQL (experimental rules, rule variants)."""
+    from tests import kusto
+
+    path = RESULTS / "_kusto_load.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("".join(json.dumps(e, ensure_ascii=False) + "\n" for e in events), encoding="utf-8")
+    kusto.load_table(path, chunk=200, extra_columns=extra_columns)
+    out = {}
+    for name, q in queries.items():
+        cols, rows = kusto.query(q)
+        col = next((c for c in (key, "session_id", "user_id") if c in cols), None)
+        out[name] = {str(r[col]) for r in rows} if col else set()
+    return out
+
+
 def run_rules(events: Iterable[dict], rules: Sequence[str] | None = None,
               key: str = "request_id") -> dict[str, set[str]]:
     """Load events into Kustainer's LLMAppLogs_CL and return, per rule, the set of `key`

@@ -42,9 +42,12 @@ def main(path):
                 print(json.dumps({"error": resp}), flush=True)
                 continue
             data = resp["data"]
-            if "output" not in data:  # ruleset failed to load: messages say why
-                print(json.dumps({"error": data.get("messages")}), flush=True)
-                return
+            if "output" not in data:  # ruleset failed to load, or the event was rejected (e.g. too large)
+                print(json.dumps({"error": data.get("messages"), "session_id": event.get("session_id"),
+                                  "event_bytes": len(line.encode())}), flush=True)
+                if any("Session initialized" in m or "rule" in m.lower() for m in data.get("messages", [])):
+                    return
+                continue
             token = data.get("token", token)
             rule = data["output"].get("rule", {})
             print(json.dumps({"request_id": event.get("request_id"), "session_id": event.get("session_id"),
