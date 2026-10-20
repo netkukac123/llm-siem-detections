@@ -69,14 +69,22 @@ class ScriptedModel:
 
 
 class OpenAICompatModel:
-    def __init__(self, base_url: str, model: str, api_key: str = "unused", timeout: float = 120):
+    def __init__(self, base_url: str, model: str, api_key: str = "unused", timeout: float = 300,
+                 temperature: float | None = None, seed: int | None = None):
         self.base_url = base_url.rstrip("/")
         self.name = model
         self.api_key = api_key
         self.timeout = timeout
+        self.temperature = temperature
+        self.seed = seed
 
     def generate(self, messages: list[dict], tools: list[dict]) -> ModelResponse:
-        body = json.dumps({"model": self.name, "messages": messages, "tools": tools}).encode()
+        payload: dict[str, Any] = {"model": self.name, "messages": messages, "tools": tools}
+        if self.temperature is not None:
+            payload["temperature"] = self.temperature
+        if self.seed is not None:
+            payload["seed"] = self.seed
+        body = json.dumps(payload).encode()
         req = urllib.request.Request(
             f"{self.base_url}/chat/completions", data=body,
             headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"})
