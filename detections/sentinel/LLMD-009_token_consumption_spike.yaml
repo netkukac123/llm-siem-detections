@@ -21,14 +21,15 @@ tags:
   - ATLAS AML.T0029 Denial of AI Service
 query: |
   let threshold = 50000;
+  let trigger_window = 1h;  // see LLMD-008: dedupe across overlapping runs
   LLMAppLogs_CL
   | where event_type == "completion"
   | sort by user_id asc, TimeGenerated asc
   | extend Window = row_window_session(TimeGenerated, 1h, 30m, user_id != prev(user_id))
-  | summarize TimeGenerated = min(TimeGenerated), Tokens = sum(input_tokens + output_tokens), Requests = count(),
+  | summarize TimeGenerated = min(TimeGenerated), LastRequest = max(TimeGenerated), Tokens = sum(input_tokens + output_tokens), Requests = count(),
               Sessions = make_set(session_id, 20), SourceIps = make_set(src_ip, 10)
       by user_id, Window
-  | where Tokens > threshold
+  | where Tokens > threshold and LastRequest > ago(trigger_window)
   | project-away Window
 entityMappings:
   - entityType: Account

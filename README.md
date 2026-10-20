@@ -15,9 +15,9 @@ show up in those logs, and which do not.
 ```
 ragdemo/                 vulnerable RAG assistant (stdlib Python) that writes JSONL telemetry
 simulate/                benign, attack and evasion scenarios with ground truth -> datasets/
-datasets/                reference dataset (272 events) and labels
+datasets/                reference dataset (293 events) and labels
 detections/sentinel/     12 scheduled analytic rules (Azure-Sentinel YAML format)
-detections/wazuh/        the same 12 detections as a Wazuh ruleset + agent config
+detections/wazuh/        the 12 detections as a Wazuh ruleset, equivalent where the engine allows
 deploy/sentinel/         custom table, DCR (Logs Ingestion API), ingest script, rules -> ARM
 tests/                   KQL rules on Kustainer, Wazuh rules on wazuh-logtest, app unit tests
 docs/                    log schema, coverage analysis, deployment guides
@@ -45,8 +45,10 @@ chain risks that do not appear in application telemetry, so they are out of scop
 
 ## What it catches and what it does not
 
-On the reference dataset (36 benign sessions including deliberate near misses, 11 attacks,
+On the reference dataset (37 benign scenarios including deliberate near misses, 13 attacks,
 5 evasions) every attack raises at least one correct alert and no benign session raises a false one.
+One benign session does raise LLMD-002, correctly: an innocent question pulled a poisoned vendor
+document into context, and the alert is about the document, not the user.
 The five evasion scenarios exist to show the limits, and the tests assert that they stay undetected
 so the documentation cannot quietly drift:
 
@@ -79,7 +81,7 @@ python -m venv .venv && . .venv/bin/activate
 pip install pytest pyyaml
 
 make engines        # Kustainer (Kusto emulator) + wazuh-manager 4.14.7
-make test           # 33 tests: app, 12 KQL rules, 12 Wazuh rules
+make test           # 45 tests: app, 12 KQL rules, 12 Wazuh rules
 make engines-down
 ```
 
@@ -109,6 +111,9 @@ Deploying: [Microsoft Sentinel](docs/deploy-sentinel.md) | [Wazuh](docs/deploy-w
   through the `wazuh-logtest` socket in one session, so frequency and correlation rules keep state.
 - Each rule must flag exactly the sessions (or identities) labelled for it: no misses, no extras,
   and documented gaps stay silent. CI runs all of it on every push.
+- Not covered by the tests: Wazuh `timeframe` lengths (logtest replays in seconds), Sentinel
+  scheduling, and deployment of the generated ARM template. See
+  [docs/coverage.md](docs/coverage.md#what-the-tests-do-not-prove).
 
 ## References
 

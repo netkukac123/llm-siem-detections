@@ -21,6 +21,9 @@ tags:
   - ATLAS AML.T0053 AI Agent Tool Invocation
 query: |
   let threshold = 10;
+  // queryPeriod is twice the frequency so windows spanning a run boundary are seen whole;
+  // only windows with activity in the latest interval alert, to avoid duplicates.
+  let trigger_window = 5m;
   LLMAppLogs_CL
   | where event_type == "tool_call"
   | sort by session_id asc, TimeGenerated asc
@@ -28,7 +31,7 @@ query: |
   | summarize TimeGenerated = min(TimeGenerated), LastCall = max(TimeGenerated), ToolCalls = count(),
               Denied = countif(tool_status == "denied"), Tools = make_set(tool_name), Targets = make_set(tool_target, 25)
       by session_id, user_id, src_ip, Window
-  | where ToolCalls >= threshold
+  | where ToolCalls >= threshold and LastCall > ago(trigger_window)
   | project-away Window
 entityMappings:
   - entityType: Account

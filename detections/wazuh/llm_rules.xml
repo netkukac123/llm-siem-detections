@@ -6,9 +6,10 @@
   Every alerting rule carries group llmd_NNN for the LLMD rule(s) it implements,
   so the same IDs work across Sentinel and Wazuh.
 
-  Wazuh emits one alert per event, the deepest matching rule. Where one event
-  satisfies several LLMD rules (for example an exfiltrating send_email that also
-  contains a secret), a more specific child rule carries all of their groups.
+  Wazuh emits one alert per event, the deepest matching rule. Combined child rules
+  carry several llmd groups for the overlaps seen in practice (injection plus
+  extraction, exfiltrating call plus secret). Other overlaps report only one of
+  the applicable LLMD rules; see docs/coverage.md, "Wazuh and Sentinel differences".
 
   Regexes run in PCRE2 without UTF mode, so non-ASCII characters are written as
   literal UTF-8 sequences or byte ranges.
@@ -94,7 +95,8 @@
 
   <rule id="100714" level="8">
     <if_sid>100701</if_sid>
-    <field name="prompt" type="pcre2">[A-Za-z0-9+/]{60,}={0,2}</field>
+    <!-- Run must start at a boundary and contain both cases, so hex digests do not match -->
+    <field name="prompt" type="pcre2">(?:^|[^A-Za-z0-9+/])(?=[A-Za-z0-9+/]*[A-Z])(?=[A-Za-z0-9+/]*[a-z])[A-Za-z0-9+/]{60,}={0,2}</field>
     <description>LLMD-011 Long base64 blob in prompt from $(user_id).</description>
     <group>llmd_011,owasp_llm01,atlas_AML.T0068,</group>
   </rule>
@@ -239,7 +241,7 @@
     <if_sid>100705</if_sid>
     <!-- Character classes holding quotes or ">" after "\s" did not match under Wazuh 4.14
          (verified with wazuh-logtest), hence the plainer [^)\s] classes. -->
-    <field name="completion" type="pcre2">(?i)(!\[[^\]]*\]\(|&lt;img\s[^)]+?src=\W?)https?://(?![a-z0-9.-]*acme-freight\.hu[/?:)])[^)\s]+\?[^)\s]*=</field>
+    <field name="completion" type="pcre2">(?i)(!\[[^\]]*\]\(|&lt;img\s[^)]+?src=\W?)https?://(?!(?:[a-z0-9-]+\.)*acme-freight\.hu[/?)])[^)\s]+\?[^)\s]*=</field>
     <description>LLMD-005 Model output contains an auto-loading image beacon to an external host (session $(session_id)).</description>
     <group>llmd_005,owasp_llm05,owasp_llm02,atlas_AML.T0077,</group>
   </rule>
@@ -252,9 +254,18 @@
     <group>llm_large_request,</group>
   </rule>
 
-  <!-- LLMD-009 Token consumption spike: 5 large requests in 1 hour, same user -->
+  <!-- Large response: also input to LLMD-009 (short prompts asking for long outputs) -->
+  <rule id="100745" level="3">
+    <if_sid>100705</if_sid>
+    <field name="output_tokens" type="pcre2">^([4-9]\d{3}|\d{5,})$</field>
+    <description>LLM app: large response ($(output_tokens) output tokens) to $(user_id).</description>
+    <group>llm_large_request,</group>
+  </rule>
+
+  <!-- LLMD-009 Token consumption spike: 5 large requests or responses in 1 hour, same user.
+       Wazuh cannot sum fields, so this counts large turns instead of totalling tokens. -->
   <rule id="100744" level="10" frequency="5" timeframe="3600">
-    <if_matched_sid>100743</if_matched_sid>
+    <if_matched_group>llm_large_request</if_matched_group>
     <same_field>user_id</same_field>
     <description>LLMD-009 Token consumption spike from $(user_id): repeated large requests.</description>
     <group>llmd_009,owasp_llm10,atlas_AML.T0034,atlas_AML.T0029,</group>

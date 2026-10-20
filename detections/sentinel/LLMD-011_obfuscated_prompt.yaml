@@ -22,8 +22,11 @@ query: |
   let zero_width = @"[\x{200B}-\x{200D}\x{2060}\x{FEFF}]{3,}";
   LLMAppLogs_CL
   | where event_type == "prompt"
+  // Real base64 of text mixes upper and lower case; hex digests (SHA-256, commit IDs) do not.
+  | extend B64Candidate = extract(b64, 0, prompt)
+  | extend IsB64 = B64Candidate matches regex "[A-Z]" and B64Candidate matches regex "[a-z]"
   | extend Technique = case(prompt matches regex unicode_tags, "unicode_tag_smuggling",
-                            prompt matches regex b64, "base64_blob",
+                            IsB64, "base64_blob",
                             prompt matches regex zero_width, "zero_width_chars", "")
   | where isnotempty(Technique)
   | extend Codepoints = unicode_codepoints_from_string(prompt)
@@ -31,7 +34,7 @@ query: |
         where Cp between (917504 .. 917631)
         | summarize Hidden = make_list(Cp - 917504))
   | extend DecodedPayload = case(Technique == "unicode_tag_smuggling", unicode_codepoints_to_string(Hidden),
-                                 Technique == "base64_blob", base64_decode_tostring(extract(b64, 0, prompt)), "")
+                                 Technique == "base64_blob", base64_decode_tostring(B64Candidate), "")
   | project TimeGenerated, user_id, src_ip, session_id, request_id, Technique, DecodedPayload, prompt
 entityMappings:
   - entityType: Account

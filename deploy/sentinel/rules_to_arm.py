@@ -45,6 +45,8 @@ def rule_resource(rule: dict) -> dict:
         "techniques": rule.get("relevantTechniques", []),
         "entityMappings": rule.get("entityMappings", []),
         "customDetails": rule.get("customDetails") or None,
+        # One alert per result row; the API default (SingleAlert) would merge different users.
+        "eventGroupingSettings": {"aggregationKind": "AlertPerResult"},
         "incidentConfiguration": {
             "createIncident": True,
             "groupingConfiguration": {

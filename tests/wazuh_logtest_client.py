@@ -42,6 +42,9 @@ def main(path):
                 print(json.dumps({"error": resp}), flush=True)
                 continue
             data = resp["data"]
+            if "output" not in data:  # ruleset failed to load: messages say why
+                print(json.dumps({"error": data.get("messages")}), flush=True)
+                return
             token = data.get("token", token)
             rule = data["output"].get("rule", {})
             print(json.dumps({"request_id": event.get("request_id"), "session_id": event.get("session_id"),

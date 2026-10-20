@@ -21,6 +21,9 @@ tags:
   - ATLAS AML.T0051.001 LLM Prompt Injection Indirect
   - ATLAS AML.T0086 Exfiltration via AI Agent Tool Invocation
 query: |
+  // queryPeriod (20m) covers the retrieval side; only egress newer than one run interval
+  // triggers, so overlapping runs do not alert twice on the same call.
+  let trigger_window = 10m;
   let window = 10m;
   let corporate_domain = "acme-freight.hu";
   let http_allowlist = dynamic(["learn.microsoft.com", "github.com"]);
@@ -29,6 +32,7 @@ query: |
       | project RetrievedAt = TimeGenerated, session_id, doc_id, doc_source, doc_title;
   LLMAppLogs_CL
   | where event_type == "tool_call" and tool_name in ("send_email", "http_get")
+  | where TimeGenerated > ago(trigger_window)
   | extend Target = tolower(tool_target)
   | where not(Target == corporate_domain or Target endswith strcat(".", corporate_domain))
   | where not(tool_name == "http_get" and Target in (http_allowlist))

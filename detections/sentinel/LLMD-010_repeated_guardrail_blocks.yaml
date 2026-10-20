@@ -20,14 +20,17 @@ tags:
   - ATLAS AML.T0054 LLM Jailbreak
 query: |
   let threshold = 3;
+  let trigger_window = 10m;  // see LLMD-008: dedupe across overlapping runs
   LLMAppLogs_CL
   | where event_type == "guardrail" and guardrail_action == "block"
   | sort by user_id asc, TimeGenerated asc
   | extend Window = row_window_session(TimeGenerated, 10m, 10m, user_id != prev(user_id))
-  | summarize TimeGenerated = min(TimeGenerated), Blocks = count(), Rules = make_set(guardrail_rule),
-              Sampleprompts = make_list(prompt, 5), Sessions = make_set(session_id)
-      by user_id, src_ip, Window
-  | where Blocks >= threshold
+  | summarize TimeGenerated = min(TimeGenerated), LastBlock = max(TimeGenerated), Blocks = count(),
+              Rules = make_set(guardrail_rule), SamplePrompts = make_list(prompt, 5),
+              Sessions = make_set(session_id), SourceIps = make_set(src_ip)
+      by user_id, Window
+  | where Blocks >= threshold and LastBlock > ago(trigger_window)
+  | extend src_ip = tostring(SourceIps[0])
   | project-away Window
 entityMappings:
   - entityType: Account

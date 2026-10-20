@@ -385,10 +385,21 @@
     "description": "Power user pasting long text a few times; must stay under the consumption threshold."
   },
   {
-    "scenario": "benign-vendor-question",
+    "scenario": "benign-pasted-hash",
     "kind": "benign",
     "session_ids": [
       "s-504867babf7b"
+    ],
+    "user_id": "bence.nagy",
+    "expect": [],
+    "known_miss": [],
+    "description": "Long hex digest in a prompt; must not be mistaken for base64 (LLMD-011)."
+  },
+  {
+    "scenario": "benign-vendor-question",
+    "kind": "benign",
+    "session_ids": [
+      "s-87f7e1fbda4b"
     ],
     "user_id": "gabor.kiss",
     "expect": [
@@ -401,7 +412,7 @@
     "scenario": "atk-direct-injection-leak",
     "kind": "attack",
     "session_ids": [
-      "s-87f7e1fbda4b"
+      "s-118a9d292f92"
     ],
     "user_id": "contractor.ext7",
     "expect": [
@@ -417,7 +428,7 @@
     "scenario": "atk-direct-injection-hu",
     "kind": "attack",
     "session_ids": [
-      "s-118a9d292f92"
+      "s-f10c718b1eb0"
     ],
     "user_id": "contractor.ext7",
     "expect": [
@@ -430,7 +441,7 @@
     "scenario": "atk-system-prompt-probe",
     "kind": "attack",
     "session_ids": [
-      "s-f10c718b1eb0"
+      "s-14fcdd549e8f"
     ],
     "user_id": "intern.r",
     "expect": [
@@ -443,7 +454,7 @@
     "scenario": "atk-indirect-email-exfil",
     "kind": "attack",
     "session_ids": [
-      "s-14fcdd549e8f"
+      "s-42c18a62ef48"
     ],
     "user_id": "eszter.horvath",
     "expect": [
@@ -459,7 +470,7 @@
     "scenario": "atk-markdown-image-exfil",
     "kind": "attack",
     "session_ids": [
-      "s-42c18a62ef48"
+      "s-21813d256552"
     ],
     "user_id": "ferenc.varga",
     "expect": [
@@ -473,7 +484,7 @@
     "scenario": "atk-secret-disclosure",
     "kind": "attack",
     "session_ids": [
-      "s-21813d256552"
+      "s-ef8c485bc07a"
     ],
     "user_id": "intern.r",
     "expect": [
@@ -486,7 +497,7 @@
     "scenario": "atk-jailbreak-probing",
     "kind": "attack",
     "session_ids": [
-      "s-ef8c485bc07a"
+      "s-19985f15ff00"
     ],
     "user_id": "contractor.ext7",
     "expect": [
@@ -499,7 +510,7 @@
     "scenario": "atk-obfuscated-b64",
     "kind": "attack",
     "session_ids": [
-      "s-3e896c64e117"
+      "s-4d71c366b41b"
     ],
     "user_id": "contractor.ext7",
     "expect": [
@@ -512,7 +523,7 @@
     "scenario": "atk-obfuscated-unicode-tags",
     "kind": "attack",
     "session_ids": [
-      "s-4d71c366b41b"
+      "s-aaf915310200"
     ],
     "user_id": "hanna.molnar",
     "expect": [
@@ -525,7 +536,7 @@
     "scenario": "atk-tool-burst",
     "kind": "attack",
     "session_ids": [
-      "s-aaf915310200"
+      "s-e0ccedc5f05d"
     ],
     "user_id": "contractor.ext7",
     "expect": [
@@ -538,7 +549,6 @@
     "scenario": "atk-cost-harvesting",
     "kind": "attack",
     "session_ids": [
-      "s-e0ccedc5f05d",
       "s-27cb6f2a8da0",
       "s-afffcfd2341e",
       "s-e87d1c78e7c4",
@@ -549,7 +559,8 @@
       "s-0ab54bde20a0",
       "s-0a368ce7dc57",
       "s-5a8aaeca1a50",
-      "s-bfddc3d99ee3"
+      "s-bfddc3d99ee3",
+      "s-ccc56569f9e8"
     ],
     "user_id": "api.svc-legacy",
     "expect": [
@@ -559,10 +570,43 @@
     "description": "Stolen service credential used to burn tokens on unrelated work."
   },
   {
+    "scenario": "atk-output-harvesting",
+    "kind": "attack",
+    "session_ids": [
+      "s-ecab3301bc8f",
+      "s-bc2cbb0ddd33",
+      "s-61ee411a1bac",
+      "s-eb1fa9f2d10b",
+      "s-391184973a43",
+      "s-11c58ef0dd46",
+      "s-adf4e62d6651",
+      "s-e08596db1d87"
+    ],
+    "user_id": "api.svc-batch",
+    "expect": [
+      "LLMD-009"
+    ],
+    "known_miss": [],
+    "description": "Short prompts asking for very long outputs: the cost is on the output side."
+  },
+  {
+    "scenario": "atk-lookalike-domain-beacon",
+    "kind": "attack",
+    "session_ids": [
+      "s-09cb394243f5"
+    ],
+    "user_id": "ferenc.varga",
+    "expect": [
+      "LLMD-005"
+    ],
+    "known_miss": [],
+    "description": "Image beacon on a host that starts with the corporate domain; substring allowlists would wave it through."
+  },
+  {
     "scenario": "evade-paraphrased-injection",
     "kind": "evasion",
     "session_ids": [
-      "s-ccc56569f9e8"
+      "s-6fb78271504d"
     ],
     "user_id": "contractor.ext7",
     "expect": [
@@ -578,7 +622,7 @@
     "scenario": "evade-spaced-secret",
     "kind": "evasion",
     "session_ids": [
-      "s-ecab3301bc8f"
+      "s-30a900ad939b"
     ],
     "user_id": "intern.r",
     "expect": [],
@@ -591,7 +635,7 @@
     "scenario": "evade-clickable-link",
     "kind": "evasion",
     "session_ids": [
-      "s-bc2cbb0ddd33"
+      "s-ce777f00ecf2"
     ],
     "user_id": "ferenc.varga",
     "expect": [
@@ -606,7 +650,7 @@
     "scenario": "evade-allowlisted-exfil",
     "kind": "evasion",
     "session_ids": [
-      "s-61ee411a1bac"
+      "s-3270e4faabae"
     ],
     "user_id": "eszter.horvath",
     "expect": [
@@ -623,14 +667,14 @@
     "scenario": "evade-slow-consumption",
     "kind": "evasion",
     "session_ids": [
-      "s-eb1fa9f2d10b",
-      "s-391184973a43",
-      "s-11c58ef0dd46",
-      "s-adf4e62d6651",
-      "s-e08596db1d87",
-      "s-09cb394243f5",
-      "s-6fb78271504d",
-      "s-30a900ad939b"
+      "s-9f871ce75487",
+      "s-81d2c7de4ce1",
+      "s-8dedf9fb4bb0",
+      "s-bf85bf0ead64",
+      "s-d56f03508c45",
+      "s-9b4e2c249479",
+      "s-82dc4c8e36b5",
+      "s-a8aa71582b70"
     ],
     "user_id": "api.svc-reporting",
     "expect": [],

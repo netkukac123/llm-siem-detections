@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 
 import pytest
+import yaml
 
 from . import kusto
 from .groundtruth import DATASET, ROOT, RULE_IDS, describe, expectation
@@ -26,6 +27,18 @@ def loaded_table():
 
 def test_every_rule_has_a_sentinel_file():
     assert sorted(RULE_FILES) == RULE_IDS
+
+
+def _minutes(d: str) -> int:
+    return int(d[:-1]) * {"m": 1, "h": 60, "d": 1440}[d[-1]]
+
+
+@pytest.mark.parametrize("rule_id", RULE_IDS)
+def test_overlapping_lookback_is_deduplicated(rule_id: str):
+    rule = yaml.safe_load(RULE_FILES[rule_id].read_text(encoding="utf-8"))
+    if _minutes(rule["queryPeriod"]) > _minutes(rule["queryFrequency"]):
+        assert f"let trigger_window = {rule['queryFrequency']};" in rule["query"], \
+            "lookback longer than the run interval needs a trigger_window equal to queryFrequency"
 
 
 def _hits(rule_id: str) -> tuple[str, set[str]]:

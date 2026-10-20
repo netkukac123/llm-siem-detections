@@ -20,7 +20,7 @@ tags:
   - OWASP-LLM02:2025 Sensitive Information Disclosure
   - ATLAS AML.T0077 LLM Response Rendering
 query: |
-  let corporate_domains = dynamic(["acme-freight.hu"]);
+  let corporate_domain = "acme-freight.hu";
   LLMAppLogs_CL
   | where event_type == "completion"
   | where completion contains "](http" or completion contains "<img"
@@ -28,7 +28,8 @@ query: |
   | mv-expand ImageUrl = ImageUrls to typeof(string)
   | extend Host = tolower(tostring(parse_url(ImageUrl).Host)), Query = tostring(parse_url(ImageUrl)["Query Parameters"])
   | where ImageUrl contains "?"
-  | where not(Host in (corporate_domains) or Host has_any (corporate_domains))
+  // Exact match or a true subdomain; "has" or "contains" would accept acme-freight.hu.evil.com
+  | where not(Host == corporate_domain or Host endswith strcat(".", corporate_domain))
   | project TimeGenerated, user_id, src_ip, session_id, request_id, Host, ImageUrl, Query, completion
 entityMappings:
   - entityType: Account

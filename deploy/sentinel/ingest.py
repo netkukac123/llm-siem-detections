@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from datetime import datetime, timezone
 
 from azure.identity import DefaultAzureCredential
@@ -52,6 +53,8 @@ def main() -> None:
 
     client.upload(rule_id=os.environ["LOGS_DCR_RULE_ID"], stream_name=STREAM, logs=events, on_error=on_error)
     print(f"uploaded {len(events) - len(failed)} of {len(events)} events")
+    if failed:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

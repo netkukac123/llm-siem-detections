@@ -1,6 +1,6 @@
 PY ?= python3
 WAZUH_IMAGE ?= wazuh/wazuh-manager:4.14.7
-KUSTAINER_IMAGE ?= mcr.microsoft.com/azuredataexplorer/kustainer-linux:latest
+KUSTAINER_IMAGE ?= mcr.microsoft.com/azuredataexplorer/kustainer-linux@sha256:51e2250da2faf292de903f871a073eb37d3f2641cf63381b183879d21ebb1013
 
 .PHONY: dataset coverage engines engines-down test arm
 

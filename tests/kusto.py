@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -67,4 +68,11 @@ def query(csl: str) -> tuple[list[str], list[dict]]:
 
 
 def rule_query(path: Path) -> str:
-    return yaml.safe_load(path.read_text(encoding="utf-8"))["query"]
+    """The rule query, adapted for replaying a fixed-date dataset.
+
+    Rules whose lookback is longer than their run interval only alert on activity
+    newer than `trigger_window` (relative to now()). The reference dataset is
+    dated, so the window is widened here; nothing else in the query changes.
+    """
+    query = yaml.safe_load(path.read_text(encoding="utf-8"))["query"]
+    return re.sub(r"let trigger_window = \w+;", "let trigger_window = 3650d;", query)
