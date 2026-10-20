@@ -1,0 +1,238 @@
+{
+  "bounds": {
+    "ascii": {
+      "largest_alerting_chars": 63952,
+      "smallest_silent_chars": 64260
+    },
+    "cjk": {
+      "largest_alerting_chars": 22165,
+      "smallest_silent_chars": 22242
+    },
+    "emoji": {
+      "largest_alerting_chars": 43665,
+      "smallest_silent_chars": 43820
+    }
+  },
+  "probes": [
+    {
+      "script": "ascii",
+      "chars": 1000,
+      "line_bytes": 1512,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "ascii",
+      "chars": 40500,
+      "line_bytes": 41499,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "ascii",
+      "chars": 60250,
+      "line_bytes": 61498,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "ascii",
+      "chars": 70125,
+      "line_bytes": 71496,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "ascii",
+      "chars": 65187,
+      "line_bytes": 66496,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "ascii",
+      "chars": 62718,
+      "line_bytes": 63996,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "ascii",
+      "chars": 63952,
+      "line_bytes": 65245,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "ascii",
+      "chars": 64569,
+      "line_bytes": 65871,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "ascii",
+      "chars": 64260,
+      "line_bytes": 65558,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "cjk",
+      "chars": 20150,
+      "line_bytes": 59271,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "cjk",
+      "chars": 30075,
+      "line_bytes": 88219,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "cjk",
+      "chars": 25112,
+      "line_bytes": 73744,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "cjk",
+      "chars": 22631,
+      "line_bytes": 66508,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "cjk",
+      "chars": 21390,
+      "line_bytes": 62888,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "cjk",
+      "chars": 22010,
+      "line_bytes": 64696,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "cjk",
+      "chars": 22320,
+      "line_bytes": 65598,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "cjk",
+      "chars": 22165,
+      "line_bytes": 65146,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "cjk",
+      "chars": 22242,
+      "line_bytes": 65373,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "emoji",
+      "chars": 40250,
+      "line_bytes": 60159,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "emoji",
+      "chars": 60125,
+      "line_bytes": 89619,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "emoji",
+      "chars": 50187,
+      "line_bytes": 74885,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "emoji",
+      "chars": 45218,
+      "line_bytes": 67523,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "emoji",
+      "chars": 42734,
+      "line_bytes": 63838,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "emoji",
+      "chars": 43976,
+      "line_bytes": 65680,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    },
+    {
+      "script": "emoji",
+      "chars": 43355,
+      "line_bytes": 64759,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "emoji",
+      "chars": 43665,
+      "line_bytes": 65221,
+      "marker_before": true,
+      "probe": true,
+      "marker_after": true
+    },
+    {
+      "script": "emoji",
+      "chars": 43820,
+      "line_bytes": 65450,
+      "marker_before": true,
+      "probe": false,
+      "marker_after": true
+    }
+  ],
+  "created": "2026-10-20T21:39:18+00:00",
+  "commit": "a13b0490a952f49adc64409c23e3ff60f0dec3e2",
+  "python": "3.14.8",
+  "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44"
+}
