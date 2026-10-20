@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - run: pip install pytest pyyaml
+      - run: pip install pytest pyyaml "mcp>=2.3,<3"
 
       - name: Start wazuh-manager
         run: |

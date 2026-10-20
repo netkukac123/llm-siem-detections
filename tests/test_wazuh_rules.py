@@ -14,13 +14,23 @@ from collections import defaultdict
 
 import pytest
 
-from .groundtruth import DATASET, ROOT, RULE_IDS, describe, expectation
+from .groundtruth import DATASET, ROOT, RULE_IDS, describe, expectation, scenario_by_session
 
 CONTAINER = os.environ.get("WAZUH_CONTAINER", "wazuh-llmd")
 RULES = ROOT / "detections" / "wazuh" / "llm_rules.xml"
 CLIENT = ROOT / "tests" / "wazuh_logtest_client.py"
 PY = "/var/ossec/framework/python/bin/python3"
 USER_LEVEL = {"LLMD-009", "LLMD-010"}
+
+# Engine limits, documented in docs/coverage.md ("Wazuh and Sentinel differences"). These sessions
+# must stay silent for the rule in Wazuh; if a Wazuh release starts catching them, the test fails
+# and the docs get updated.
+WAZUH_KNOWN_GAPS = {
+    "LLMD-008": {"atk-tool-burst": "frequency counts only calls whose final rule is 100704; 4 of the 12 "
+                                   "calls alert as LLMD-018/021 instead"},
+    "LLMD-019": {"atk-indirect-email-exfil": "the send_email already sits under the LLMD-007 correlation "
+                                             "rule, and a correlation nested under another is not evaluated"},
+}
 
 
 def _container_running() -> bool:
@@ -74,7 +84,10 @@ def test_rule_matches_ground_truth(results, rule_id: str):
         assert hits_by_level["user"] == set(exp.users)
         return
     hits = hits_by_level["session"]
-    missed, false_pos = exp.sessions - hits, hits - exp.sessions
+    names = scenario_by_session()
+    gap_sessions = {s for s, n in names.items() if n in WAZUH_KNOWN_GAPS.get(rule_id, {})}
+    assert not (hits & gap_sessions), f"{rule_id}: a documented Wazuh gap now fires; update coverage docs"
+    missed, false_pos = (exp.sessions - gap_sessions) - hits, hits - exp.sessions
     assert not missed, f"{rule_id} missed: {describe(missed)}"
     assert not false_pos, f"{rule_id} false positives: {describe(false_pos)}"
     assert not (hits & exp.known_miss_sessions), "a documented gap now fires; update coverage docs"

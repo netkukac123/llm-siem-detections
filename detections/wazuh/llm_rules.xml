@@ -19,7 +19,7 @@
   <!-- ===== Base: recognise the event family ===== -->
   <rule id="100700" level="0">
     <decoded_as>json</decoded_as>
-    <field name="event_type" type="pcre2">^(prompt|guardrail|retrieval|tool_call|completion)$</field>
+    <field name="event_type" type="pcre2">^(prompt|guardrail|retrieval|tool_call|completion|memory_write|tool_registry)$</field>
     <field name="request_id" type="pcre2">^\w+$</field>
     <description>LLM app event.</description>
   </rule>
@@ -151,7 +151,7 @@
     <field name="tool_name">^send_email$|^http_get$</field>
     <field name="tool_target" type="pcre2" negate="yes">(?i)(^|\.)acme-freight\.hu$|^learn\.microsoft\.com$|^github\.com$</field>
     <description>LLMD-006 Agent called $(tool_name) towards external target $(tool_target).</description>
-    <group>llmd_006,llm_egress_external,owasp_llm06,atlas_AML.T0053,atlas_AML.T0086,</group>
+    <group>llm_tool_call,llmd_006,llm_egress_external,owasp_llm06,atlas_AML.T0053,atlas_AML.T0086,</group>
   </rule>
 
   <!-- LLMD-007 Egress after external content in the same session (10 min) -->
@@ -160,7 +160,7 @@
     <if_matched_group>llm_external_content</if_matched_group>
     <same_field>session_id</same_field>
     <description>LLMD-007 Egress tool call to $(tool_target) after external content entered session $(session_id): probable indirect prompt injection.</description>
-    <group>llmd_006,llmd_007,owasp_llm01,owasp_llm06,atlas_AML.T0051.001,atlas_AML.T0086,</group>
+    <group>llm_tool_call,llmd_006,llmd_007,owasp_llm01,owasp_llm06,atlas_AML.T0051.001,atlas_AML.T0086,</group>
   </rule>
 
   <!-- LLMD-004 on top of LLMD-006/007: the exfiltrating call carries a secret -->
@@ -168,14 +168,23 @@
     <if_sid>100731</if_sid>
     <field name="tool_args" type="pcre2">\b(AKIA|ASIA)[0-9A-Z]{16}\b|(?i:secret)[^\n]{0,20}[A-Za-z0-9/+]{40}|-----BEGIN [A-Z ]*PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{36}\b|\bxox[baprs]-[A-Za-z0-9-]{10,}|\bHU\d{2}(?: ?\d{4}){6}\b</field>
     <description>LLMD-004/006/007 Secret sent to $(tool_target) via $(tool_name) after external content entered the session.</description>
-    <group>llmd_004,llmd_006,llmd_007,owasp_llm02,owasp_llm06,atlas_AML.T0057,atlas_AML.T0086,</group>
+    <group>llm_tool_call,llmd_004,llmd_006,llmd_007,owasp_llm02,owasp_llm06,atlas_AML.T0057,atlas_AML.T0086,</group>
+  </rule>
+
+  <!-- ...and the data was read from a private file earlier in the same turn (LLMD-019) -->
+  <rule id="100784" level="14" timeframe="300">
+    <if_sid>100732</if_sid>
+    <if_matched_group>llm_private_read</if_matched_group>
+    <same_field>request_id</same_field>
+    <description>LLMD-004/006/007/019 Private file read and its secrets sent to $(tool_target) after external content entered the session.</description>
+    <group>llm_tool_call,llmd_004,llmd_006,llmd_007,llmd_019,owasp_llm02,owasp_asi01,owasp_asi02,atlas_AML.T0057,atlas_AML.T0086,</group>
   </rule>
 
   <rule id="100733" level="12">
     <if_sid>100730</if_sid>
     <field name="tool_args" type="pcre2">\b(AKIA|ASIA)[0-9A-Z]{16}\b|(?i:secret)[^\n]{0,20}[A-Za-z0-9/+]{40}|-----BEGIN [A-Z ]*PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{36}\b|\bxox[baprs]-[A-Za-z0-9-]{10,}|\bHU\d{2}(?: ?\d{4}){6}\b</field>
     <description>LLMD-004/006 Secret sent to external target $(tool_target) via $(tool_name).</description>
-    <group>llmd_004,llmd_006,owasp_llm02,owasp_llm06,atlas_AML.T0057,atlas_AML.T0086,</group>
+    <group>llm_tool_call,llmd_004,llmd_006,owasp_llm02,owasp_llm06,atlas_AML.T0057,atlas_AML.T0086,</group>
   </rule>
 
   <!-- Egress tool to a trusted destination: not LLMD-006, but still checked for secrets -->
@@ -184,22 +193,24 @@
     <field name="tool_name">^send_email$|^http_get$</field>
     <field name="tool_target" type="pcre2">(?i)(^|\.)acme-freight\.hu$|^learn\.microsoft\.com$|^github\.com$</field>
     <description>LLM app: agent egress tool call to trusted target $(tool_target).</description>
+    <group>llm_tool_call,</group>
   </rule>
 
   <rule id="100738" level="10">
     <if_sid>100737</if_sid>
     <field name="tool_args" type="pcre2">\b(AKIA|ASIA)[0-9A-Z]{16}\b|(?i:secret)[^\n]{0,20}[A-Za-z0-9/+]{40}|-----BEGIN [A-Z ]*PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{36}\b|\bxox[baprs]-[A-Za-z0-9-]{10,}|\bHU\d{2}(?: ?\d{4}){6}\b</field>
     <description>LLMD-004 Secret in arguments of $(tool_name) to trusted target $(tool_target).</description>
-    <group>llmd_004,owasp_llm02,atlas_AML.T0057,</group>
+    <group>llm_tool_call,llmd_004,owasp_llm02,atlas_AML.T0057,</group>
   </rule>
 
   <!-- LLMD-004 secret in arguments of a non-egress tool call -->
   <rule id="100734" level="10">
     <if_sid>100704</if_sid>
     <field name="tool_name" negate="yes">^send_email$|^http_get$</field>
+    <field name="tool_risk" negate="yes">^external$</field>
     <field name="tool_args" type="pcre2">\b(AKIA|ASIA)[0-9A-Z]{16}\b|(?i:secret)[^\n]{0,20}[A-Za-z0-9/+]{40}|-----BEGIN [A-Z ]*PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{36}\b|\bxox[baprs]-[A-Za-z0-9-]{10,}|\bHU\d{2}(?: ?\d{4}){6}\b</field>
     <description>LLMD-004 Secret in arguments of tool $(tool_name) (target $(tool_target)).</description>
-    <group>llmd_004,owasp_llm02,atlas_AML.T0057,</group>
+    <group>llm_tool_call,llmd_004,owasp_llm02,atlas_AML.T0057,</group>
   </rule>
 
   <!-- LLMD-003 canary in tool arguments -->
@@ -207,15 +218,175 @@
     <if_sid>100704</if_sid>
     <field name="tool_args" type="pcre2">sp-canary-[0-9a-f]{16}</field>
     <description>LLMD-003 System prompt canary passed to tool $(tool_name).</description>
-    <group>llmd_003,owasp_llm07,atlas_AML.T0056,</group>
+    <group>llm_tool_call,llmd_003,owasp_llm07,atlas_AML.T0056,</group>
   </rule>
 
-  <!-- LLMD-008 Burst of tool calls (10 in 5 minutes, same session) -->
+
+  <!-- LLMD-008 Burst of tool calls (10 in 5 minutes, same session).
+       Wazuh frequency rules only count events whose final rule is the counted sid, so calls that
+       land on a more specific rule (and alert there, e.g. LLMD-018/021) are not counted. Tested with
+       wazuh-logtest 4.14.7; see docs/coverage.md, "Wazuh and Sentinel differences". -->
   <rule id="100736" level="10" frequency="10" timeframe="300">
     <if_matched_sid>100704</if_matched_sid>
     <same_field>session_id</same_field>
     <description>LLMD-008 Burst of agent tool calls in session $(session_id) by $(user_id).</description>
-    <group>llmd_008,owasp_llm06,owasp_llm10,atlas_AML.T0053,</group>
+    <group>llmd_008,owasp_llm06,owasp_llm10,owasp_asi02,atlas_AML.T0053,</group>
+  </rule>
+
+  <!-- ===== Agentic: tool calls ===== -->
+
+  <!-- Successful private read: correlation anchor for LLMD-019 -->
+  <rule id="100760" level="2">
+    <if_sid>100704</if_sid>
+    <field name="tool_name">^read_file$</field>
+    <field name="tool_status">^ok$</field>
+    <description>LLM app: agent read $(tool_target).</description>
+    <group>llm_tool_call,llm_private_read,</group>
+  </rule>
+
+  <!-- LLMD-021 Instructions in the output of a read -->
+  <rule id="100761" level="10">
+    <if_sid>100760</if_sid>
+    <field name="tool_result" type="pcre2">(?i)\b(ignore|disregard|forget|override)\b[^.\n]{0,30}\b(previous|prior|above|earlier|preceding|system)\b[^.\n]{0,20}\b(instructions?|prompts?|rules|directions|guidelines)\b|\bnew instructions?\s*:|\b(note|message|instructions?) (to|for) the (ai|assistant|ai assistant|llm|model|agent)\b|\bassistant instructions\s*:|\b(ai|llm) (assistant|agent)\s*:|\bno need to (ask|tell|inform) the user\b|\bdo not (tell|mention|inform)\b[^.\n]{0,20}\buser\b|\bto fix (this|the) (error|issue|problem)\b[^.\n]{0,40}\brun\b|`[^`]*\b(curl|wget|npx|npm (i|install)|pip install|bash|sh -c)\b[^`]*`</field>
+    <description>LLMD-021 Tool $(tool_name) returned instructions aimed at the agent.</description>
+    <group>llm_tool_call,llm_private_read,llmd_021,owasp_asi01,owasp_asi04,atlas_AML.T0110.002,</group>
+  </rule>
+
+  <!-- Call to a third-party MCP server: egress by definition -->
+  <rule id="100762" level="3">
+    <if_sid>100704</if_sid>
+    <field name="tool_risk">^external$</field>
+    <description>LLM app: agent called MCP tool $(tool_name) on $(mcp_server).</description>
+    <group>llm_tool_call,llm_mcp_call,</group>
+  </rule>
+
+  <!-- LLMD-021 Instructions in an MCP tool result (runtime response poisoning) -->
+  <rule id="100763" level="10">
+    <if_sid>100762</if_sid>
+    <field name="tool_result" type="pcre2">(?i)\b(ignore|disregard|forget|override)\b[^.\n]{0,30}\b(previous|prior|above|earlier|preceding|system)\b[^.\n]{0,20}\b(instructions?|prompts?|rules|directions|guidelines)\b|\bnew instructions?\s*:|\b(note|message|instructions?) (to|for) the (ai|assistant|ai assistant|llm|model|agent)\b|\bassistant instructions\s*:|\b(ai|llm) (assistant|agent)\s*:|\bno need to (ask|tell|inform) the user\b|\bdo not (tell|mention|inform)\b[^.\n]{0,20}\buser\b|\bto fix (this|the) (error|issue|problem)\b[^.\n]{0,40}\brun\b|`[^`]*\b(curl|wget|npx|npm (i|install)|pip install|bash|sh -c)\b[^`]*`</field>
+    <description>LLMD-021 MCP tool $(tool_name) on $(mcp_server) returned instructions aimed at the agent.</description>
+    <group>llm_tool_call,llmd_021,owasp_asi01,owasp_asi04,atlas_AML.T0110.002,</group>
+  </rule>
+
+  <!-- LLMD-019 Private read followed by an MCP call in the same turn -->
+  <rule id="100764" level="12" timeframe="300">
+    <if_sid>100762</if_sid>
+    <if_matched_group>llm_private_read</if_matched_group>
+    <same_field>request_id</same_field>
+    <description>LLMD-019 Private data read, then sent to MCP server $(mcp_server) in the same turn.</description>
+    <group>llm_tool_call,llmd_019,owasp_asi02,owasp_asi01,atlas_AML.T0085.001,atlas_AML.T0086,</group>
+  </rule>
+
+  <rule id="100765" level="13">
+    <if_sid>100764</if_sid>
+    <field name="tool_args" type="pcre2">\b(AKIA|ASIA)[0-9A-Z]{16}\b|(?i:secret)[^\n]{0,20}[A-Za-z0-9/+]{40}|-----BEGIN [A-Z ]*PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{36}\b|\bxox[baprs]-[A-Za-z0-9-]{10,}|\bHU\d{2}(?: ?\d{4}){6}\b</field>
+    <description>LLMD-004/019 Secret read and passed to MCP server $(mcp_server) in the same turn.</description>
+    <group>llm_tool_call,llmd_004,llmd_019,owasp_llm02,owasp_asi02,atlas_AML.T0057,atlas_AML.T0086,</group>
+  </rule>
+
+  <!-- LLMD-016 Destructive tool executed without a human in the loop -->
+  <rule id="100766" level="12">
+    <if_sid>100704</if_sid>
+    <field name="tool_risk">^destructive$</field>
+    <field name="tool_approval">^auto$</field>
+    <field name="tool_status">^ok$</field>
+    <description>LLMD-016 Destructive tool $(tool_name) ran on $(tool_target) without human approval.</description>
+    <group>llm_tool_call,llmd_016,owasp_asi02,atlas_AML.T0101,</group>
+  </rule>
+
+  <!-- LLMD-017 Dangerous shell command -->
+  <rule id="100767" level="12">
+    <if_sid>100704</if_sid>
+    <field name="tool_risk">^exec$</field>
+    <field name="tool_args" type="pcre2">/dev/(tcp|udp)/|\bbash\s+-i\b|\bnc(at)?\b[^|;]{0,40}\s-(e|c)\b|\bmkfifo\b|\bsocat\b|\b(curl|wget)\b[^|;]{0,200}\|\s*(sudo\s+)?(ba|z|da)?sh\b|base64\s+(-d|--decode)[^|;]{0,80}\|\s*(ba)?sh\b|\bchmod\s+[ugo]*\+s\b|\brm\s+-[a-zA-Z]*r[a-zA-Z]*\s+/(\s|$|\*)|\bpython[0-9.]*\s+-c\s+[^|]{0,80}socket</field>
+    <description>LLMD-017 Dangerous command issued by the agent ($(tool_approval) approval).</description>
+    <group>llm_tool_call,llmd_017,owasp_asi05,atlas_AML.T0102,atlas_AML.T0072,</group>
+  </rule>
+
+  <!-- LLMD-018 Credential material targeted through agent tools -->
+  <rule id="100768" level="10">
+    <if_sid>100704</if_sid>
+    <field name="tool_args" type="pcre2">(?i)(\.aws/(credentials|config)|\.ssh/|\bid_(rsa|ed25519|ecdsa)\b|(^|\W)\.env\b|\.git-credentials|\.netrc|\.kube/config|\.docker/config\.json|mcp\.json|/etc/shadow|\.azure/|gcloud/credentials)</field>
+    <field name="tool_name" negate="yes">^write_file$</field>
+    <description>LLMD-018 Agent tool $(tool_name) aimed at credential material: $(tool_target).</description>
+    <group>llm_tool_call,llmd_018,owasp_asi03,atlas_AML.T0098,atlas_AML.T0083,</group>
+  </rule>
+
+  <!-- LLMD-020 Agent writes agent configuration -->
+  <rule id="100769" level="12">
+    <if_sid>100704</if_sid>
+    <field name="tool_name">^write_file$</field>
+    <field name="tool_target" type="pcre2">(?i)(\.vscode/(settings|mcp)\.json|\.cursor/|\.claude/(settings[^/]*\.json|agents/|commands/)|(^|/)mcp\.json|\.continue/config|copilot-instructions\.md|(^|/)(AGENTS|CLAUDE|GEMINI)\.md|\.windsurf/|\.kiro/)</field>
+    <description>LLMD-020 Agent wrote agent configuration file $(tool_target).</description>
+    <group>llm_tool_call,llmd_020,owasp_asi03,owasp_asi05,atlas_AML.T0081,</group>
+  </rule>
+
+  <rule id="100770" level="12">
+    <if_sid>100704</if_sid>
+    <field name="tool_name">^run_shell$</field>
+    <field name="tool_args" type="pcre2">(?i)(>>?|\btee\b|\bsed\s+-i\b|\bcp\b|\bmv\b)[^|;]{0,80}(\.vscode/|\.cursor/|\.claude/|mcp\.json|AGENTS\.md|CLAUDE\.md|copilot-instructions\.md)</field>
+    <description>LLMD-020 Agent shell command writes agent configuration.</description>
+    <group>llm_tool_call,llmd_020,owasp_asi03,owasp_asi05,atlas_AML.T0081,</group>
+  </rule>
+
+  <!-- ===== Agentic: memory ===== -->
+
+  <rule id="100775" level="3">
+    <if_sid>100700</if_sid>
+    <field name="event_type">^memory_write$</field>
+    <description>LLM app: agent wrote to long-term memory of $(user_id).</description>
+    <group>llm_memory_write,</group>
+  </rule>
+
+  <!-- LLMD-013 Memory write in a turn with untrusted content in context -->
+  <rule id="100776" level="12" timeframe="300">
+    <if_sid>100775</if_sid>
+    <if_matched_group>llm_external_content</if_matched_group>
+    <same_field>request_id</same_field>
+    <description>LLMD-013 Memory written for $(user_id) while untrusted content was in context.</description>
+    <group>llmd_013,owasp_asi06,atlas_AML.T0080.000,atlas_AML.T0094,</group>
+  </rule>
+
+  <!-- LLMD-013 Standing instruction to act, written to memory -->
+  <rule id="100777" level="12">
+    <if_sid>100775</if_sid>
+    <field name="memory_text" type="pcre2">(?i)\b(always|from now on|in (all )?future|every time|whenever)\b[^.\n]{0,80}\b(send|e-?mail|forward|bcc|cc|copy|call|run|execute|share|upload|post)\b</field>
+    <description>LLMD-013 Standing instruction written to the long-term memory of $(user_id).</description>
+    <group>llmd_013,owasp_asi06,atlas_AML.T0080.000,atlas_AML.T0094,</group>
+  </rule>
+
+  <!-- ===== Agentic: MCP tool registry ===== -->
+
+  <rule id="100780" level="2">
+    <if_sid>100700</if_sid>
+    <field name="event_type">^tool_registry$</field>
+    <description>LLM app: MCP tool $(tool_key) advertised.</description>
+    <group>llm_tool_registry,</group>
+  </rule>
+
+  <!-- LLMD-014 Same MCP tool, different description hash (rug pull). Wazuh keeps this state in
+       memory for the timeframe only; persist approved hashes in a CDB list for production. -->
+  <rule id="100781" level="12" frequency="2" timeframe="1209600">
+    <if_matched_sid>100780</if_matched_sid>
+    <same_field>tool_key</same_field>
+    <different_field>tool_desc_sha256</different_field>
+    <description>LLMD-014 MCP tool $(tool_key) changed its description (rug pull?).</description>
+    <group>llmd_014,owasp_asi04,atlas_AML.T0109,atlas_AML.T0110.000,</group>
+  </rule>
+
+  <rule id="100782" level="13">
+    <if_sid>100781</if_sid>
+    <field name="tool_description" type="pcre2">(?i)&lt;important&gt;|\b(do not|don't|never)\s+(tell|mention|inform|reveal|show)\b|\bbefore (using|calling) this tool\b|\b(first|always)\s+call\b|\b(read|send|include|pass|forward)\b[^.\n]{0,60}(\.ssh|id_rsa|\.env\b|credentials|mcp\.json|conversation|user's (last |previous )?message)|\b(ignore|override)\b[^.\n]{0,30}\binstructions\b</field>
+    <description>LLMD-014/015 MCP tool $(tool_key) changed its description to one with hidden instructions.</description>
+    <group>llmd_014,llmd_015,owasp_asi04,atlas_AML.T0109,atlas_AML.T0110.000,</group>
+  </rule>
+
+  <!-- LLMD-015 Hidden instructions in an MCP tool description -->
+  <rule id="100783" level="10">
+    <if_sid>100780</if_sid>
+    <field name="tool_description" type="pcre2">(?i)&lt;important&gt;|\b(do not|don't|never)\s+(tell|mention|inform|reveal|show)\b|\bbefore (using|calling) this tool\b|\b(first|always)\s+call\b|\b(read|send|include|pass|forward)\b[^.\n]{0,60}(\.ssh|id_rsa|\.env\b|credentials|mcp\.json|conversation|user's (last |previous )?message)|\b(ignore|override)\b[^.\n]{0,30}\binstructions\b</field>
+    <description>LLMD-015 MCP tool $(tool_key) description contains hidden instructions.</description>
+    <group>llmd_015,owasp_asi04,owasp_asi01,atlas_AML.T0110.000,</group>
   </rule>
 
   <!-- ===== Completion-side rules ===== -->
@@ -243,6 +414,14 @@
          (verified with wazuh-logtest), hence the plainer [^)\s] classes. -->
     <field name="completion" type="pcre2">(?i)(!\[[^\]]*\]\(|&lt;img\s[^)]+?src=\W?)https?://(?!(?:[a-z0-9-]+\.)*acme-freight\.hu[/?)])[^)\s]+\?[^)\s]*=</field>
     <description>LLMD-005 Model output contains an auto-loading image beacon to an external host (session $(session_id)).</description>
+    <group>llmd_005,owasp_llm05,owasp_llm02,atlas_AML.T0077,</group>
+  </rule>
+
+  <!-- LLMD-005 Reference-style markdown image (the EchoLeak link-redaction bypass) -->
+  <rule id="100746" level="12">
+    <if_sid>100705</if_sid>
+    <field name="completion" type="pcre2">(?is)!\[[^\]]*\]\[[^\]]+\].*\n\s*\[[^\]]+\]:\s*https?://(?!(?:[a-z0-9-]+\.)*acme-freight\.hu[/?)])[^)\s]+\?[^)\s]*=</field>
+    <description>LLMD-005 Model output contains a reference-style image beacon to an external host (session $(session_id)).</description>
     <group>llmd_005,owasp_llm05,owasp_llm02,atlas_AML.T0077,</group>
   </rule>
 
