@@ -34,12 +34,13 @@ def _cfg(name: str, variant: str) -> McpServerConfig:
     return McpServerConfig(name, SERVER_MODULE, (("CARGOLINK_VARIANT", variant),))
 
 
-def run_once(sc: LiveScenario, model_tag: str, base_url: str, rep: int, temperature: float) -> dict:
+def run_once(sc: LiveScenario, model_tag: str, base_url: str, rep: int, temperature: float,
+             corpus_dir: Path | None = None, run_prefix: str = "") -> dict:
     buf = io.StringIO()
     model = OpenAICompatModel(base_url, model_tag, temperature=temperature, seed=1000 + rep)
-    app = RagApp(EventLog(buf), model)
+    app = RagApp(EventLog(buf), model, corpus_dir=corpus_dir)
     user, ip = ("research.user", "10.99.0.10")
-    run_id = f"{sc.id}-{model_tag.replace(':', '_')}-r{rep}"
+    run_id = f"{run_prefix}{sc.id}-{model_tag.replace(':', '_')}-r{rep}"
     if sc.preregister_clean_mcp:
         app.mcp_servers = [_cfg(sc.mcp[0], "clean")]
         app._connect_mcp(RequestContext(session_id=f"{run_id}-baseline", user_id=user, src_ip=ip, model=model.name))
@@ -63,7 +64,8 @@ def run_once(sc: LiveScenario, model_tag: str, base_url: str, rep: int, temperat
         e["session_label"] = labels.get(e["session_id"], "baseline")
     return {"run_id": run_id, "scenario": sc.id, "attack_class": sc.attack_class, "benign": sc.benign,
             "model": model_tag, "rep": rep, "temperature": temperature, "seconds": round(time.time() - t0, 1),
-            "error": error, "success": (None if sc.benign else sc.oracle(events)), "events": events}
+            "error": error, "success": (None if sc.benign else sc.oracle(events)),
+            "complied": (None if sc.benign else sc.complied(events)), "events": events}
 
 
 def collect(models: list[str], base_url: str, reps: int, temperature: float, benign_extra: int) -> None:
@@ -110,8 +112,8 @@ def evaluate() -> dict:
     for r in records:
         hits = sorted(run_hits.get(r["run_id"], set()))
         intended = scen[r["scenario"]].intended_rules if r["scenario"] in scen else []
-        rows.append({k: r[k] for k in ("run_id", "scenario", "attack_class", "benign", "model", "rep", "success",
-                                        "error", "seconds")} | {
+        rows.append({k: r.get(k) for k in ("run_id", "scenario", "attack_class", "benign", "model", "rep",
+                                            "success", "complied", "error", "seconds")} | {
             "rules_fired": hits, "intended_hit": bool(set(hits) & set(intended)), "any_hit": bool(hits)})
     write_json(OUT / "per_run.json", rows)
 
@@ -122,20 +124,25 @@ def evaluate() -> dict:
             group[(row["model"], row["scenario"])].append(row)
     for (m, s), rs in sorted(group.items()):
         succ = [x for x in rs if x["success"]]
-        fail = [x for x in rs if not x["success"]]
+        comp = [x for x in rs if x["complied"]]
+        resisted = [x for x in rs if not x["complied"]]
         summary["by_model_scenario"].append({
             "model": m, "scenario": s, "n": len(rs),
-            "asr": wilson(len(succ), len(rs)),
+            "compliance": wilson(len(comp), len(rs)), "asr": wilson(len(succ), len(rs)),
+            "detected_given_compliance": wilson(sum(x["intended_hit"] for x in comp), len(comp)),
             "detected_given_success": wilson(sum(x["intended_hit"] for x in succ), len(succ)),
-            "visible_given_failure": wilson(sum(x["any_hit"] for x in fail), len(fail))})
+            "visible_given_resisted": wilson(sum(x["any_hit"] for x in resisted), len(resisted))})
     for m in sorted({row["model"] for row in rows}):
         att = [x for x in rows if x["model"] == m and not x["benign"] and not x["error"]]
         succ = [x for x in att if x["success"]]
+        comp = [x for x in att if x["complied"]]
         ben = [x for x in rows if x["model"] == m and x["benign"] and not x["error"]]
         summary["by_model"].append({
-            "model": m, "attack_runs": len(att), "asr": wilson(len(succ), len(att)),
+            "model": m, "attack_runs": len(att), "compliance": wilson(len(comp), len(att)),
+            "asr": wilson(len(succ), len(att)),
+            "detected_given_compliance": wilson(sum(x["intended_hit"] for x in comp), len(comp)),
             "detected_given_success": wilson(sum(x["intended_hit"] for x in succ), len(succ)),
-            "any_rule_given_success": wilson(sum(x["any_hit"] for x in succ), len(succ)),
+            "any_rule_given_compliance": wilson(sum(x["any_hit"] for x in comp), len(comp)),
             "benign_runs": len(ben), "benign_fp": wilson(sum(x["any_hit"] for x in ben), len(ben)),
             "errors": sum(1 for x in rows if x["model"] == m and x["error"])})
     write_json(OUT / "summary.json", summary)

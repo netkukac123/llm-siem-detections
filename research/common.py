@@ -107,7 +107,7 @@ def run_rules(events: Iterable[dict], rules: Sequence[str] | None = None,
     path = RESULTS / "_kusto_load.jsonl"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("".join(json.dumps(e, ensure_ascii=False) + "\n" for e in events), encoding="utf-8")
-    kusto.load_table(path)
+    kusto.load_table(path, chunk=400)
     out: dict[str, set[str]] = {}
     for rid, p in rule_files().items():
         if rules and rid not in rules:

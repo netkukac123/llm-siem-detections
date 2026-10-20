@@ -4,3 +4,4 @@ __pycache__/
 logs/
 .claude/
 research/results/_kusto_load.jsonl
+research/data/

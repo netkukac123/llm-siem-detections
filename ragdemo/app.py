@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import os
 from collections import defaultdict
+from pathlib import Path
 
 from .guardrail import check_input
 from .llm import ModelResponse, OpenAICompatModel, ScriptedModel
@@ -36,10 +37,10 @@ RESULT_PREVIEW_CHARS = 1000
 
 class RagApp:
     def __init__(self, log: EventLog, model: ScriptedModel | OpenAICompatModel, top_k: int = 2,
-                 mcp_servers: list[McpServerConfig] | None = None):
+                 mcp_servers: list[McpServerConfig] | None = None, corpus_dir: Path | None = None):
         self.log = log
         self.model = model
-        self.retriever = Retriever(load_corpus())
+        self.retriever = Retriever(load_corpus(corpus_dir) if corpus_dir else load_corpus())
         self.tools = Toolbox(self.retriever)
         self.top_k = top_k
         self.mcp_servers = list(mcp_servers or [])
