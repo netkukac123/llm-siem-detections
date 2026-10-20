@@ -1,0 +1,42 @@
+id: e75d8b48-1eb1-59f2-accc-7b1d2eb32872
+name: LLMD-003 System prompt canary token in model output
+description: |
+  The application plants a unique canary string in its system prompt (here: sp-canary-<16 hex>).
+  The string has no business reason to appear in any output, so a hit is a confirmed system
+  prompt leak regardless of how the attacker phrased the request. This is the highest-precision
+  rule in the pack. Rotate the canary per deployment and keep the pattern in sync.
+severity: High
+requiredDataConnectors: []
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Discovery
+  - Collection
+relevantTechniques: []
+tags:
+  - OWASP-LLM07:2025 System Prompt Leakage
+  - ATLAS AML.T0056 Extract LLM System Prompt
+query: |
+  let canary = @"sp-canary-[0-9a-f]{16}";
+  LLMAppLogs_CL
+  | where event_type in ("completion", "tool_call")
+  | extend Output = iff(event_type == "completion", completion, tool_args)
+  | where Output matches regex canary
+  | project TimeGenerated, user_id, src_ip, session_id, request_id, event_type, tool_name,
+            Canary = extract(canary, 0, Output), Output
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: src_ip
+customDetails:
+  SessionId: session_id
+  Canary: Canary
+version: 1.0.0
+kind: Scheduled

@@ -1,0 +1,41 @@
+id: 9add36fa-35d4-5674-843b-ce729f56b15c
+name: LLMD-001 Direct prompt injection phrasing in user prompt
+description: |
+  A user prompt contains well-known instruction-override phrasing ("ignore all previous
+  instructions", "you are now unrestricted", Hungarian "felejtsd el a korábbi utasításokat").
+  Keyword matching only catches unsophisticated attempts; pair it with LLMD-003 (canary)
+  to learn whether an attempt actually succeeded.
+severity: Medium
+requiredDataConnectors: []
+queryFrequency: 15m
+queryPeriod: 15m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+  - DefenseEvasion
+relevantTechniques: []
+tags:
+  - OWASP-LLM01:2025 Prompt Injection
+  - ATLAS AML.T0051.000 LLM Prompt Injection Direct
+query: |
+  let injection = @"(?i)\b(ignore|disregard|forget|override)\b[^.\n]{0,30}\b(previous|prior|above|earlier|preceding|system)\b[^.\n]{0,20}\b(instructions?|prompts?|rules|directions|guidelines)\b|\bnew instructions?\s*:|\byou are now\b[^.\n]{0,30}\b(unrestricted|unfiltered|uncensored)\b|(felejtsd el|hagyd figyelmen k[ií]v[üu]l|ne vedd figyelembe)[^.\n]{0,30}(kor[áa]bbi|el[őo]z[őo]|fenti|eddigi)[^.\n]{0,15}utas[íi]t[áa]s";
+  LLMAppLogs_CL
+  | where event_type == "prompt"
+  | where prompt matches regex injection
+  | project TimeGenerated, user_id, src_ip, session_id, request_id, app_name, model,
+            MatchedPhrase = extract(injection, 0, prompt), prompt
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: src_ip
+customDetails:
+  SessionId: session_id
+  MatchedPhrase: MatchedPhrase
+version: 1.0.0
+kind: Scheduled

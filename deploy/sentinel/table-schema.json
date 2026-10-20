@@ -1,0 +1,36 @@
+{
+  "properties": {
+    "schema": {
+      "name": "LLMAppLogs_CL",
+      "columns": [
+        {"name": "TimeGenerated", "type": "datetime"},
+        {"name": "app_name", "type": "string"},
+        {"name": "event_type", "type": "string"},
+        {"name": "request_id", "type": "string"},
+        {"name": "session_id", "type": "string"},
+        {"name": "user_id", "type": "string"},
+        {"name": "src_ip", "type": "string"},
+        {"name": "model", "type": "string"},
+        {"name": "prompt", "type": "string"},
+        {"name": "prompt_chars", "type": "long"},
+        {"name": "guardrail_action", "type": "string"},
+        {"name": "guardrail_rule", "type": "string"},
+        {"name": "doc_id", "type": "string"},
+        {"name": "doc_source", "type": "string"},
+        {"name": "doc_title", "type": "string"},
+        {"name": "retrieval_score", "type": "real"},
+        {"name": "chunk_text", "type": "string"},
+        {"name": "tool_name", "type": "string"},
+        {"name": "tool_args", "type": "string"},
+        {"name": "tool_target", "type": "string"},
+        {"name": "tool_status", "type": "string"},
+        {"name": "completion", "type": "string"},
+        {"name": "input_tokens", "type": "long"},
+        {"name": "output_tokens", "type": "long"},
+        {"name": "finish_reason", "type": "string"}
+      ]
+    },
+    "retentionInDays": 30,
+    "plan": "Analytics"
+  }
+}

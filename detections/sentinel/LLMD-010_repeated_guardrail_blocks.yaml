@@ -1,0 +1,45 @@
+id: 5a3546e0-4ae7-5f0a-ada9-cd8e936113e9
+name: LLMD-010 Repeated guardrail blocks from one identity
+description: |
+  Three or more prompts from the same user blocked by the input guardrail within ten minutes.
+  A single block is noise (curiosity, a copy-pasted meme); a series is someone iterating on a
+  jailbreak. Works with any guardrail that logs its decisions, for example Azure AI Content
+  Safety Prompt Shields or Llama Prompt Guard, as long as the block becomes a guardrail event.
+severity: Medium
+requiredDataConnectors: []
+queryFrequency: 10m
+queryPeriod: 20m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - DefenseEvasion
+  - InitialAccess
+relevantTechniques: []
+tags:
+  - OWASP-LLM01:2025 Prompt Injection
+  - ATLAS AML.T0054 LLM Jailbreak
+query: |
+  let threshold = 3;
+  LLMAppLogs_CL
+  | where event_type == "guardrail" and guardrail_action == "block"
+  | sort by user_id asc, TimeGenerated asc
+  | extend Window = row_window_session(TimeGenerated, 10m, 10m, user_id != prev(user_id))
+  | summarize TimeGenerated = min(TimeGenerated), Blocks = count(), Rules = make_set(guardrail_rule),
+              Sampleprompts = make_list(prompt, 5), Sessions = make_set(session_id)
+      by user_id, src_ip, Window
+  | where Blocks >= threshold
+  | project-away Window
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: src_ip
+customDetails:
+  Blocks: Blocks
+  Rules: Rules
+version: 1.0.0
+kind: Scheduled

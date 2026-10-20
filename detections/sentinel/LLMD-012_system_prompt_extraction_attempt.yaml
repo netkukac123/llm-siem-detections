@@ -1,0 +1,38 @@
+id: 6ca0f505-38a1-54b6-9cc6-e03a7b6064e8
+name: LLMD-012 System prompt extraction attempt
+description: |
+  The user asks the assistant to repeat, print or reveal its instructions. Low severity on its
+  own: people are curious. Escalate when the same session also hits LLMD-003 (the canary leaked)
+  or the user hits LLMD-001 or LLMD-010.
+severity: Low
+requiredDataConnectors: []
+queryFrequency: 15m
+queryPeriod: 15m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Discovery
+relevantTechniques: []
+tags:
+  - OWASP-LLM07:2025 System Prompt Leakage
+  - ATLAS AML.T0056 Extract LLM System Prompt
+  - ATLAS AML.T0069 Discover LLM System Information
+query: |
+  let extraction = @"(?i)\b(repeat|print|reveal|show|output|display|dump)\b[^.\n]{0,25}\b(system prompt|instructions|the text above|everything above|initial prompt|hidden prompt)\b|\bwhat (are|were) your (original |initial |system |hidden )?(instructions|rules|prompt)\b|\brepeat the (text|words) above\b";
+  LLMAppLogs_CL
+  | where event_type == "prompt"
+  | where prompt matches regex extraction
+  | project TimeGenerated, user_id, src_ip, session_id, request_id, MatchedPhrase = extract(extraction, 0, prompt), prompt
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: src_ip
+customDetails:
+  SessionId: session_id
+version: 1.0.0
+kind: Scheduled

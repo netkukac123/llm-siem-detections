@@ -1,0 +1,55 @@
+id: 19fd31fd-d768-56c3-bdaf-4b367b6c1ad5
+name: LLMD-007 Egress tool call shortly after externally sourced content entered context
+description: |
+  Correlation of LLMD-006 with retrieval: in the same session, a document that did not come from
+  the internal wiki was pulled into context, and within 10 minutes the agent sent data to an
+  external destination. This is the shape of a successful indirect prompt injection: the user
+  asked an ordinary question and the agent acted on instructions from the document.
+severity: High
+requiredDataConnectors: []
+queryFrequency: 10m
+queryPeriod: 20m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Exfiltration
+  - InitialAccess
+relevantTechniques: []
+tags:
+  - OWASP-LLM01:2025 Prompt Injection
+  - OWASP-LLM06:2025 Excessive Agency
+  - ATLAS AML.T0051.001 LLM Prompt Injection Indirect
+  - ATLAS AML.T0086 Exfiltration via AI Agent Tool Invocation
+query: |
+  let window = 10m;
+  let corporate_domain = "acme-freight.hu";
+  let http_allowlist = dynamic(["learn.microsoft.com", "github.com"]);
+  let external_content = LLMAppLogs_CL
+      | where event_type == "retrieval" and doc_source != "internal-wiki"
+      | project RetrievedAt = TimeGenerated, session_id, doc_id, doc_source, doc_title;
+  LLMAppLogs_CL
+  | where event_type == "tool_call" and tool_name in ("send_email", "http_get")
+  | extend Target = tolower(tool_target)
+  | where not(Target == corporate_domain or Target endswith strcat(".", corporate_domain))
+  | where not(tool_name == "http_get" and Target in (http_allowlist))
+  | project TimeGenerated, session_id, user_id, src_ip, tool_name, Target
+  | join kind=inner external_content on session_id
+  | where TimeGenerated between (RetrievedAt .. (RetrievedAt + window))
+  | summarize TimeGenerated = min(TimeGenerated), SourceDocs = make_set(doc_id), DocSources = make_set(doc_source),
+              Tools = make_set(tool_name), Targets = make_set(Target)
+      by session_id, user_id, src_ip
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: src_ip
+customDetails:
+  SessionId: session_id
+  SourceDocs: SourceDocs
+  Targets: Targets
+version: 1.0.0
+kind: Scheduled

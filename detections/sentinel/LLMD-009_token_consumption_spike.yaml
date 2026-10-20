@@ -1,0 +1,42 @@
+id: df4ae554-ce91-531c-950f-0604087278be
+name: LLMD-009 Token consumption spike per identity
+description: |
+  One identity consumed more than 50 000 tokens within a one hour activity window. Typical
+  cause: a leaked API key or service credential used to run unrelated workloads on your bill
+  (cost harvesting), or a scripted denial-of-wallet. The fixed threshold is a starting point;
+  in production replace it with a per-user baseline (for example series_decompose_anomalies over
+  14 days). Abuse spread thinly under the threshold is not caught (evade-slow-consumption).
+severity: Medium
+requiredDataConnectors: []
+queryFrequency: 1h
+queryPeriod: 2h
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Impact
+relevantTechniques: []
+tags:
+  - OWASP-LLM10:2025 Unbounded Consumption
+  - ATLAS AML.T0034 Cost Harvesting
+  - ATLAS AML.T0029 Denial of AI Service
+query: |
+  let threshold = 50000;
+  LLMAppLogs_CL
+  | where event_type == "completion"
+  | sort by user_id asc, TimeGenerated asc
+  | extend Window = row_window_session(TimeGenerated, 1h, 30m, user_id != prev(user_id))
+  | summarize TimeGenerated = min(TimeGenerated), Tokens = sum(input_tokens + output_tokens), Requests = count(),
+              Sessions = make_set(session_id, 20), SourceIps = make_set(src_ip, 10)
+      by user_id, Window
+  | where Tokens > threshold
+  | project-away Window
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+customDetails:
+  Tokens: Tokens
+  Requests: Requests
+version: 1.0.0
+kind: Scheduled

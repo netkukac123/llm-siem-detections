@@ -1,0 +1,50 @@
+id: 4c1e51f2-5da1-596a-a9a4-7f46824c60a8
+name: LLMD-011 Obfuscated content in user prompt (base64, Unicode tags, zero-width)
+description: |
+  The prompt carries content a human reviewer would not read directly: a long base64 blob,
+  invisible Unicode tag characters (U+E0000 to U+E007F, used for "ASCII smuggling"), or runs of
+  zero-width characters. The query decodes the payload so the analyst sees what was hidden.
+severity: Medium
+requiredDataConnectors: []
+queryFrequency: 15m
+queryPeriod: 15m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - DefenseEvasion
+relevantTechniques: []
+tags:
+  - OWASP-LLM01:2025 Prompt Injection
+  - ATLAS AML.T0068 LLM Prompt Obfuscation
+query: |
+  let b64 = @"[A-Za-z0-9+/]{60,}={0,2}";
+  let unicode_tags = @"[\x{E0000}-\x{E007F}]";
+  let zero_width = @"[\x{200B}-\x{200D}\x{2060}\x{FEFF}]{3,}";
+  LLMAppLogs_CL
+  | where event_type == "prompt"
+  | extend Technique = case(prompt matches regex unicode_tags, "unicode_tag_smuggling",
+                            prompt matches regex b64, "base64_blob",
+                            prompt matches regex zero_width, "zero_width_chars", "")
+  | where isnotempty(Technique)
+  | extend Codepoints = unicode_codepoints_from_string(prompt)
+  | mv-apply Cp = Codepoints to typeof(long) on (
+        where Cp between (917504 .. 917631)
+        | summarize Hidden = make_list(Cp - 917504))
+  | extend DecodedPayload = case(Technique == "unicode_tag_smuggling", unicode_codepoints_to_string(Hidden),
+                                 Technique == "base64_blob", base64_decode_tostring(extract(b64, 0, prompt)), "")
+  | project TimeGenerated, user_id, src_ip, session_id, request_id, Technique, DecodedPayload, prompt
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: src_ip
+customDetails:
+  SessionId: session_id
+  Technique: Technique
+  DecodedPayload: DecodedPayload
+version: 1.0.0
+kind: Scheduled

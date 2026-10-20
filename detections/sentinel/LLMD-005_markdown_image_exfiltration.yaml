@@ -1,0 +1,49 @@
+id: 4e9fa4a0-eaa0-5515-b990-7b5c23810672
+name: LLMD-005 Auto-loading image with query string to external host in model output
+description: |
+  The model emitted a markdown image or HTML img tag that points to a non-corporate host and
+  carries a query string. Chat clients that render markdown fetch the image without a click, so
+  whatever is in the query string (often conversation content) reaches the attacker's server.
+  Clickable links are deliberately out of scope here because they are too common in normal
+  answers; see docs/coverage.md.
+severity: High
+requiredDataConnectors: []
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Exfiltration
+relevantTechniques: []
+tags:
+  - OWASP-LLM05:2025 Improper Output Handling
+  - OWASP-LLM02:2025 Sensitive Information Disclosure
+  - ATLAS AML.T0077 LLM Response Rendering
+query: |
+  let corporate_domains = dynamic(["acme-freight.hu"]);
+  LLMAppLogs_CL
+  | where event_type == "completion"
+  | where completion contains "](http" or completion contains "<img"
+  | extend ImageUrls = extract_all(@"(?:!\[[^\]]*\]\(|<img[^>]+src=[""']?)(https?://[^)\s""'>]+)", completion)
+  | mv-expand ImageUrl = ImageUrls to typeof(string)
+  | extend Host = tolower(tostring(parse_url(ImageUrl).Host)), Query = tostring(parse_url(ImageUrl)["Query Parameters"])
+  | where ImageUrl contains "?"
+  | where not(Host in (corporate_domains) or Host has_any (corporate_domains))
+  | project TimeGenerated, user_id, src_ip, session_id, request_id, Host, ImageUrl, Query, completion
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: URL
+    fieldMappings:
+      - identifier: Url
+        columnName: ImageUrl
+  - entityType: DNS
+    fieldMappings:
+      - identifier: DomainName
+        columnName: Host
+customDetails:
+  SessionId: session_id
+version: 1.0.0
+kind: Scheduled

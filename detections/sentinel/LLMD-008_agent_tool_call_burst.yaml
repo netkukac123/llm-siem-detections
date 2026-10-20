@@ -1,0 +1,47 @@
+id: 3c3e3f63-5839-5bcb-9410-39af72222b4c
+name: LLMD-008 Burst of agent tool calls in one session
+description: |
+  Ten or more tool calls in a single session within five minutes. Normal assistant turns use zero
+  to two tools; an agent looping over the document store, probing paths or retrying denied calls
+  looks different. Denied calls are surfaced separately because path traversal attempts show up
+  as denials.
+severity: Medium
+requiredDataConnectors: []
+queryFrequency: 5m
+queryPeriod: 10m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Discovery
+  - Collection
+relevantTechniques: []
+tags:
+  - OWASP-LLM06:2025 Excessive Agency
+  - OWASP-LLM10:2025 Unbounded Consumption
+  - ATLAS AML.T0053 AI Agent Tool Invocation
+query: |
+  let threshold = 10;
+  LLMAppLogs_CL
+  | where event_type == "tool_call"
+  | sort by session_id asc, TimeGenerated asc
+  | extend Window = row_window_session(TimeGenerated, 5m, 5m, session_id != prev(session_id))
+  | summarize TimeGenerated = min(TimeGenerated), LastCall = max(TimeGenerated), ToolCalls = count(),
+              Denied = countif(tool_status == "denied"), Tools = make_set(tool_name), Targets = make_set(tool_target, 25)
+      by session_id, user_id, src_ip, Window
+  | where ToolCalls >= threshold
+  | project-away Window
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: src_ip
+customDetails:
+  SessionId: session_id
+  ToolCalls: ToolCalls
+  Denied: Denied
+version: 1.0.0
+kind: Scheduled

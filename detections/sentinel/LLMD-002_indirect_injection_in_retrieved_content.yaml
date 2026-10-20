@@ -1,0 +1,46 @@
+id: 46e8869a-83c2-53c9-a5d3-f86955342c79
+name: LLMD-002 Instructions aimed at the model inside retrieved content
+description: |
+  A chunk returned by the retriever contains text addressed to the AI (instruction-override
+  phrasing, "note to the AI assistant", templated image URLs). This means a poisoned document
+  is in the index and is being served into model context. It fires whether or not the model
+  obeyed; LLMD-007 tells you if it did. Triage starts with doc_id and doc_source: who uploaded it.
+severity: Medium
+requiredDataConnectors: []
+queryFrequency: 15m
+queryPeriod: 15m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+  - Persistence
+relevantTechniques: []
+tags:
+  - OWASP-LLM01:2025 Prompt Injection
+  - OWASP-LLM08:2025 Vector and Embedding Weaknesses
+  - ATLAS AML.T0051.001 LLM Prompt Injection Indirect
+  - ATLAS AML.T0070 RAG Poisoning
+query: |
+  let injection = @"(?i)\b(ignore|disregard|forget|override)\b[^.\n]{0,30}\b(previous|prior|above|earlier|preceding|system)\b[^.\n]{0,20}\b(instructions?|prompts?|rules|directions|guidelines)\b|\bnew instructions?\s*:|\byou are now\b[^.\n]{0,30}\b(unrestricted|unfiltered|uncensored)\b|(felejtsd el|hagyd figyelmen k[ií]v[üu]l|ne vedd figyelembe)[^.\n]{0,30}(kor[áa]bbi|el[őo]z[őo]|fenti|eddigi)[^.\n]{0,15}utas[íi]t[áa]s";
+  let addressed_to_model = @"(?i)\b(note|message|instructions?) (to|for) the (ai|assistant|ai assistant|llm|model)\b|\bassistant instructions\s*:|\b(ai|llm) (assistant|agent)\s*:|!\[[^\]]*\]\(https?://[^)\s]*\{[^}]*\}";
+  LLMAppLogs_CL
+  | where event_type == "retrieval"
+  | where chunk_text matches regex injection or chunk_text matches regex addressed_to_model
+  | summarize FirstSeen = min(TimeGenerated), Retrievals = count(), Prompts = make_set(request_id, 10)
+      by session_id, user_id, src_ip, doc_id, doc_source, doc_title
+  | extend TimeGenerated = FirstSeen
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: File
+    fieldMappings:
+      - identifier: Name
+        columnName: doc_id
+customDetails:
+  DocSource: doc_source
+  DocTitle: doc_title
+  SessionId: session_id
+version: 1.0.0
+kind: Scheduled
