@@ -11,6 +11,8 @@ SUB=$(az account show --query id -o tsv)
 RG=<resource-group>
 WS=<sentinel-workspace>
 WS_ID=$(az monitor log-analytics workspace show -g $RG -n $WS --query id -o tsv)
+WS_LOCATION=$(az monitor log-analytics workspace show -g $RG -n $WS --query location -o tsv)
+WS_GUID=$(az monitor log-analytics workspace show -g $RG -n $WS --query customerId -o tsv)
 ```
 
 ## 1. Custom table
@@ -25,9 +27,13 @@ az rest --method PUT \
 
 ```bash
 az deployment group create -g $RG --template-file deploy/sentinel/dcr.json \
-  --parameters workspaceResourceId=$WS_ID \
+  --parameters workspaceResourceId=$WS_ID location=$WS_LOCATION \
   --query properties.outputs
 ```
+
+The DCR goes in the workspace's region, which is not necessarily the resource group's region.
+(In the author's lab the resource group is in West Europe and the workspace in East US; defaulting
+to the resource group region failed with `RequestDisallowedByAzure`.)
 
 Note `immutableId` and `logsIngestionEndpoint` from the output.
 
@@ -52,9 +58,19 @@ export LOGS_DCR_RULE_ID=<immutableId>
 python deploy/sentinel/ingest.py datasets/sample.jsonl --shift-to-now
 ```
 
-`--shift-to-now` moves the timestamps so the newest event is now; otherwise the scheduled rules'
-look-back windows will not see data dated 2026-10-19. First ingestion into a new table can take
-5 to 15 minutes to become queryable.
+`--shift-to-now` moves the timestamps so the newest event is now; otherwise the data is dated
+2026-10-19. The dataset spans about ten hours, so after shifting most of it is older than the
+scheduled rules' look-back windows: the rules are deployed for real traffic, the dataset is checked
+with the next step. First ingestion into a new table can take 5 to 15 minutes to become queryable.
+
+## 4b. Check every rule against the live workspace
+
+```bash
+python deploy/sentinel/verify_live.py $WS_GUID
+```
+
+Runs each rule query over the last two days and compares the hits with `datasets/labels.json`, the
+same way the Kustainer tests do.
 
 ## 5. Analytic rules
 

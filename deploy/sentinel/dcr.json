@@ -8,9 +8,8 @@
     },
     "location": {
       "type": "string",
-      "defaultValue": "[resourceGroup().location]",
       "metadata": {
-        "description": "Must match the workspace region."
+        "description": "Region of the workspace. No default on purpose: the resource group can live in a different region than the workspace, and the DCR must sit with the workspace."
       }
     },
     "workspaceResourceId": {

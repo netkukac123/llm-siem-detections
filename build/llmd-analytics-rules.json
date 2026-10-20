@@ -1,0 +1,781 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "string",
+      "metadata": {
+        "description": "Sentinel-enabled workspace name"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "9add36fa-35d4-5674-843b-ce729f56b15c",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-001 Direct prompt injection phrasing in user prompt",
+        "description": "A user prompt contains well-known instruction-override phrasing (\"ignore all previous\ninstructions\", \"you are now unrestricted\", Hungarian \"felejtsd el a kor\u00e1bbi utas\u00edt\u00e1sokat\").\nKeyword matching only catches unsophisticated attempts; pair it with LLMD-003 (canary)\nto learn whether an attempt actually succeeded.",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let injection = @\"(?i)\\b(ignore|disregard|forget|override)\\b[^.\\n]{0,30}\\b(previous|prior|above|earlier|preceding|system)\\b[^.\\n]{0,20}\\b(instructions?|prompts?|rules|directions|guidelines)\\b|\\bnew instructions?\\s*:|\\byou are now\\b[^.\\n]{0,30}\\b(unrestricted|unfiltered|uncensored)\\b|(felejtsd el|hagyd figyelmen k[i\u00ed]v[\u00fcu]l|ne vedd figyelembe)[^.\\n]{0,30}(kor[\u00e1a]bbi|el[\u0151o]z[\u0151o]|fenti|eddigi)[^.\\n]{0,15}utas[\u00edi]t[\u00e1a]s\";\nLLMAppLogs_CL\n| where event_type == \"prompt\"\n| where prompt matches regex injection\n| project TimeGenerated, user_id, src_ip, session_id, request_id, app_name, model,\n          MatchedPhrase = extract(injection, 0, prompt), prompt",
+        "queryFrequency": "PT15M",
+        "queryPeriod": "PT15M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "InitialAccess",
+          "DefenseEvasion"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "src_ip"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "MatchedPhrase": "MatchedPhrase"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "46e8869a-83c2-53c9-a5d3-f86955342c79",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-002 Instructions aimed at the model inside retrieved content",
+        "description": "A chunk returned by the retriever contains text addressed to the AI (instruction-override\nphrasing, \"note to the AI assistant\", templated image URLs). This means a poisoned document\nis in the index and is being served into model context. It fires whether or not the model\nobeyed; LLMD-007 tells you if it did. Triage starts with doc_id and doc_source: who uploaded it.",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let injection = @\"(?i)\\b(ignore|disregard|forget|override)\\b[^.\\n]{0,30}\\b(previous|prior|above|earlier|preceding|system)\\b[^.\\n]{0,20}\\b(instructions?|prompts?|rules|directions|guidelines)\\b|\\bnew instructions?\\s*:|\\byou are now\\b[^.\\n]{0,30}\\b(unrestricted|unfiltered|uncensored)\\b|(felejtsd el|hagyd figyelmen k[i\u00ed]v[\u00fcu]l|ne vedd figyelembe)[^.\\n]{0,30}(kor[\u00e1a]bbi|el[\u0151o]z[\u0151o]|fenti|eddigi)[^.\\n]{0,15}utas[\u00edi]t[\u00e1a]s\";\nlet addressed_to_model = @\"(?i)\\b(note|message|instructions?) (to|for) the (ai|assistant|ai assistant|llm|model)\\b|\\bassistant instructions\\s*:|\\b(ai|llm) (assistant|agent)\\s*:|!\\[[^\\]]*\\]\\(https?://[^)\\s]*\\{[^}]*\\}\";\nLLMAppLogs_CL\n| where event_type == \"retrieval\"\n| where chunk_text matches regex injection or chunk_text matches regex addressed_to_model\n| summarize FirstSeen = min(TimeGenerated), Retrievals = count(), Prompts = make_set(request_id, 10)\n    by session_id, user_id, src_ip, doc_id, doc_source, doc_title\n| extend TimeGenerated = FirstSeen",
+        "queryFrequency": "PT15M",
+        "queryPeriod": "PT15M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "InitialAccess",
+          "Persistence"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "File",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "doc_id"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "DocSource": "doc_source",
+          "DocTitle": "doc_title",
+          "SessionId": "session_id"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "e75d8b48-1eb1-59f2-accc-7b1d2eb32872",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-003 System prompt canary token in model output",
+        "description": "The application plants a unique canary string in its system prompt (here: sp-canary-<16 hex>).\nThe string has no business reason to appear in any output, so a hit is a confirmed system\nprompt leak regardless of how the attacker phrased the request. This is the highest-precision\nrule in the pack. Rotate the canary per deployment and keep the pattern in sync.",
+        "severity": "High",
+        "enabled": true,
+        "query": "let canary = @\"sp-canary-[0-9a-f]{16}\";\nLLMAppLogs_CL\n| where event_type in (\"completion\", \"tool_call\")\n| extend Output = iff(event_type == \"completion\", completion, tool_args)\n| where Output matches regex canary\n| project TimeGenerated, user_id, src_ip, session_id, request_id, event_type, tool_name,\n          Canary = extract(canary, 0, Output), Output",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Discovery",
+          "Collection"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "src_ip"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "Canary": "Canary"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "874e47f5-508d-5422-97e2-bc9d3eabd081",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-004 Credentials or financial identifiers in model output or tool arguments",
+        "description": "A completion, or the arguments of a tool call, contains a secret or financial identifier:\nAWS access keys, a secret next to a 40 character key, PEM private keys, GitHub and Slack\ntokens, Hungarian IBANs. Checking tool arguments matters: in agentic exfiltration the secret\nleaves through send_email or http_get and never shows up in the chat answer.\nPattern matching is defeated by reformatting (see docs/coverage.md, evade-spaced-secret).",
+        "severity": "High",
+        "enabled": true,
+        "query": "// KQL needs constant regexes, so each pattern is listed once for the filter and once for labelling.\nlet aws_key = @\"\\b(AKIA|ASIA)[0-9A-Z]{16}\\b\";\nlet secret_near_key = @\"(?i:secret)[^\\n]{0,20}[A-Za-z0-9/+]{40}\";\nlet private_key = @\"-----BEGIN [A-Z ]*PRIVATE KEY-----\";\nlet github_token = @\"\\bgh[pousr]_[A-Za-z0-9]{36}\\b\";\nlet slack_token = @\"\\bxox[baprs]-[A-Za-z0-9-]{10,}\";\nlet iban_hu = @\"\\bHU\\d{2}(?: ?\\d{4}){6}\\b\";\nLLMAppLogs_CL\n| where event_type in (\"completion\", \"tool_call\")\n| extend Output = iff(event_type == \"completion\", completion, tool_args)\n| where isnotempty(Output)\n| extend SecretTypes = set_difference(pack_array(\n      iff(Output matches regex aws_key, \"aws_access_key_id\", \"\"),\n      iff(Output matches regex secret_near_key, \"secret_near_key\", \"\"),\n      iff(Output matches regex private_key, \"private_key_pem\", \"\"),\n      iff(Output matches regex github_token, \"github_token\", \"\"),\n      iff(Output matches regex slack_token, \"slack_token\", \"\"),\n      iff(Output matches regex iban_hu, \"iban_hu\", \"\")), dynamic([\"\"]))\n| where array_length(SecretTypes) > 0\n| project TimeGenerated, user_id, src_ip, session_id, request_id, event_type, tool_name, tool_target,\n          SecretTypes, Output",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Collection",
+          "Exfiltration"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "src_ip"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "SecretTypes": "SecretTypes",
+          "Channel": "event_type"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "4e9fa4a0-eaa0-5515-b990-7b5c23810672",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-005 Auto-loading image with query string to external host in model output",
+        "description": "The model emitted a markdown image or HTML img tag that points to a non-corporate host and\ncarries a query string. Chat clients that render markdown fetch the image without a click, so\nwhatever is in the query string (often conversation content) reaches the attacker's server.\nClickable links are deliberately out of scope here because they are too common in normal\nanswers; see docs/coverage.md.",
+        "severity": "High",
+        "enabled": true,
+        "query": "let corporate_domain = \"acme-freight.hu\";\nLLMAppLogs_CL\n| where event_type == \"completion\"\n| where completion contains \"](http\" or completion contains \"<img\"\n| extend ImageUrls = extract_all(@\"(?:!\\[[^\\]]*\\]\\(|<img[^>]+src=[\"\"']?)(https?://[^)\\s\"\"'>]+)\", completion)\n| mv-expand ImageUrl = ImageUrls to typeof(string)\n| extend Host = tolower(tostring(parse_url(ImageUrl).Host)), Query = tostring(parse_url(ImageUrl)[\"Query Parameters\"])\n| where ImageUrl contains \"?\"\n// Exact match or a true subdomain; \"has\" or \"contains\" would accept acme-freight.hu.evil.com\n| where not(Host == corporate_domain or Host endswith strcat(\".\", corporate_domain))\n| project TimeGenerated, user_id, src_ip, session_id, request_id, Host, ImageUrl, Query, completion",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Exfiltration"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "URL",
+            "fieldMappings": [
+              {
+                "identifier": "Url",
+                "columnName": "ImageUrl"
+              }
+            ]
+          },
+          {
+            "entityType": "DNS",
+            "fieldMappings": [
+              {
+                "identifier": "DomainName",
+                "columnName": "Host"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "50e3d2bd-771a-5131-954a-8d7b0e9e766a",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-006 Side-effecting agent tool aimed at an external destination",
+        "description": "The assistant called a tool that moves data out (send_email, http_get) with a target outside\nthe corporate domain and the HTTP allowlist. An agent that can email arbitrary recipients is\nan exfiltration channel the moment it reads attacker-controlled text. Tune the two lists to\nyour environment; anything allowlisted is a blind spot (see evade-allowlisted-exfil).",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let corporate_domain = \"acme-freight.hu\";\nlet http_allowlist = dynamic([\"learn.microsoft.com\", \"github.com\"]);\nLLMAppLogs_CL\n| where event_type == \"tool_call\" and tool_name in (\"send_email\", \"http_get\")\n| extend Target = tolower(tool_target)\n| where not(Target == corporate_domain or Target endswith strcat(\".\", corporate_domain))\n| where not(tool_name == \"http_get\" and Target in (http_allowlist))\n| project TimeGenerated, user_id, src_ip, session_id, request_id, tool_name, Target, tool_status, tool_args",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Exfiltration",
+          "Execution"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "DNS",
+            "fieldMappings": [
+              {
+                "identifier": "DomainName",
+                "columnName": "Target"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "ToolName": "tool_name"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "19fd31fd-d768-56c3-bdaf-4b367b6c1ad5",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-007 Egress tool call shortly after externally sourced content entered context",
+        "description": "Correlation of LLMD-006 with retrieval: in the same session, a document that did not come from\nthe internal wiki was pulled into context, and within 10 minutes the agent sent data to an\nexternal destination. This is the shape of a successful indirect prompt injection: the user\nasked an ordinary question and the agent acted on instructions from the document.",
+        "severity": "High",
+        "enabled": true,
+        "query": "// queryPeriod (20m) covers the retrieval side; only egress newer than one run interval\n// triggers, so overlapping runs do not alert twice on the same call.\nlet trigger_window = 10m;\nlet window = 10m;\nlet corporate_domain = \"acme-freight.hu\";\nlet http_allowlist = dynamic([\"learn.microsoft.com\", \"github.com\"]);\nlet external_content = LLMAppLogs_CL\n    | where event_type == \"retrieval\" and doc_source != \"internal-wiki\"\n    | project RetrievedAt = TimeGenerated, session_id, doc_id, doc_source, doc_title;\nLLMAppLogs_CL\n| where event_type == \"tool_call\" and tool_name in (\"send_email\", \"http_get\")\n| where TimeGenerated > ago(trigger_window)\n| extend Target = tolower(tool_target)\n| where not(Target == corporate_domain or Target endswith strcat(\".\", corporate_domain))\n| where not(tool_name == \"http_get\" and Target in (http_allowlist))\n| project TimeGenerated, session_id, user_id, src_ip, tool_name, Target\n| join kind=inner external_content on session_id\n| where TimeGenerated between (RetrievedAt .. (RetrievedAt + window))\n| summarize TimeGenerated = min(TimeGenerated), SourceDocs = make_set(doc_id), DocSources = make_set(doc_source),\n            Tools = make_set(tool_name), Targets = make_set(Target)\n    by session_id, user_id, src_ip",
+        "queryFrequency": "PT10M",
+        "queryPeriod": "PT20M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Exfiltration",
+          "InitialAccess"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "src_ip"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "SourceDocs": "SourceDocs",
+          "Targets": "Targets"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "3c3e3f63-5839-5bcb-9410-39af72222b4c",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-008 Burst of agent tool calls in one session",
+        "description": "Ten or more tool calls in a single session within five minutes. Normal assistant turns use zero\nto two tools; an agent looping over the document store, probing paths or retrying denied calls\nlooks different. Denied calls are surfaced separately because path traversal attempts show up\nas denials.",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 10;\n// queryPeriod is twice the frequency so windows spanning a run boundary are seen whole;\n// only windows with activity in the latest interval alert, to avoid duplicates.\nlet trigger_window = 5m;\nLLMAppLogs_CL\n| where event_type == \"tool_call\"\n| sort by session_id asc, TimeGenerated asc\n| extend Window = row_window_session(TimeGenerated, 5m, 5m, session_id != prev(session_id))\n| summarize TimeGenerated = min(TimeGenerated), LastCall = max(TimeGenerated), ToolCalls = count(),\n            Denied = countif(tool_status == \"denied\"), Tools = make_set(tool_name), Targets = make_set(tool_target, 25)\n    by session_id, user_id, src_ip, Window\n| where ToolCalls >= threshold and LastCall > ago(trigger_window)\n| project-away Window",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT10M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Discovery",
+          "Collection"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "src_ip"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "ToolCalls": "ToolCalls",
+          "Denied": "Denied"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "df4ae554-ce91-531c-950f-0604087278be",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-009 Token consumption spike per identity",
+        "description": "One identity consumed more than 50 000 tokens within a one hour activity window. Typical\ncause: a leaked API key or service credential used to run unrelated workloads on your bill\n(cost harvesting), or a scripted denial-of-wallet. The fixed threshold is a starting point;\nin production replace it with a per-user baseline (for example series_decompose_anomalies over\n14 days). Abuse spread thinly under the threshold is not caught (evade-slow-consumption).",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 50000;\nlet trigger_window = 1h;  // see LLMD-008: dedupe across overlapping runs\nLLMAppLogs_CL\n| where event_type == \"completion\"\n| sort by user_id asc, TimeGenerated asc\n| extend Window = row_window_session(TimeGenerated, 1h, 30m, user_id != prev(user_id))\n| summarize TimeGenerated = min(TimeGenerated), LastRequest = max(TimeGenerated), Tokens = sum(input_tokens + output_tokens), Requests = count(),\n            Sessions = make_set(session_id, 20), SourceIps = make_set(src_ip, 10)\n    by user_id, Window\n| where Tokens > threshold and LastRequest > ago(trigger_window)\n| project-away Window",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT2H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "Tokens": "Tokens",
+          "Requests": "Requests"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "5a3546e0-4ae7-5f0a-ada9-cd8e936113e9",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-010 Repeated guardrail blocks from one identity",
+        "description": "Three or more prompts from the same user blocked by the input guardrail within ten minutes.\nA single block is noise (curiosity, a copy-pasted meme); a series is someone iterating on a\njailbreak. Works with any guardrail that logs its decisions, for example Azure AI Content\nSafety Prompt Shields or Llama Prompt Guard, as long as the block becomes a guardrail event.",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 3;\nlet trigger_window = 10m;  // see LLMD-008: dedupe across overlapping runs\nLLMAppLogs_CL\n| where event_type == \"guardrail\" and guardrail_action == \"block\"\n| sort by user_id asc, TimeGenerated asc\n| extend Window = row_window_session(TimeGenerated, 10m, 10m, user_id != prev(user_id))\n| summarize TimeGenerated = min(TimeGenerated), LastBlock = max(TimeGenerated), Blocks = count(),\n            Rules = make_set(guardrail_rule), SamplePrompts = make_list(prompt, 5),\n            Sessions = make_set(session_id), SourceIps = make_set(src_ip)\n    by user_id, Window\n| where Blocks >= threshold and LastBlock > ago(trigger_window)\n| extend src_ip = tostring(SourceIps[0])\n| project-away Window",
+        "queryFrequency": "PT10M",
+        "queryPeriod": "PT20M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "DefenseEvasion",
+          "InitialAccess"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "src_ip"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "Blocks": "Blocks",
+          "Rules": "Rules"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "4c1e51f2-5da1-596a-a9a4-7f46824c60a8",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-011 Obfuscated content in user prompt (base64, Unicode tags, zero-width)",
+        "description": "The prompt carries content a human reviewer would not read directly: a long base64 blob,\ninvisible Unicode tag characters (U+E0000 to U+E007F, used for \"ASCII smuggling\"), or runs of\nzero-width characters. The query decodes the payload so the analyst sees what was hidden.",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let b64 = @\"[A-Za-z0-9+/]{60,}={0,2}\";\nlet unicode_tags = @\"[\\x{E0000}-\\x{E007F}]\";\nlet zero_width = @\"[\\x{200B}-\\x{200D}\\x{2060}\\x{FEFF}]{3,}\";\nLLMAppLogs_CL\n| where event_type == \"prompt\"\n// Real base64 of text mixes upper and lower case; hex digests (SHA-256, commit IDs) do not.\n| extend B64Candidate = extract(b64, 0, prompt)\n| extend IsB64 = B64Candidate matches regex \"[A-Z]\" and B64Candidate matches regex \"[a-z]\"\n| extend Technique = case(prompt matches regex unicode_tags, \"unicode_tag_smuggling\",\n                          IsB64, \"base64_blob\",\n                          prompt matches regex zero_width, \"zero_width_chars\", \"\")\n| where isnotempty(Technique)\n| extend Codepoints = unicode_codepoints_from_string(prompt)\n| mv-apply Cp = Codepoints to typeof(long) on (\n      where Cp between (917504 .. 917631)\n      | summarize Hidden = make_list(Cp - 917504))\n| extend DecodedPayload = case(Technique == \"unicode_tag_smuggling\", unicode_codepoints_to_string(Hidden),\n                               Technique == \"base64_blob\", base64_decode_tostring(B64Candidate), \"\")\n| project TimeGenerated, user_id, src_ip, session_id, request_id, Technique, DecodedPayload, prompt",
+        "queryFrequency": "PT15M",
+        "queryPeriod": "PT15M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "DefenseEvasion"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "src_ip"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id",
+          "Technique": "Technique",
+          "DecodedPayload": "DecodedPayload"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2023-02-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('workspace'))]",
+      "name": "6ca0f505-38a1-54b6-9cc6-e03a7b6064e8",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "LLMD-012 System prompt extraction attempt",
+        "description": "The user asks the assistant to repeat, print or reveal its instructions. Low severity on its\nown: people are curious. Escalate when the same session also hits LLMD-003 (the canary leaked)\nor the user hits LLMD-001 or LLMD-010.",
+        "severity": "Low",
+        "enabled": true,
+        "query": "let extraction = @\"(?i)\\b(repeat|print|reveal|show|output|display|dump)\\b[^.\\n]{0,25}\\b(system prompt|instructions|the text above|everything above|initial prompt|hidden prompt)\\b|\\bwhat (are|were) your (original |initial |system |hidden )?(instructions|rules|prompt)\\b|\\brepeat the (text|words) above\\b\";\nLLMAppLogs_CL\n| where event_type == \"prompt\"\n| where prompt matches regex extraction\n| project TimeGenerated, user_id, src_ip, session_id, request_id, MatchedPhrase = extract(extraction, 0, prompt), prompt",
+        "queryFrequency": "PT15M",
+        "queryPeriod": "PT15M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionEnabled": false,
+        "suppressionDuration": "PT1H",
+        "tactics": [
+          "Discovery"
+        ],
+        "techniques": [],
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user_id"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "src_ip"
+              }
+            ]
+          }
+        ],
+        "customDetails": {
+          "SessionId": "session_id"
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "reopenClosedIncident": false,
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "groupByEntities": [],
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": []
+          }
+        }
+      }
+    }
+  ]
+}

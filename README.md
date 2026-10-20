@@ -111,6 +111,10 @@ Deploying: [Microsoft Sentinel](docs/deploy-sentinel.md) | [Wazuh](docs/deploy-w
   through the `wazuh-logtest` socket in one session, so frequency and correlation rules keep state.
 - Each rule must flag exactly the sessions (or identities) labelled for it: no misses, no extras,
   and documented gaps stay silent. CI runs all of it on every push.
+- **Live Sentinel**: the table, DCR and all 12 analytic rules were deployed to a real Sentinel
+  workspace, the dataset was sent through the Logs Ingestion API, and
+  `deploy/sentinel/verify_live.py` confirmed 12/12 rules return exactly the labelled hits there too
+  (2026-10-20). That check is manual, not part of CI.
 - Not covered by the tests: Wazuh `timeframe` lengths (logtest replays in seconds), Sentinel
   scheduling, and deployment of the generated ARM template. See
   [docs/coverage.md](docs/coverage.md#what-the-tests-do-not-prove).
