@@ -14,7 +14,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from .guardrail import check_input
-from .llm import ModelResponse, OpenAICompatModel, ScriptedModel
+from .llm import ModelResponse, OpenAICompatModel, ProviderFilterError, ScriptedModel
 from .logsink import EventLog, RequestContext
 from .mcp_bridge import McpServerConfig, McpTool, discover
 from .retriever import Retriever, load_corpus
@@ -94,7 +94,14 @@ class RagApp:
         total_in = total_out = 0
         resp = ModelResponse()
         for _ in range(MAX_TOOL_ROUNDS):
-            resp = self.model.generate(messages, self.tools.specs())
+            try:
+                resp = self.model.generate(messages, self.tools.specs())
+            except ProviderFilterError as exc:
+                # The provider's guardrail stopped the call: log it like our own guardrail.
+                rule = "provider.content_filter." + ("+".join(exc.categories) or "unspecified")
+                self.log.emit("guardrail", ctx, guardrail_action="block", guardrail_rule=rule,
+                              prompt=message[:PREVIEW_CHARS])
+                return "Sorry, I can't help with that request."
             total_in += resp.input_tokens or 0
             total_out += resp.output_tokens or 0
             if not resp.tool_calls:

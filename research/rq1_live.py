@@ -34,12 +34,32 @@ def _cfg(name: str, variant: str) -> McpServerConfig:
     return McpServerConfig(name, SERVER_MODULE, (("CARGOLINK_VARIANT", variant),))
 
 
+AZURE_ENV = Path.home() / ".config" / "llmd" / "azure.env"
+REASONING = ("gpt-5", "o3", "o4")
+
+
+def make_model(model_tag: str, base_url: str, temperature: float, seed: int) -> OpenAICompatModel:
+    """`name` = local Ollama tag; `azure:<deployment>` = Azure AI Foundry deployment (OpenAI v1 API).
+
+    A per-call output cap keeps thinking models from generating for minutes; 2048 tokens is generous
+    for an assistant answer plus reasoning (reasoning models get 4096, their thinking counts too).
+    Reasoning models only accept the default temperature, so none is sent for them.
+    """
+    if not model_tag.startswith("azure:"):
+        return OpenAICompatModel(base_url, model_tag, temperature=temperature, seed=seed, max_tokens=2048)
+    env = dict(line.split("=", 1) for line in AZURE_ENV.read_text().split() if "=" in line)
+    deployment = model_tag.split(":", 1)[1]
+    reasoning = deployment.startswith(REASONING)
+    return OpenAICompatModel(env["AZURE_AI_BASE"], deployment, api_key=env["AZURE_AI_KEY"],
+                             temperature=None if reasoning else temperature, seed=seed,
+                             max_tokens=4096 if reasoning else 2048,
+                             token_param="max_completion_tokens" if reasoning else "max_tokens")
+
+
 def run_once(sc: LiveScenario, model_tag: str, base_url: str, rep: int, temperature: float,
              corpus_dir: Path | None = None, run_prefix: str = "") -> dict:
     buf = io.StringIO()
-    # A per-call output cap keeps thinking models from generating for minutes; 2048 tokens is
-    # generous for an assistant answer plus reasoning.
-    model = OpenAICompatModel(base_url, model_tag, temperature=temperature, seed=1000 + rep, max_tokens=2048)
+    model = make_model(model_tag, base_url, temperature, 1000 + rep)
     app = RagApp(EventLog(buf), model, corpus_dir=corpus_dir)
     user, ip = ("research.user", "10.99.0.10")
     run_id = f"{run_prefix}{sc.id}-{model_tag.replace(':', '_')}-r{rep}"
@@ -121,7 +141,9 @@ def evaluate() -> dict:
         intended = scen[r["scenario"]].intended_rules if r["scenario"] in scen else []
         rows.append({k: r.get(k) for k in ("run_id", "scenario", "attack_class", "benign", "model", "rep",
                                             "success", "complied", "error", "seconds")} | {
-            "rules_fired": hits, "intended_hit": bool(set(hits) & set(intended)), "any_hit": bool(hits)})
+            "rules_fired": hits, "intended_hit": bool(set(hits) & set(intended)), "any_hit": bool(hits),
+            "provider_blocked": any(e["event_type"] == "guardrail" and
+                                    str(e.get("guardrail_rule", "")).startswith("provider.") for e in r["events"])})
     write_json(OUT / "per_run.json", rows)
 
     summary = {"by_model_scenario": [], "by_model": []}
@@ -150,6 +172,8 @@ def evaluate() -> dict:
             "detected_given_compliance": wilson(sum(x["intended_hit"] for x in comp), len(comp)),
             "detected_given_success": wilson(sum(x["intended_hit"] for x in succ), len(succ)),
             "any_rule_given_compliance": wilson(sum(x["any_hit"] for x in comp), len(comp)),
+            "provider_blocked_attacks": wilson(sum(x["provider_blocked"] for x in att), len(att)),
+            "provider_blocked_benign": wilson(sum(x["provider_blocked"] for x in ben), len(ben)),
             "benign_runs": len(ben), "benign_fp": wilson(sum(x["any_hit"] for x in ben), len(ben)),
             "errors": sum(1 for x in rows if x["model"] == m and x["error"])})
     write_json(OUT / "summary.json", summary)

@@ -270,9 +270,17 @@ def static_tables():
         lines.append(f"{r['name'][:8]} & {tex_escape(r['name'][9:])} & {owasp} & {atlas} \\\\")
     lines += [r"\bottomrule", r"\end{tabular}"]
     (TAB / "rules.tex").write_text("\n".join(lines) + "\n")
-    m = _load("rq1/manifest.json")
-    models = m["models"] if m else ["qwen3:8b", "llama3.1:8b", "ministral-3:8b", "gemma4:e4b", "granite4:tiny-h"]
-    (gen / "models.tex").write_text(", ".join(rf"\texttt{{{x}}}" for x in models))
+    # Models = whatever has run records (two collectors run in parallel, local and Azure).
+    runs = sorted((RESULTS / "rq1" / "runs").glob("*.jsonl"))
+    tags = []
+    for p in runs:
+        first = p.open().readline()
+        if first:
+            tags.append(json.loads(first)["model"])
+    local = [t for t in tags if not t.startswith("azure:")]
+    azure = [t.removeprefix("azure:") for t in tags if t.startswith("azure:")]
+    (gen / "models.tex").write_text(", ".join(rf"\texttt{{{x}}}" for x in local))
+    (gen / "azure_models.tex").write_text(", ".join(rf"\texttt{{{x}}}" for x in azure))
 
 
 def main() -> None:

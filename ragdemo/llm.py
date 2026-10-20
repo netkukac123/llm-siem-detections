@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import math
+import urllib.error
 import urllib.request
 import uuid
 from collections import deque
@@ -31,6 +32,16 @@ class ModelResponse:
     input_tokens: int | None = None
     output_tokens: int | None = None
     finish_reason: str = "stop"
+
+
+class ProviderFilterError(Exception):
+    """The model provider's own guardrail refused the request (e.g. Azure AI Content Safety
+    Prompt Shields returning HTTP 400 with code content_filter)."""
+
+    def __init__(self, categories: list[str], raw: str):
+        super().__init__(", ".join(categories) or "content_filter")
+        self.categories = categories
+        self.raw = raw
 
 
 def estimate_tokens(text: str) -> int:
@@ -70,7 +81,8 @@ class ScriptedModel:
 
 class OpenAICompatModel:
     def __init__(self, base_url: str, model: str, api_key: str = "unused", timeout: float = 300,
-                 temperature: float | None = None, seed: int | None = None, max_tokens: int | None = None):
+                 temperature: float | None = None, seed: int | None = None, max_tokens: int | None = None,
+                 token_param: str = "max_tokens"):
         self.base_url = base_url.rstrip("/")
         self.name = model
         self.api_key = api_key
@@ -78,6 +90,8 @@ class OpenAICompatModel:
         self.temperature = temperature
         self.seed = seed
         self.max_tokens = max_tokens
+        # Reasoning models on OpenAI-compatible APIs take max_completion_tokens instead.
+        self.token_param = token_param
 
     def generate(self, messages: list[dict], tools: list[dict]) -> ModelResponse:
         payload: dict[str, Any] = {"model": self.name, "messages": messages, "tools": tools}
@@ -86,13 +100,24 @@ class OpenAICompatModel:
         if self.seed is not None:
             payload["seed"] = self.seed
         if self.max_tokens is not None:
-            payload["max_tokens"] = self.max_tokens
+            payload[self.token_param] = self.max_tokens
         body = json.dumps(payload).encode()
         req = urllib.request.Request(
             f"{self.base_url}/chat/completions", data=body,
             headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"})
-        with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-            data = json.load(resp)
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                data = json.load(resp)
+        except urllib.error.HTTPError as exc:
+            raw = exc.read().decode(errors="replace")
+            if exc.code == 400 and "content_filter" in raw:
+                try:
+                    result = json.loads(raw)["error"]["innererror"]["content_filter_result"]
+                    cats = [k for k, v in result.items() if isinstance(v, dict) and v.get("filtered")]
+                except (KeyError, ValueError, TypeError):
+                    cats = []
+                raise ProviderFilterError(cats, raw) from exc
+            raise
         choice = data["choices"][0]
         msg = choice["message"]
         calls = [ToolCall(tc["function"]["name"], json.loads(tc["function"]["arguments"] or "{}"), tc["id"])
