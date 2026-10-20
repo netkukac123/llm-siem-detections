@@ -63,11 +63,13 @@ python deploy/sentinel/ingest.py datasets/sample.jsonl --shift-to-now
 scheduled rules' look-back windows: the rules are deployed for real traffic, the dataset is checked
 with the next step. First ingestion into a new table can take 5 to 15 minutes to become queryable.
 
-**Schema changes: wait before sending.** After adding columns to the table and the DCR, both
-updates report `Succeeded` immediately, but ingestion keeps using the old schema for several
-minutes. Rows sent in that window are accepted and land with the new columns empty, without any
-error. (Observed in the author's lab: the first upload after adding 8 columns came through with
-`tool_desc_sha256` empty on all 552 rows; the same upload 15 minutes later was complete.)
+**Schema changes: deploy a new DCR, do not extend the old one.** In the author's lab, 8 columns
+were added to the table and to the existing DCR's stream declaration. Both updates reported
+`Succeeded` and a GET showed the new columns, yet uploads through that DCR kept landing with the new
+columns empty, with no error, for at least 20 minutes. A freshly created DCR with the identical
+template, on the same table, delivered the same probe complete on the first try. So: when the
+schema grows, create a new DCR (new name), point the sender at it, then retire the old one, and
+always spot-check a new column with a small probe before trusting the data.
 
 ## 4b. Check every rule against the live workspace
 

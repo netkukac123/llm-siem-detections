@@ -28,8 +28,8 @@ in those logs, and which do not.
   official Python SDK v2, and logs every advertised tool with a SHA-256 of its description.
 - **Tested on real engines**: KQL runs unchanged on the Kusto engine (Kustainer), Wazuh rules run
   through `wazuh-logtest` on wazuh-manager 4.14.7, in CI on every push. **72 tests**.
-- **Validated on a live Sentinel workspace**: table, DCR (Logs Ingestion API) and all analytic rules
-  deployed; every rule returns exactly the labelled hits there too.
+- **Validated on a live Sentinel workspace**: table, DCR (Logs Ingestion API) and all 21 analytic
+  rules deployed; 21/21 rules return exactly the labelled hits there too (2026-10-20).
 - **Honest about limits**: evasion scenarios are asserted to stay undetected, Wazuh engine limits are
   pinned in tests, and [docs/coverage.md](docs/coverage.md) says what each rule misses.
 
