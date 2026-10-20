@@ -1,0 +1,35 @@
+\subsection{RQ2: content signatures on public data}
+\label{sec:rq2}
+
+Table~\ref{tab:rq2-pooled} pools all labelled items per surface. The content signatures are
+\emph{precise and blind}: on 37{,}058 benign prompts the prompt rules fire on 0.91\% (95\% CI 0.82 to
+1.01), and on 9{,}467 benign documents and 10{,}001 real MCP tool descriptions on 0.25\% and 0.17\%,
+but they recall only 11.9\% of 19{,}611 attack prompts, 0.9\% of 16{,}272 injected documents and
+23.7\% of 485 poisoned tool descriptions.
+
+\begin{table}[t]\centering\small
+\resizebox{\textwidth}{!}{\input{tables/rq2_pooled.tex}}
+\caption{Content signatures pooled over all labelled public datasets, per surface.}
+\label{tab:rq2-pooled}
+\end{table}
+
+\paragraph{Recall tracks phrasing, not intent.} Per dataset (Table~\ref{tab:rq2-datasets}), recall is
+highest on Lakera Gandalf (39.6\%), whose prompts were selected for similarity to ``Ignore all
+previous instructions'', and near zero where attackers had reason to avoid that phrasing: 1.0\% on
+LLMail-Inject, where participants iterated against a defended email agent, and 0.0\% on NVIDIA's agentic
+indirect injections, which pose as late additions from the user (``Hi Assistant, I forgot to mention
+earlier \ldots''). Role-play jailbreaks (TrustAIRLab, jackhhao: 4.5\% and 5.6\%) are largely outside
+what an injection signature is meant to match.
+
+\paragraph{Where the false positives come from.} The highest false-positive rate is on the
+TrustAIRLab ``regular'' prompts (6.6\%), collected from the same prompt-sharing communities as its
+jailbreaks. Inspection shows that almost all of these hits are prompt-marketplace templates that open
+with ``Please ignore all previous instructions. Respond only in [TARGETLANGUAGE]'': the
+instruction-override phrase is a benign idiom in that ecosystem, used to reset a chat before a
+template. On unlabelled real traffic (WildChat-1M) the prompt rules alert on
+\input{tables/rq2_unlabelled.tex}a rate that a SOC would see as a steady stream of low-value alerts.
+
+\paragraph{Implication.} Content signatures are cheap to run and their alerts are easy to explain,
+which makes them useful as context and as one input to correlation; as a primary detector they
+miss the attacks that matter. This motivates the question of RQ1: do the structural and behavioural
+rules, which do not depend on the attacker's wording, close the gap on live attacks?

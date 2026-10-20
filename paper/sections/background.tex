@@ -1,0 +1,34 @@
+\section{Background and threat model}
+\label{sec:background}
+
+\paragraph{LLM applications and agents.}
+We consider an enterprise assistant that answers employee questions with retrieval-augmented
+generation (RAG), keeps long-term memory per user, and can act through tools: local tools (search,
+file read and write, email, HTTP, shell, record deletion) and tools provided by third-party Model
+Context Protocol (MCP) servers. This is the architecture that the OWASP Top 10 for LLM Applications
+2025~\cite{owasp-llm-2025} and the OWASP Top 10 for Agentic Applications 2026~\cite{owasp-agentic-2026}
+describe, and that MITRE ATLAS~\cite{atlas} models in its 2026.09 release with agent-specific
+techniques such as AI Agent Context Poisoning (AML.T0080), AI Agent Tool Poisoning (AML.T0110) and
+AI Supply Chain Rug Pull (AML.T0109).
+
+\paragraph{Attacker.}
+The attacker does not control the model or the application code. They control one or more inputs:
+the user message (direct prompt injection), a document that ends up in the retrieval index (indirect
+injection, RAG poisoning), the metadata or the responses of a third-party MCP server (tool poisoning,
+rug pull, runtime-response poisoning), or content the user pastes. Their goals are disclosure of the
+system prompt, exfiltration of data the assistant can read, persistence through memory, execution
+of commands, destruction of data, and cost abuse. These goals correspond to real incidents: zero-click
+exfiltration through rendered images in Microsoft 365 Copilot (EchoLeak, CVE-2025-32711)~\cite{echoleak},
+agent configuration tampering in GitHub Copilot (CVE-2025-53773)~\cite{copilot-rce} and Cursor
+(CVE-2025-54135, CVE-2025-54136)~\cite{mcpoison}, MCP tool poisoning~\cite{invariant-tp} and data theft
+through the GitHub and Supabase MCP servers~\cite{invariant-github,supabase-mcp}, persistent memory
+injection~\cite{spaiware,unit42-memory}, and coding agents executing attacker packages from fake error
+reports~\cite{agentjacking}.
+
+\paragraph{Defender.}
+The defender is a security operations centre (SOC). It cannot change the model, but it can require
+the application to emit telemetry and can write detection rules in its SIEM. Its questions are the
+ones a SOC asks of any new log source: what can we see, what does it cost in false positives, and
+where are we blind. Prevention (model hardening, design patterns such as CaMeL~\cite{camel} or the
+patterns of Beurer-Kellner et~al.~\cite{design-patterns}, guardrail classifiers) is complementary and
+out of scope except as a comparison point in RQ3.

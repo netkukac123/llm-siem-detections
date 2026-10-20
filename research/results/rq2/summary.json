@@ -1,0 +1,1287 @@
+{
+  "labelled": [
+    {
+      "dataset": "Lakera/gandalf_ignore_instructions",
+      "kind": "prompt",
+      "rule": "LLMD-001",
+      "n": 1000,
+      "positives": 1000,
+      "tp": 355,
+      "fp": 0,
+      "tn": 0,
+      "fn": 645,
+      "recall": [
+        0.355,
+        0.325,
+        0.382
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "dataset": "Lakera/gandalf_ignore_instructions",
+      "kind": "prompt",
+      "rule": "LLMD-011",
+      "n": 1000,
+      "positives": 1000,
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 1000,
+      "recall": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "Lakera/gandalf_ignore_instructions",
+      "kind": "prompt",
+      "rule": "LLMD-012",
+      "n": 1000,
+      "positives": 1000,
+      "tp": 52,
+      "fp": 0,
+      "tn": 0,
+      "fn": 948,
+      "recall": [
+        0.052,
+        0.039,
+        0.065
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "dataset": "Lakera/gandalf_ignore_instructions",
+      "kind": "prompt",
+      "rule": "any",
+      "n": 1000,
+      "positives": 1000,
+      "tp": 396,
+      "fp": 0,
+      "tn": 0,
+      "fn": 604,
+      "recall": [
+        0.396,
+        0.366,
+        0.423
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "dataset": "MCPTox/pure_tool",
+      "kind": "tool_description",
+      "rule": "LLMD-015",
+      "n": 485,
+      "positives": 485,
+      "tp": 115,
+      "fp": 0,
+      "tn": 0,
+      "fn": 370,
+      "recall": [
+        0.23711340206185566,
+        0.1979381443298969,
+        0.27628865979381445
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "dataset": "MCPTox/pure_tool",
+      "kind": "tool_description",
+      "rule": "any",
+      "n": 485,
+      "positives": 485,
+      "tp": 115,
+      "fp": 0,
+      "tn": 0,
+      "fn": 370,
+      "recall": [
+        0.23711340206185566,
+        0.1979381443298969,
+        0.27628865979381445
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "dataset": "OpenAssistant/oasst2",
+      "kind": "document",
+      "rule": "LLMD-002",
+      "n": 5000,
+      "positives": 0,
+      "tp": 0,
+      "fp": 0,
+      "tn": 5000,
+      "fn": 0,
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "OpenAssistant/oasst2",
+      "kind": "document",
+      "rule": "LLMD-021",
+      "n": 5000,
+      "positives": 0,
+      "tp": 0,
+      "fp": 24,
+      "tn": 4976,
+      "fn": 0,
+      "precision": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fpr": [
+        0.0048,
+        0.003,
+        0.0068
+      ]
+    },
+    {
+      "dataset": "OpenAssistant/oasst2",
+      "kind": "document",
+      "rule": "any",
+      "n": 5000,
+      "positives": 0,
+      "tp": 0,
+      "fp": 24,
+      "tn": 4976,
+      "fn": 0,
+      "precision": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fpr": [
+        0.0048,
+        0.003,
+        0.0068
+      ]
+    },
+    {
+      "dataset": "OpenAssistant/oasst2",
+      "kind": "prompt",
+      "rule": "LLMD-001",
+      "n": 10000,
+      "positives": 0,
+      "tp": 0,
+      "fp": 2,
+      "tn": 9998,
+      "fn": 0,
+      "precision": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fpr": [
+        0.0002,
+        0.0,
+        0.0005
+      ]
+    },
+    {
+      "dataset": "OpenAssistant/oasst2",
+      "kind": "prompt",
+      "rule": "LLMD-011",
+      "n": 10000,
+      "positives": 0,
+      "tp": 0,
+      "fp": 1,
+      "tn": 9999,
+      "fn": 0,
+      "precision": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fpr": [
+        0.0001,
+        0.0,
+        0.0003
+      ]
+    },
+    {
+      "dataset": "OpenAssistant/oasst2",
+      "kind": "prompt",
+      "rule": "LLMD-012",
+      "n": 10000,
+      "positives": 0,
+      "tp": 0,
+      "fp": 0,
+      "tn": 10000,
+      "fn": 0,
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "OpenAssistant/oasst2",
+      "kind": "prompt",
+      "rule": "any",
+      "n": 10000,
+      "positives": 0,
+      "tp": 0,
+      "fp": 3,
+      "tn": 9997,
+      "fn": 0,
+      "precision": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fpr": [
+        0.0003,
+        0.0,
+        0.0007
+      ]
+    },
+    {
+      "dataset": "TrustAIRLab/in-the-wild-jailbreak-prompts",
+      "kind": "prompt",
+      "rule": "LLMD-001",
+      "n": 6405,
+      "positives": 1405,
+      "tp": 59,
+      "fp": 311,
+      "tn": 4689,
+      "fn": 1346,
+      "recall": [
+        0.04199288256227758,
+        0.03244005641748942,
+        0.053064275037369206
+      ],
+      "precision": [
+        0.15945945945945947,
+        0.12737127371273713,
+        0.19794344473007713
+      ],
+      "fpr": [
+        0.0622,
+        0.05568814638027048,
+        0.06922769107643058
+      ]
+    },
+    {
+      "dataset": "TrustAIRLab/in-the-wild-jailbreak-prompts",
+      "kind": "prompt",
+      "rule": "LLMD-011",
+      "n": 6405,
+      "positives": 1405,
+      "tp": 2,
+      "fp": 11,
+      "tn": 4989,
+      "fn": 1403,
+      "recall": [
+        0.0014234875444839859,
+        0.0,
+        0.0036023054755043226
+      ],
+      "precision": [
+        0.15384615384615385,
+        0.0,
+        0.375
+      ],
+      "fpr": [
+        0.0022,
+        0.001006238679814852,
+        0.0036159100040176776
+      ]
+    },
+    {
+      "dataset": "TrustAIRLab/in-the-wild-jailbreak-prompts",
+      "kind": "prompt",
+      "rule": "LLMD-012",
+      "n": 6405,
+      "positives": 1405,
+      "tp": 2,
+      "fp": 9,
+      "tn": 4991,
+      "fn": 1403,
+      "recall": [
+        0.0014234875444839859,
+        0.0,
+        0.00357653791130186
+      ],
+      "precision": [
+        0.18181818181818182,
+        0.0,
+        0.4666666666666667
+      ],
+      "fpr": [
+        0.0018,
+        0.0007939658594680428,
+        0.003006012024048096
+      ]
+    },
+    {
+      "dataset": "TrustAIRLab/in-the-wild-jailbreak-prompts",
+      "kind": "prompt",
+      "rule": "any",
+      "n": 6405,
+      "positives": 1405,
+      "tp": 63,
+      "fp": 330,
+      "tn": 4670,
+      "fn": 1342,
+      "recall": [
+        0.044839857651245554,
+        0.035036496350364967,
+        0.05616338439095551
+      ],
+      "precision": [
+        0.16030534351145037,
+        0.12903225806451613,
+        0.19696969696969696
+      ],
+      "fpr": [
+        0.066,
+        0.05939804664141918,
+        0.0733185215108059
+      ]
+    },
+    {
+      "dataset": "databricks/databricks-dolly-15k",
+      "kind": "document",
+      "rule": "LLMD-002",
+      "n": 4467,
+      "positives": 0,
+      "tp": 0,
+      "fp": 0,
+      "tn": 4467,
+      "fn": 0,
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "databricks/databricks-dolly-15k",
+      "kind": "document",
+      "rule": "LLMD-021",
+      "n": 4467,
+      "positives": 0,
+      "tp": 0,
+      "fp": 0,
+      "tn": 4467,
+      "fn": 0,
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "databricks/databricks-dolly-15k",
+      "kind": "document",
+      "rule": "any",
+      "n": 4467,
+      "positives": 0,
+      "tp": 0,
+      "fp": 0,
+      "tn": 4467,
+      "fn": 0,
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "databricks/databricks-dolly-15k",
+      "kind": "prompt",
+      "rule": "LLMD-001",
+      "n": 15011,
+      "positives": 0,
+      "tp": 0,
+      "fp": 0,
+      "tn": 15011,
+      "fn": 0,
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "databricks/databricks-dolly-15k",
+      "kind": "prompt",
+      "rule": "LLMD-011",
+      "n": 15011,
+      "positives": 0,
+      "tp": 0,
+      "fp": 0,
+      "tn": 15011,
+      "fn": 0,
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "databricks/databricks-dolly-15k",
+      "kind": "prompt",
+      "rule": "LLMD-012",
+      "n": 15011,
+      "positives": 0,
+      "tp": 0,
+      "fp": 0,
+      "tn": 15011,
+      "fn": 0,
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "databricks/databricks-dolly-15k",
+      "kind": "prompt",
+      "rule": "any",
+      "n": 15011,
+      "positives": 0,
+      "tp": 0,
+      "fp": 0,
+      "tn": 15011,
+      "fn": 0,
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "deepset/prompt-injections",
+      "kind": "prompt",
+      "rule": "LLMD-001",
+      "n": 662,
+      "positives": 263,
+      "tp": 4,
+      "fp": 0,
+      "tn": 399,
+      "fn": 259,
+      "recall": [
+        0.015209125475285171,
+        0.0036363636363636364,
+        0.03187250996015936
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "deepset/prompt-injections",
+      "kind": "prompt",
+      "rule": "LLMD-011",
+      "n": 662,
+      "positives": 263,
+      "tp": 0,
+      "fp": 0,
+      "tn": 399,
+      "fn": 263,
+      "recall": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "deepset/prompt-injections",
+      "kind": "prompt",
+      "rule": "LLMD-012",
+      "n": 662,
+      "positives": 263,
+      "tp": 2,
+      "fp": 0,
+      "tn": 399,
+      "fn": 261,
+      "recall": [
+        0.0076045627376425855,
+        0.0,
+        0.01937984496124031
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "deepset/prompt-injections",
+      "kind": "prompt",
+      "rule": "any",
+      "n": 662,
+      "positives": 263,
+      "tp": 6,
+      "fp": 0,
+      "tn": 399,
+      "fn": 257,
+      "recall": [
+        0.022813688212927757,
+        0.007547169811320755,
+        0.042801556420233464
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "geodesic-research/bipia",
+      "kind": "document",
+      "rule": "LLMD-002",
+      "n": 5000,
+      "positives": 5000,
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 5000,
+      "recall": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "geodesic-research/bipia",
+      "kind": "document",
+      "rule": "LLMD-021",
+      "n": 5000,
+      "positives": 5000,
+      "tp": 48,
+      "fp": 0,
+      "tn": 0,
+      "fn": 4952,
+      "recall": [
+        0.0096,
+        0.007,
+        0.0124
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "dataset": "geodesic-research/bipia",
+      "kind": "document",
+      "rule": "any",
+      "n": 5000,
+      "positives": 5000,
+      "tp": 48,
+      "fp": 0,
+      "tn": 0,
+      "fn": 4952,
+      "recall": [
+        0.0096,
+        0.007,
+        0.0124
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "dataset": "jackhhao/jailbreak-classification",
+      "kind": "prompt",
+      "rule": "LLMD-001",
+      "n": 1306,
+      "positives": 666,
+      "tp": 36,
+      "fp": 0,
+      "tn": 640,
+      "fn": 630,
+      "recall": [
+        0.05405405405405406,
+        0.037993920972644375,
+        0.0701219512195122
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "jackhhao/jailbreak-classification",
+      "kind": "prompt",
+      "rule": "LLMD-011",
+      "n": 1306,
+      "positives": 666,
+      "tp": 0,
+      "fp": 3,
+      "tn": 637,
+      "fn": 666,
+      "recall": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "precision": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fpr": [
+        0.0046875,
+        0.0,
+        0.010954616588419406
+      ]
+    },
+    {
+      "dataset": "jackhhao/jailbreak-classification",
+      "kind": "prompt",
+      "rule": "LLMD-012",
+      "n": 1306,
+      "positives": 666,
+      "tp": 1,
+      "fp": 0,
+      "tn": 640,
+      "fn": 665,
+      "recall": [
+        0.0015015015015015015,
+        0.0,
+        0.0045871559633027525
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "jackhhao/jailbreak-classification",
+      "kind": "prompt",
+      "rule": "any",
+      "n": 1306,
+      "positives": 666,
+      "tp": 37,
+      "fp": 3,
+      "tn": 637,
+      "fn": 629,
+      "recall": [
+        0.05555555555555555,
+        0.038880248833592534,
+        0.07228915662650602
+      ],
+      "precision": [
+        0.925,
+        0.8333333333333334,
+        1.0
+      ],
+      "fpr": [
+        0.0046875,
+        0.0,
+        0.010954616588419406
+      ]
+    },
+    {
+      "dataset": "microsoft/llmail-inject-challenge",
+      "kind": "document",
+      "rule": "LLMD-002",
+      "n": 10000,
+      "positives": 10000,
+      "tp": 102,
+      "fp": 0,
+      "tn": 0,
+      "fn": 9898,
+      "recall": [
+        0.0102,
+        0.0082,
+        0.0121
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "dataset": "microsoft/llmail-inject-challenge",
+      "kind": "document",
+      "rule": "LLMD-021",
+      "n": 10000,
+      "positives": 10000,
+      "tp": 103,
+      "fp": 0,
+      "tn": 0,
+      "fn": 9897,
+      "recall": [
+        0.0103,
+        0.0083,
+        0.0123
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "dataset": "microsoft/llmail-inject-challenge",
+      "kind": "document",
+      "rule": "any",
+      "n": 10000,
+      "positives": 10000,
+      "tp": 103,
+      "fp": 0,
+      "tn": 0,
+      "fn": 9897,
+      "recall": [
+        0.0103,
+        0.0083,
+        0.0123
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "dataset": "neuralchemy/Prompt-injection-dataset",
+      "kind": "prompt",
+      "rule": "LLMD-001",
+      "n": 6274,
+      "positives": 3736,
+      "tp": 145,
+      "fp": 0,
+      "tn": 2538,
+      "fn": 3591,
+      "recall": [
+        0.038811563169164884,
+        0.032707774798927614,
+        0.04484425349087003
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "neuralchemy/Prompt-injection-dataset",
+      "kind": "prompt",
+      "rule": "LLMD-011",
+      "n": 6274,
+      "positives": 3736,
+      "tp": 4,
+      "fp": 0,
+      "tn": 2538,
+      "fn": 3732,
+      "recall": [
+        0.0010706638115631692,
+        0.0002639218791237794,
+        0.0023860021208907743
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "neuralchemy/Prompt-injection-dataset",
+      "kind": "prompt",
+      "rule": "LLMD-012",
+      "n": 6274,
+      "positives": 3736,
+      "tp": 35,
+      "fp": 0,
+      "tn": 2538,
+      "fn": 3701,
+      "recall": [
+        0.00936830835117773,
+        0.006423982869379015,
+        0.012523822488429077
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "neuralchemy/Prompt-injection-dataset",
+      "kind": "prompt",
+      "rule": "any",
+      "n": 6274,
+      "positives": 3736,
+      "tp": 174,
+      "fp": 0,
+      "tn": 2538,
+      "fn": 3562,
+      "recall": [
+        0.046573875802997856,
+        0.04001059883412825,
+        0.05359085963003264
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "nvidia/Nemotron-RL-Agentic-Indirect-Prompt-Injection-v1",
+      "kind": "document",
+      "rule": "LLMD-002",
+      "n": 1272,
+      "positives": 1272,
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 1272,
+      "recall": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "nvidia/Nemotron-RL-Agentic-Indirect-Prompt-Injection-v1",
+      "kind": "document",
+      "rule": "LLMD-021",
+      "n": 1272,
+      "positives": 1272,
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 1272,
+      "recall": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "nvidia/Nemotron-RL-Agentic-Indirect-Prompt-Injection-v1",
+      "kind": "document",
+      "rule": "any",
+      "n": 1272,
+      "positives": 1272,
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 1272,
+      "recall": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "reshabhs/SPML_Chatbot_Prompt_Injection",
+      "kind": "prompt",
+      "rule": "LLMD-001",
+      "n": 16011,
+      "positives": 12541,
+      "tp": 1486,
+      "fp": 0,
+      "tn": 3470,
+      "fn": 11055,
+      "recall": [
+        0.11849134837732238,
+        0.11250599712138173,
+        0.12381716118684843
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "reshabhs/SPML_Chatbot_Prompt_Injection",
+      "kind": "prompt",
+      "rule": "LLMD-011",
+      "n": 16011,
+      "positives": 12541,
+      "tp": 0,
+      "fp": 0,
+      "tn": 3470,
+      "fn": 12541,
+      "recall": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "reshabhs/SPML_Chatbot_Prompt_Injection",
+      "kind": "prompt",
+      "rule": "LLMD-012",
+      "n": 16011,
+      "positives": 12541,
+      "tp": 214,
+      "fp": 0,
+      "tn": 3470,
+      "fn": 12327,
+      "recall": [
+        0.017064029981660154,
+        0.014781848525788763,
+        0.019477927676219368
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "reshabhs/SPML_Chatbot_Prompt_Injection",
+      "kind": "prompt",
+      "rule": "any",
+      "n": 16011,
+      "positives": 12541,
+      "tp": 1649,
+      "fp": 0,
+      "tn": 3470,
+      "fn": 10892,
+      "recall": [
+        0.13148871700821307,
+        0.12536908467001837,
+        0.13710962396430848
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fpr": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "dataset": "wwh0411/MCP-Flow",
+      "kind": "tool_description",
+      "rule": "LLMD-015",
+      "n": 10001,
+      "positives": 0,
+      "tp": 0,
+      "fp": 17,
+      "tn": 9984,
+      "fn": 0,
+      "precision": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fpr": [
+        0.0016998300169983002,
+        0.000999900009999,
+        0.0025997400259974
+      ]
+    },
+    {
+      "dataset": "wwh0411/MCP-Flow",
+      "kind": "tool_description",
+      "rule": "any",
+      "n": 10001,
+      "positives": 0,
+      "tp": 0,
+      "fp": 17,
+      "tn": 9984,
+      "fn": 0,
+      "precision": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fpr": [
+        0.0016998300169983002,
+        0.000999900009999,
+        0.0025997400259974
+      ]
+    }
+  ],
+  "unlabelled": [
+    {
+      "dataset": "allenai/WildChat-1M",
+      "kind": "prompt",
+      "rule": "LLMD-001",
+      "n": 20000,
+      "alert_rate": [
+        0.0164,
+        0.014730351029489651,
+        0.018255393068783956
+      ]
+    },
+    {
+      "dataset": "allenai/WildChat-1M",
+      "kind": "prompt",
+      "rule": "LLMD-011",
+      "n": 20000,
+      "alert_rate": [
+        0.0014,
+        0.000968825251519309,
+        0.002022680140125064
+      ]
+    },
+    {
+      "dataset": "allenai/WildChat-1M",
+      "kind": "prompt",
+      "rule": "LLMD-012",
+      "n": 20000,
+      "alert_rate": [
+        0.0002,
+        7.777749831242644e-05,
+        0.000514188796801608
+      ]
+    },
+    {
+      "dataset": "allenai/WildChat-1M",
+      "kind": "prompt",
+      "rule": "any",
+      "n": 20000,
+      "alert_rate": [
+        0.018,
+        0.016247809432534257,
+        0.0199373201277798
+      ]
+    }
+  ],
+  "pooled": [
+    {
+      "kind": "prompt",
+      "rule": "LLMD-001",
+      "benign_n": 37058,
+      "fpr": [
+        0.008446219439797075,
+        0.007564066295425357,
+        0.009430275399672708
+      ],
+      "attack_n": 19611,
+      "recall": [
+        0.10631788282086584,
+        0.10208051345265352,
+        0.11070945880998252
+      ]
+    },
+    {
+      "kind": "prompt",
+      "rule": "LLMD-011",
+      "benign_n": 37058,
+      "fpr": [
+        0.0004047708996707863,
+        0.00024531963704489614,
+        0.0006677920308868992
+      ],
+      "attack_n": 19611,
+      "recall": [
+        0.0003059507419305492,
+        0.00014022535925977542,
+        0.0006674079789569349
+      ]
+    },
+    {
+      "kind": "prompt",
+      "rule": "LLMD-012",
+      "benign_n": 37058,
+      "fpr": [
+        0.0002428625398024718,
+        0.0001277782937839956,
+        0.0004615502192384119
+      ],
+      "attack_n": 19611,
+      "recall": [
+        0.015603487838458009,
+        0.013961324018085865,
+        0.01743539141600666
+      ]
+    },
+    {
+      "kind": "prompt",
+      "rule": "any",
+      "benign_n": 37058,
+      "fpr": [
+        0.009066868152625614,
+        0.008151378760259467,
+        0.010084131695324586
+      ],
+      "attack_n": 19611,
+      "recall": [
+        0.1185559124980878,
+        0.11410600149974176,
+        0.12315523643959495
+      ]
+    },
+    {
+      "kind": "document",
+      "rule": "LLMD-002",
+      "benign_n": 9467,
+      "fpr": [
+        0.0,
+        0.0,
+        0.000405623931034809
+      ],
+      "attack_n": 16272,
+      "recall": [
+        0.006268436578171091,
+        0.005166838490300403,
+        0.007603106383087895
+      ]
+    },
+    {
+      "kind": "document",
+      "rule": "LLMD-021",
+      "benign_n": 9467,
+      "fpr": [
+        0.002535122002746382,
+        0.0017042315043825113,
+        0.003769579819840249
+      ],
+      "attack_n": 16272,
+      "recall": [
+        0.009279744346116028,
+        0.007917937720222949,
+        0.01087320116626019
+      ]
+    },
+    {
+      "kind": "document",
+      "rule": "any",
+      "benign_n": 9467,
+      "fpr": [
+        0.002535122002746382,
+        0.0017042315043825113,
+        0.003769579819840249
+      ],
+      "attack_n": 16272,
+      "recall": [
+        0.009279744346116028,
+        0.007917937720222949,
+        0.01087320116626019
+      ]
+    },
+    {
+      "kind": "tool_description",
+      "rule": "LLMD-015",
+      "benign_n": 10001,
+      "fpr": [
+        0.0016998300169983002,
+        0.0010615921554889554,
+        0.002720736592224551
+      ],
+      "attack_n": 485,
+      "recall": [
+        0.23711340206185566,
+        0.2014194011994814,
+        0.2769392327629309
+      ]
+    },
+    {
+      "kind": "tool_description",
+      "rule": "any",
+      "benign_n": 10001,
+      "fpr": [
+        0.0016998300169983002,
+        0.0010615921554889554,
+        0.002720736592224551
+      ],
+      "attack_n": 485,
+      "recall": [
+        0.23711340206185566,
+        0.2014194011994814,
+        0.2769392327629309
+      ]
+    }
+  ]
+}

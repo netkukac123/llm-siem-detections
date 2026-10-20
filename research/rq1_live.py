@@ -37,7 +37,9 @@ def _cfg(name: str, variant: str) -> McpServerConfig:
 def run_once(sc: LiveScenario, model_tag: str, base_url: str, rep: int, temperature: float,
              corpus_dir: Path | None = None, run_prefix: str = "") -> dict:
     buf = io.StringIO()
-    model = OpenAICompatModel(base_url, model_tag, temperature=temperature, seed=1000 + rep)
+    # A per-call output cap keeps thinking models from generating for minutes; 2048 tokens is
+    # generous for an assistant answer plus reasoning.
+    model = OpenAICompatModel(base_url, model_tag, temperature=temperature, seed=1000 + rep, max_tokens=2048)
     app = RagApp(EventLog(buf), model, corpus_dir=corpus_dir)
     user, ip = ("research.user", "10.99.0.10")
     run_id = f"{run_prefix}{sc.id}-{model_tag.replace(':', '_')}-r{rep}"
@@ -79,8 +81,8 @@ def collect(models: list[str], base_url: str, reps: int, temperature: float, ben
         path = OUT / "runs" / f"{tag.replace(':', '_')}.jsonl"
         path.parent.mkdir(parents=True, exist_ok=True)
         done = set()
-        if path.exists():
-            done = {json.loads(l)["run_id"] for l in path.open()}
+        if path.exists():  # runs that ended in an error are retried; evaluate() keeps the last record
+            done = {r["run_id"] for r in map(json.loads, path.open()) if not r.get("error")}
         with path.open("a", encoding="utf-8") as f:
             for sc in scenarios:
                 for rep in range(1 if sc.benign else reps):
@@ -97,7 +99,12 @@ def collect(models: list[str], base_url: str, reps: int, temperature: float, ben
 
 
 def evaluate() -> dict:
-    records = [json.loads(l) for p in sorted((OUT / "runs").glob("*.jsonl")) for l in p.open()]
+    latest: dict[str, dict] = {}
+    for p in sorted((OUT / "runs").glob("*.jsonl")):
+        for line in p.open():
+            r = json.loads(line)
+            latest[r["run_id"]] = r  # a retried run supersedes its earlier error record
+    records = list(latest.values())
     events = [{k: v for k, v in e.items() if k not in ("run_id", "session_label")}
               for r in records for e in r["events"]]
     flagged = run_rules(events, key="session_id")

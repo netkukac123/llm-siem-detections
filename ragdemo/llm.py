@@ -70,13 +70,14 @@ class ScriptedModel:
 
 class OpenAICompatModel:
     def __init__(self, base_url: str, model: str, api_key: str = "unused", timeout: float = 300,
-                 temperature: float | None = None, seed: int | None = None):
+                 temperature: float | None = None, seed: int | None = None, max_tokens: int | None = None):
         self.base_url = base_url.rstrip("/")
         self.name = model
         self.api_key = api_key
         self.timeout = timeout
         self.temperature = temperature
         self.seed = seed
+        self.max_tokens = max_tokens
 
     def generate(self, messages: list[dict], tools: list[dict]) -> ModelResponse:
         payload: dict[str, Any] = {"model": self.name, "messages": messages, "tools": tools}
@@ -84,6 +85,8 @@ class OpenAICompatModel:
             payload["temperature"] = self.temperature
         if self.seed is not None:
             payload["seed"] = self.seed
+        if self.max_tokens is not None:
+            payload["max_tokens"] = self.max_tokens
         body = json.dumps(payload).encode()
         req = urllib.request.Request(
             f"{self.base_url}/chat/completions", data=body,

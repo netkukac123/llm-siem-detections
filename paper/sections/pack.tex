@@ -1,0 +1,41 @@
+\section{The detection pack and its telemetry}
+\label{sec:pack}
+
+\paragraph{Telemetry.}
+The demo application emits one JSON object per event, aligned with the OpenTelemetry GenAI semantic
+conventions~\cite{otel-genai}: \texttt{prompt}, \texttt{guardrail}, \texttt{retrieval},
+\texttt{tool\_call}, \texttt{completion}, \texttt{memory\_write} and \texttt{tool\_registry}. Beyond
+what an LLM gateway usually logs, it records four fields that most of the agentic rules depend on:
+the provenance of every retrieved chunk (\texttt{doc\_source}), the normalised destination, risk class
+and human-approval state of every tool call (\texttt{tool\_target}, \texttt{tool\_risk},
+\texttt{tool\_approval}), a preview of every tool result (\texttt{tool\_result}), and, for every MCP
+tool the client discovers, the advertised description and its SHA-256 (\texttt{tool\_registry}).
+The MCP integration is real: the agent connects to a third-party server over stdio with the official
+Python SDK (version 2.3).
+
+\paragraph{Rules.}
+The pack has 21 detections, each implemented as a Microsoft Sentinel scheduled analytic rule (KQL)
+and as Wazuh rules (Table~\ref{tab:rules} in the appendix). They fall into three families that matter
+for the results:
+\begin{itemize}
+  \item \emph{Content signatures} match text: instruction-override phrasing in prompts (\llmd{001}),
+        in retrieved documents (\llmd{002}) and in tool results (\llmd{021}); obfuscation
+        (\llmd{011}); system-prompt extraction requests (\llmd{012}); secrets in outputs
+        (\llmd{004}); hidden instructions in MCP tool descriptions (\llmd{015}).
+  \item \emph{Planted and structural signals} need no knowledge of the attack text: a canary token
+        in the system prompt (\llmd{003}), a changed MCP description hash (\llmd{014}), auto-loading
+        images to external hosts (\llmd{005}), dangerous commands (\llmd{017}), credential paths
+        (\llmd{018}), writes to agent configuration (\llmd{020}).
+  \item \emph{Behavioural and correlation rules} reason about what the agent did: egress to external
+        destinations (\llmd{006}), egress after untrusted content entered the context (\llmd{007}),
+        tool-call bursts (\llmd{008}), token spikes (\llmd{009}), repeated guardrail blocks
+        (\llmd{010}), memory writes with standing instructions (\llmd{013}), destructive tools without
+        approval (\llmd{016}), and a private read followed by egress in one turn (\llmd{019}), the
+        ``lethal trifecta'' of Willison~\cite{trifecta}.
+\end{itemize}
+
+\paragraph{Prior validation.}
+Before this study the pack was validated on a synthetic, labelled dataset of 70 scenarios: all 21
+KQL rules match the labels exactly on the Kusto engine (Kustainer) and on a live Sentinel workspace,
+and the Wazuh rules match except for two documented engine limits. That dataset was written by the
+author of the rules; this paper replaces it with third-party data and live models.

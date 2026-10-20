@@ -1,0 +1,27 @@
+\begin{tabular}{lp{7.2cm}ll}
+\toprule
+ID & Detection & OWASP & MITRE ATLAS \\
+\midrule
+LLMD-001 & Direct prompt injection phrasing in user prompt & LLM01 & T0051.000 \\
+LLMD-002 & Instructions aimed at the model inside retrieved content & LLM01, LLM08, ASI01 & T0051.001, T0070 \\
+LLMD-003 & System prompt canary token in model output & LLM07 & T0056 \\
+LLMD-004 & Credentials or financial identifiers in model output or tool arguments & LLM02 & T0057 \\
+LLMD-005 & Auto-loading image with query string to external host in model output & LLM05, LLM02 & T0077 \\
+LLMD-006 & Side-effecting agent tool aimed at an external destination & LLM06, ASI02 & T0053, T0086 \\
+LLMD-007 & Egress tool call shortly after externally sourced content entered context & LLM01, LLM06, ASI01 & T0051.001, T0086 \\
+LLMD-008 & Burst of agent tool calls in one session & LLM06, LLM10, ASI02 & T0053 \\
+LLMD-009 & Token consumption spike per identity & LLM10 & T0034, T0029 \\
+LLMD-010 & Repeated guardrail blocks from one identity & LLM01 & T0054 \\
+LLMD-011 & Obfuscated content in user prompt (base64, Unicode tags, zero-width) & LLM01 & T0068 \\
+LLMD-012 & System prompt extraction attempt & LLM07 & T0056, T0069 \\
+LLMD-013 & Persistent instruction written to agent long-term memory & ASI06 & T0080.000, T0094 \\
+LLMD-014 & MCP tool description changed after first use (rug pull) & ASI04 & T0109, T0110.000 \\
+LLMD-015 & Hidden instructions in an MCP tool description (tool poisoning) & ASI04, ASI01 & T0110.000 \\
+LLMD-016 & Destructive agent tool executed without human approval & ASI02 & T0101 \\
+LLMD-017 & Dangerous shell command issued by an agent & ASI05 & T0102, T0072 \\
+LLMD-018 & Credential material targeted through agent tools & ASI03 & T0098, T0083 \\
+LLMD-019 & Private data read and sent out in the same turn (lethal trifecta) & ASI02, ASI01 & T0085.001, T0086 \\
+LLMD-020 & Agent modifies its own or another agent's configuration & ASI03, ASI05 & T0081 \\
+LLMD-021 & Instructions aimed at the agent inside a tool result & ASI01, ASI04 & T0110.002, T0051.001 \\
+\bottomrule
+\end{tabular}

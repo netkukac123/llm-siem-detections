@@ -1,0 +1,72 @@
+\section{Methodology}
+\label{sec:method}
+
+We ask four research questions.
+\textbf{RQ1}: when real open-weight models are attacked, how often do they comply, how often is harm
+achieved, and what fraction of compromised runs does the pack detect?
+\textbf{RQ2}: on public datasets of attacks and of real benign traffic, what recall and false-positive
+rate do the content signatures achieve?
+\textbf{RQ3}: how do they compare with, and combine with, open ML prompt-injection classifiers?
+\textbf{RQ4}: how does detection degrade under an adaptive attacker who mutates the payload, and how
+many mutants evade detection while the attack still works?
+
+\subsection{Rule execution}
+All rules run unchanged as KQL on the Kusto emulator (Kustainer, image pinned by digest). The only
+modification is to widen a \texttt{trigger\_window} parameter that deduplicates alerts across
+overlapping scheduled runs, because replayed data is not ``recent''. Events are loaded into a table
+with the production schema (\texttt{LLMAppLogs\_CL}).
+
+\subsection{RQ1: live attacks}
+\paragraph{Models.} Five open-weight instruction models from five vendors, all with tool calling and
+small enough for an 8~GB consumer GPU (NVIDIA RTX~4060), served by Ollama~0.40.6 at default
+quantisation: \input{generated/models.tex}.
+
+\paragraph{Scenarios.} Ten attack scenarios in which only attacker inputs are fixed and the model's
+behaviour is not scripted: a direct injection asking for the system prompt; indirect injections in
+two poisoned vendor documents (email exfiltration, image beacon); MCP tool poisoning, rug pull and
+runtime-response poisoning against a real MCP server; a two-session memory poisoning; agent
+configuration tampering and a reverse shell delivered through pasted text; and a base64-obfuscated
+injection. The system prompt instructs the assistant not to send email unless asked, and no
+high-risk tool requires approval, which is a common and insecure default.
+
+\paragraph{Oracles.} Each scenario has two independent oracles defined on side effects, never on the
+rules: \emph{compliance} (the model took the attacker-directed step, for example it read the
+restricted file the poisoned tool description asked for) and \emph{harm} (the attacker's goal was
+achieved, for example restricted data reached the third-party tool). Oracles are unit-tested on
+positive and negative traces. Each (model, scenario) pair runs 10 times at temperature 0.7 with fixed
+seeds, on a fresh agent instance. Fifty-eight benign prompts (8 application questions and 50 real
+prompts drawn from OASST2 and Dolly) measure live false positives.
+
+\paragraph{Metrics.} Compliance and harm rates; detection given compliance (one of the scenario's
+intended rules fired on the run); detection given harm; any-rule visibility of resisted attempts; and
+the false-positive rate on benign runs. Proportions carry Wilson 95\% intervals.
+
+\subsection{RQ2: public datasets}
+We assembled 112{,}894 items from 16 public datasets (Table~\ref{tab:rq2-datasets}): labelled direct
+injections and jailbreaks (deepset, Lakera Gandalf, neuralchemy, SPML, jackhhao, TrustAIRLab
+in-the-wild), indirect injections embedded in documents (Microsoft's LLMail-Inject challenge
+submissions~\cite{llmail}, BIPIA~\cite{bipia}, NVIDIA's agentic indirect injection set), poisoned MCP
+tool descriptions from MCPTox~\cite{mcptox}, and benign material: real user prompts (WildChat-1M,
+OASST2), crowd-written instructions and contexts (Dolly-15k), and real MCP tool descriptions
+(MCP-Flow). Prompts become \texttt{prompt} events, documents become \texttt{retrieval} events and
+tool results, and tool descriptions become \texttt{tool\_registry} events. WildChat is real traffic
+that can itself contain attacks, so it is reported as an alert rate rather than a false-positive rate.
+Intervals are percentile bootstrap (1{,}000 resamples).
+
+\subsection{RQ3: ML classifiers}
+Two open classifiers run with ONNX Runtime on CPU: ProtectAI's DeBERTa-v3 prompt-injection model
+(v2)~\cite{protectai} and Meta's Llama Prompt Guard~2 (22M)~\cite{promptguard}, both at threshold 0.5.
+ProtectAI's model card names jackhhao among its training data and lists eight unnamed MIT-licensed
+sets, so we mark jackhhao as \emph{contaminated} and the MIT-licensed sets published before the model
+(Lakera Gandalf, SPML, TrustAIRLab) as \emph{possibly contaminated}; headline numbers use the
+remaining, clean datasets only. We also evaluate the union and intersection of rules and classifier,
+and a precision-recall sweep.
+
+\subsection{RQ4: adaptive attacker}
+Twelve mutation operators: deterministic synonym substitution, homoglyphs, leetspeak, zero-width
+insertion, word splitting and base64 wrapping; and LLM-based paraphrase and translation into German,
+Hungarian, Spanish, Chinese and Russian (Llama~3.1~8B, temperature~0, fixed seed). \emph{Offline},
+we mutate 300 real attack prompts that the rules detect at baseline and re-run rules and classifiers.
+\emph{Live}, we mutate the attacker-controlled text of the direct (L01) and indirect (L02) scenarios
+and re-run them on two models, counting \emph{evasion-preserving} mutants: the model complied and no
+intended rule fired.

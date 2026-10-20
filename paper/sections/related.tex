@@ -1,0 +1,16 @@
+\section{Related work}
+\label{sec:related}
+
+\paragraph{Prompt injection.} Greshake et~al.~\cite{greshake} established indirect prompt injection
+against LLM-integrated applications; BIPIA~\cite{bipia} and AgentDojo~\cite{agentdojo} benchmark it,
+and Microsoft's LLMail-Inject challenge~\cite{llmail} collected adaptive attacks against an email
+agent at scale. MCPTox~\cite{mcptox} measured tool poisoning across real MCP servers.
+
+\paragraph{Defences.} Classifier guardrails (Prompt Guard~\cite{promptguard}, ProtectAI's
+DeBERTa~\cite{protectai}, LlamaFirewall~\cite{llamafirewall}) and design-level defences such as
+Spotlighting~\cite{spotlighting}, CaMeL~\cite{camel} and the design patterns of Beurer-Kellner
+et~al.~\cite{design-patterns} aim at prevention. Our study is complementary: it measures what a SOC
+can \emph{detect} from application telemetry, with standard SIEM rules, after the fact.
+
+\paragraph{Frameworks.} OWASP's LLM~\cite{owasp-llm-2025} and Agentic~\cite{owasp-agentic-2026} Top~10
+lists and MITRE ATLAS~\cite{atlas} provide the taxonomy we map every rule to.

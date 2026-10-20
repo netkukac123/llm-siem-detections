@@ -5,3 +5,5 @@ logs/
 .claude/
 research/results/_kusto_load.jsonl
 research/data/
+paper/*.pdf
+!paper/llm-siem-detections-study.pdf
