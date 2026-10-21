@@ -51,7 +51,7 @@ def run(models: list[str], base_url: str) -> None:
                     for off in OFFSETS:
                         sc = LiveScenario(f"N1bA-p{pi}-i{ii}-o{off}", "held-out attack", [Turn(prompt)], ["LLMD-022b"],
                                           lambda e: False, mcp=("cargolink-tools", "runtime-padded"))
-                        for rep in range(4 if (pi + ii) % 2 == 0 else 2):  # 4 or 2 reps, balanced across cells
+                        for rep in range(4):  # n = 4 per cell, as pre-registered
                             run_id = f"n1b~{sc.id}-{tag.replace(':', '_')}-r{rep}"
                             if run_id in done:
                                 continue
