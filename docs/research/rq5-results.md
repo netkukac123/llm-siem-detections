@@ -1,5 +1,11 @@
 # RQ5 results: frontier models and the coverage of agent-attack telemetry
 
+> **Superseded.** This first write-up is kept for the record. An adversarial review found that RQ5
+> was not pre-registered (its protocol entered git after the runs) and that its rule families made
+> the Strand A and H-B2 results true by construction. The corrected analysis, which reverses the
+> Strand A headline, is in `rq5-review-response.md`; the confirmatory run is pre-registered in
+> `prereg-rq5-confirmatory.md`. Do not cite the numbers below without reading those first.
+
 Run of 2026-10-21. Capability ladder: five open 8B-class models (local, via Ollama), two hosted mid
 models (Azure gpt-4.1-mini, gpt-oss-120b; gpt-5-mini is also present from an earlier run), and three
 frontier models (Claude Haiku 4.5, Sonnet 5.5, Opus 5.5, via the Anthropic API). Ten live attack
