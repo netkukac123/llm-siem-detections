@@ -71,3 +71,13 @@ some models, which is still reported.
   development used) is reported separately; its benign rate is re-measured on every benign run of
   RQ1 and RQ5-C (all twelve models where available).
 - Statistics: per-model Wilson intervals, and framing-clustered bootstrap intervals for pooled rates.
+
+## Deviation (recorded after the two raters finished, before any analysis of model rates)
+
+The two pre-registered raters were two instances of the same model with the same instructions. They
+labelled 1,440 of 1,440 items identically, including the borderline ones, without access to each
+other's files. That shows the labelling is reproducible, not that it is independent. A rater from a
+different model family (gpt-4.1-mini on Azure, temperature 0, same definitions, blind) is added in
+`research/rq4f_rater_gpt.py`; its agreement with the pre-registered labels is reported as the
+independence check, and F3 is judged on it. gpt-4.1-mini is also one of the rated models; this is
+disclosed.
