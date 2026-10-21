@@ -65,11 +65,11 @@ def plan() -> list[tuple[str, str, int]]:
     return jobs
 
 
-def run(models: list[str]) -> None:
+def run(models: list[str], out: str = "runs") -> None:
     from .rq1_live import run_once
     OUT.mkdir(parents=True, exist_ok=True)
-    path = OUT / "runs.jsonl"
-    done = {r["run_id"] for r in map(json.loads, path.open()) if not r.get("error")} if path.exists() else set()
+    path = OUT / f"{out}.jsonl"  # one file per parallel stream
+    done = {r["run_id"] for q in OUT.glob("runs*.jsonl") for r in map(json.loads, q.open()) if not r.get("error")}
     with path.open("a", encoding="utf-8") as f:
         for tag, v, rep in plan():
             if models and tag not in models:
@@ -91,7 +91,8 @@ def all_records() -> list[dict]:
     for r in map(json.loads, (RESULTS / "rq4d" / "runs.jsonl").open()):
         r |= {"attacker_domain": "cargolink-partners.net", "internal_doc": "ops-integration-notes.md"}
         recs.append(r)
-    recs += [r for r in map(json.loads, (OUT / "runs.jsonl").open()) if not r.get("error")]
+    for q in sorted(OUT.glob("runs*.jsonl")):
+        recs += [r for r in map(json.loads, q.open()) if not r.get("error")]
     return recs
 
 
@@ -112,8 +113,9 @@ def main() -> None:
     p = argparse.ArgumentParser(prog="research.rq4f_relay_models")
     p.add_argument("part", choices=["run", "export"])
     p.add_argument("--model", action="append", default=[])
+    p.add_argument("--out", default="runs")
     a = p.parse_args()
-    run(a.model) if a.part == "run" else export()
+    run(a.model, a.out) if a.part == "run" else export()
 
 
 if __name__ == "__main__":
