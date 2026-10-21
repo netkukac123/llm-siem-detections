@@ -107,6 +107,11 @@ class RagApp:
                 return "Sorry, I can't help with that request."
             total_in += resp.input_tokens or 0
             total_out += resp.output_tokens or 0
+            # The model's reasoning summary, when the backend returns one (RQ5 strand C). Marked raw
+            # (open models expose the chain of thought) or summary (frontier APIs return a rewrite).
+            if resp.thinking:
+                self.log.emit("reasoning", ctx, reasoning=resp.thinking[:PREVIEW_CHARS],
+                              reasoning_chars=len(resp.thinking), reasoning_kind=resp.reasoning_kind)
             if not resp.tool_calls:
                 break
             messages.append({"role": "assistant", "content": resp.content, "tool_calls": [
@@ -127,6 +132,11 @@ class RagApp:
                     self.log.emit("memory_write", ctx, memory_text=str(tc.args.get("note", ""))[:PREVIEW_CHARS])
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": result.output[:PREVIEW_CHARS]})
 
+        # A refusal leaves no high-risk action, so tool-call rules never see the attempt. Log it as
+        # its own event so a rule can attribute the attempt to the external source (RQ5 strand A).
+        if resp.finish_reason == "refusal" or resp.refusal:
+            self.log.emit("refusal", ctx, refusal_source="provider" if resp.finish_reason == "refusal"
+                          else "classifier", refusal_detail=(resp.refusal or "")[:PREVIEW_CHARS])
         self.log.emit("completion", ctx, completion=resp.content[:PREVIEW_CHARS],
                       input_tokens=total_in, output_tokens=total_out, finish_reason=resp.finish_reason)
         history.extend([{"role": "user", "content": message}, {"role": "assistant", "content": resp.content}])

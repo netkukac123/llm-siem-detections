@@ -1,12 +1,12 @@
 {
-  "created": "2026-10-21T07:41:01+00:00",
-  "commit": "5c415ea698dfb43b0d6cca6a45602b0b097f376d",
+  "created": "2026-10-21T12:53:17+00:00",
+  "commit": "4ee54b6e5b17fcbb21ea55045b1f9f44f6c9d91a",
   "python": "3.14.8",
   "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44",
   "models": [
-    "azure:gpt-5-mini",
-    "azure:gpt-oss-120b",
-    "azure:gpt-4.1-mini"
+    "anthropic:claude-haiku-4-5",
+    "anthropic:claude-sonnet-5-5",
+    "anthropic:claude-opus-5-5"
   ],
   "reps": 10,
   "temperature": 0.7,

@@ -32,6 +32,10 @@ class ModelResponse:
     input_tokens: int | None = None
     output_tokens: int | None = None
     finish_reason: str = "stop"
+    # Reasoning summary and refusal details, when the backend exposes them (Anthropic).
+    thinking: str = ""
+    refusal: str = ""
+    reasoning_kind: str = ""  # "raw" (chain of thought) | "summary" (frontier rewrite) | ""
 
 
 class ProviderFilterError(Exception):
@@ -77,6 +81,93 @@ class ScriptedModel:
         context = next((m["content"] for m in messages if m["role"] == "system" and m["content"].startswith("CONTEXT")), "")
         first_fact = next((ln for ln in context.splitlines() if ln and not ln.startswith(("CONTEXT", "[", "<!--"))), "")
         return f"According to the knowledge base: {first_fact}" if first_fact else "I could not find that in the knowledge base."
+
+
+class AnthropicModel:
+    """Anthropic Messages API backend (official SDK).
+
+    Takes the same OpenAI-style message list the app builds and converts it. Each assistant
+    turn's original content blocks are kept and sent back unchanged on tool-loop continuations,
+    because current models reject edited histories (thinking blocks carry a signature).
+    `thinking`: "adaptive" (Sonnet 5.5 / Opus 5.5, summarized text is returned) or "enabled"
+    (Haiku 4.5, fixed budget). Refusals arrive as stop_reason "refusal", not as HTTP errors.
+    """
+
+    def __init__(self, model: str, api_key: str, max_tokens: int = 4096, thinking: str | None = "adaptive",
+                 effort: str | None = None, workspace_id: str | None = None):
+        import anthropic
+        client_kw: dict[str, Any] = {"api_key": api_key, "max_retries": 5}
+        if workspace_id:  # an org-level key must name the workspace on every request
+            client_kw["default_headers"] = {"anthropic-workspace-id": workspace_id}
+        self.client = anthropic.Anthropic(**client_kw)
+        self.name = model
+        self.model = model
+        self.max_tokens = max_tokens
+        self.thinking = thinking
+        self.effort = effort
+        self._turns: dict[str, list[dict]] = {}  # first tool_use id -> original assistant blocks
+
+    @staticmethod
+    def _tools(tools: list[dict]) -> list[dict]:
+        return [{"name": t["function"]["name"], "description": t["function"]["description"],
+                 "input_schema": t["function"]["parameters"]} for t in tools]
+
+    def _convert(self, messages: list[dict]) -> tuple[str, list[dict]]:
+        system, out = [], []
+        for m in messages:
+            role, content = m["role"], m.get("content") or ""
+            if role == "system":
+                system.append(content)
+            elif role == "user":
+                out.append({"role": "user", "content": content})
+            elif role == "assistant":
+                calls = m.get("tool_calls") or []
+                if calls and calls[0]["id"] in self._turns:
+                    out.append({"role": "assistant", "content": self._turns[calls[0]["id"]]})
+                    continue
+                blocks = [{"type": "text", "text": content}] if content else []
+                blocks += [{"type": "tool_use", "id": c["id"], "name": c["function"]["name"],
+                            "input": json.loads(c["function"]["arguments"])} for c in calls]
+                if blocks:  # an empty assistant turn is not a valid block; dropping it is allowed
+                    out.append({"role": "assistant", "content": blocks})
+            elif role == "tool":
+                block = {"type": "tool_result", "tool_use_id": m["tool_call_id"], "content": content}
+                last = out[-1] if out else None
+                if last and last["role"] == "user" and isinstance(last["content"], list) \
+                        and last["content"] and last["content"][0].get("type") == "tool_result":
+                    last["content"].append(block)  # all results of one turn go in one user message
+                else:
+                    out.append({"role": "user", "content": [block]})
+        return "\n\n".join(system), out
+
+    def generate(self, messages: list[dict], tools: list[dict]) -> ModelResponse:
+        system, conv = self._convert(messages)
+        kw: dict[str, Any] = {"model": self.model, "max_tokens": self.max_tokens, "system": system,
+                              "messages": conv, "tools": self._tools(tools)}
+        if self.thinking == "adaptive":
+            kw["thinking"] = {"type": "adaptive", "display": "summarized"}
+            if self.effort:
+                kw["output_config"] = {"effort": self.effort}
+        elif self.thinking == "enabled":
+            kw["thinking"] = {"type": "enabled", "budget_tokens": 1024}
+        # The 1.x SDK takes no sampling parameters; run-to-run variability comes from repetitions.
+        r = self.client.messages.create(**kw)
+
+        thinking = "".join(getattr(b, "thinking", "") or "" for b in r.content if b.type == "thinking")
+        text = "".join(b.text for b in r.content if b.type == "text")
+        calls = [ToolCall(name=b.name, args=dict(b.input), id=b.id) for b in r.content if b.type == "tool_use"]
+        if calls:
+            self._turns[calls[0].id] = [b.model_dump() for b in r.content]
+        finish = {"end_turn": "stop", "tool_use": "tool_calls", "max_tokens": "length"}.get(r.stop_reason, r.stop_reason)
+        refusal = ""
+        if r.stop_reason == "refusal" and getattr(r, "stop_details", None):
+            refusal = f"{r.stop_details.category or 'unspecified'}: {r.stop_details.explanation or ''}".strip()
+        # adaptive thinking on 5.x returns a summary written by a separate model; enabled thinking
+        # (Haiku) returns the model's own reasoning tokens. Recorded so strand C can separate them.
+        kind = "summary" if self.thinking == "adaptive" else ("raw" if thinking else "")
+        return ModelResponse(content=text, tool_calls=calls, input_tokens=r.usage.input_tokens,
+                             output_tokens=r.usage.output_tokens, finish_reason=finish,
+                             thinking=thinking, refusal=refusal, reasoning_kind=kind)
 
 
 class OpenAICompatModel:

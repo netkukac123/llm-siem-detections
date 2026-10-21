@@ -19,7 +19,7 @@
   <!-- ===== Base: recognise the event family ===== -->
   <rule id="100700" level="0">
     <decoded_as>json</decoded_as>
-    <field name="event_type" type="pcre2">^(prompt|guardrail|retrieval|tool_call|completion|memory_write|tool_registry)$</field>
+    <field name="event_type" type="pcre2">^(prompt|guardrail|retrieval|tool_call|completion|memory_write|tool_registry|reasoning|refusal)$</field>
     <field name="request_id" type="pcre2">^\w+$</field>
     <description>LLM app event.</description>
   </rule>
@@ -51,6 +51,18 @@
     <field name="event_type">^tool_call$</field>
     <description>LLM app: agent tool call.</description>
     <group>llm_tool_call,</group>
+  </rule>
+
+  <rule id="100706" level="0">
+    <if_sid>100700</if_sid>
+    <field name="event_type">^reasoning$</field>
+    <description>LLM app: model reasoning trace.</description>
+  </rule>
+
+  <rule id="100707" level="0">
+    <if_sid>100700</if_sid>
+    <field name="event_type">^refusal$</field>
+    <description>LLM app: model refusal signal.</description>
   </rule>
 
   <rule id="100705" level="0">
@@ -448,6 +460,41 @@
     <same_field>user_id</same_field>
     <description>LLMD-009 Token consumption spike from $(user_id): repeated large requests.</description>
     <group>llmd_009,owasp_llm10,atlas_AML.T0034,atlas_AML.T0029,</group>
+  </rule>
+
+  <!-- LLMD-023 Attempted but refused injection. A refused injection produces no malicious tool
+       call, so the action rules never see it. These fire on the refusal signal instead. The
+       Sentinel version also requires external content in the session and no high-risk action, and
+       attributes the attempt to the poisoned document or MCP server; Wazuh has no join, so that
+       source attribution and the no-action condition are a known gap here (correlate by session_id
+       with the retrieval/tool_registry events in the same session manually). -->
+  <rule id="100790" level="5">
+    <if_sid>100707</if_sid>
+    <description>LLMD-023 Model refused an action from $(user_id) (provider refusal signal).</description>
+    <group>llmd_023,owasp_asi01,atlas_AML.T0051.001,</group>
+  </rule>
+
+  <rule id="100791" level="5">
+    <if_sid>100706</if_sid>
+    <field name="reasoning" type="pcre2">(?i)\bI\s+(can.?t|cannot|won.?t|will not|am not able to|am unable)\b[^.\n]{0,40}\b(help|assist|comply|do that|with that|follow|perform|execute|send|run|email)\b|\bI (must|have to) (decline|refuse)\b|\b(prompt|indirect) injection\b|\bI (should|will) not (follow|act on|comply)\b</field>
+    <description>LLMD-023 Model reasoning shows a refused instruction in session $(session_id).</description>
+    <group>llmd_023,owasp_asi01,atlas_AML.T0051.001,</group>
+  </rule>
+
+  <rule id="100792" level="5">
+    <if_sid>100705</if_sid>
+    <field name="completion" type="pcre2">(?i)\bI\s+(can.?t|cannot|won.?t|will not|am not able to|am unable)\b[^.\n]{0,40}\b(help|assist|comply|do that|with that|follow|perform|execute|send|run|email)\b|\bI (must|have to) (decline|refuse)\b|\b(prompt|indirect) injection\b</field>
+    <description>LLMD-023 Model declined in its answer to $(user_id) (possible refused injection).</description>
+    <group>llmd_023,owasp_asi01,atlas_AML.T0051.001,</group>
+  </rule>
+
+  <!-- LLMD-024 Reasoning trace states intent to follow injected content. Single-event match on the
+       reasoning text. Complement to the behavioural rules, not a replacement. -->
+  <rule id="100795" level="5">
+    <if_sid>100706</if_sid>
+    <field name="reasoning" type="pcre2">(?i)\bthe (document|doc|tool|function|result|note|message|email|instructions?|documentation|context)\b[^.\n]{0,40}\b(say|says|tell|tells|instruct|instructs|want|wants|require|requires|note|notes)\b[^.\n]{0,20}\bme\b|\bno need to (ask|tell|inform|mention)[^.\n]{0,15}\buser\b|\bimportant note\b[^.\n]{0,60}\b(read the file|pass the|do not mention|email|send|run)\b|\bI notice\b[^.\n]{0,50}\b(note|instruction|important|tells me|requires)\b</field>
+    <description>LLMD-024 Reasoning in session $(session_id) states intent to follow injected content ($(reasoning_kind)).</description>
+    <group>llmd_024,owasp_asi01,atlas_AML.T0051.001,</group>
   </rule>
 
 </group>

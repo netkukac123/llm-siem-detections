@@ -1,0 +1,41 @@
+id: 3e448082-ee55-5aa0-9972-65678710c935
+name: LLMD-024 Reasoning trace states intent to follow injected content
+description: |
+  The model's logged reasoning says, in its own words, that it is acting on an instruction that came
+  from a document or a tool rather than from the user: "the document/tool tells me to", "I will email
+  the file as instructed", "no need to tell the user". This is the compliance decision stated before
+  the action, so it can flag an injection even when the realized tool call looks ordinary. It is a
+  complement to the behavioural rules, not a replacement: published work finds action based monitors
+  match or beat reasoning text monitors, so this is evaluated for what it adds on top of LLMD-006/007,
+  not on its own. The signal differs by model tier: open models expose raw chain of thought, while
+  frontier APIs return a summary written by a separate model, which is lossier. reasoning_kind records
+  which one this was.
+severity: Medium
+requiredDataConnectors: []
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+  - Execution
+relevantTechniques: []
+tags:
+  - OWASP-ASI01:2026 Agent Goal Hijack
+  - ATLAS AML.T0051.001 LLM Prompt Injection Indirect
+query: |
+  let intent = @"(?i)\bthe (document|doc|tool|function|result|note|message|email|instructions?|documentation|context)\b[^.\n]{0,40}\b(say|says|tell|tells|instruct|instructs|want|wants|require|requires|note|notes)\b[^.\n]{0,20}\bme\b|\bI('?ll| will| should| need to| am going to)\b[^.\n]{0,40}\b(email|send|forward|run|execute|post|upload|curl|download|delete)\b[^.\n]{0,40}\bas (instructed|requested|directed|the)\b|\bno need to (ask|tell|inform|mention)[^.\n]{0,15}\buser\b|\bimportant note\b[^.\n]{0,60}\b(read the file|pass the|do not mention|email|send|run)\b|\bI notice\b[^.\n]{0,50}\b(note|instruction|important|tells me|requires)\b";
+  LLMAppLogs_CL
+  | where event_type == "reasoning" and isnotempty(reasoning)
+  | where reasoning matches regex intent
+  | project TimeGenerated, user_id, src_ip, session_id, request_id, reasoning_kind, reasoning
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+customDetails:
+  SessionId: session_id
+  ReasoningKind: reasoning_kind
+version: 1.0.0
+kind: Scheduled
