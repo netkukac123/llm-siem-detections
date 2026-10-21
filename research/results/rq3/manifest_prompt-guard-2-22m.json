@@ -1,0 +1,16 @@
+{
+  "created": "2026-10-21T13:03:57+00:00",
+  "commit": "1aefd714595827b4a7335d75570fca39f7460ade",
+  "python": "3.14.8",
+  "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44",
+  "classifier": "prompt-guard-2-22m",
+  "spec": {
+    "repo": "gravitee-io/Llama-Prompt-Guard-2-22M-onnx",
+    "model": "model.onnx",
+    "tokenizer": "tokenizer.json",
+    "positive_index": 1
+  },
+  "items": 112894,
+  "seconds": 6790.6,
+  "ms_per_item": 60.15
+}
