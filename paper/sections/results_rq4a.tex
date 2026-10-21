@@ -5,7 +5,9 @@ Of 300 real attack prompts that the rules detect, 1\% are still detected after a
 after a paraphrase (Table~\ref{tab:rq4-offline}); the rules survive base64 wrapping only because one
 rule looks for base64 blobs as such. The classifiers survive character-level operators (DeBERTa 93\%
 to 100\%) and degrade under semantic rewriting (58\% on paraphrase, 63\% to 73\% on translation).
-Even the union of rules and both classifiers catches 61\% of paraphrased seeds. The seeds are
+Even the union of rules and both classifiers catches 61\% of paraphrased seeds. Since 210 of the 300
+seeds come from Lakera Gandalf, which may overlap DeBERTa's training data, its survival rates are an
+upper bound. The seeds are
 clustered (70\% come from one near-duplicate family), but the collapse is the same in both main seed
 datasets. The operators are fixed and receive no feedback from the detectors, so a real attacker does
 at least this well.

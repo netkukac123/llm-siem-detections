@@ -11,7 +11,7 @@ violate policy with enough attempts and that robustness correlates little with m
 size~\cite{grayswan-art}, and that concealed attacks succeed against every frontier model tested, at
 rates from 0.5\% (Claude Opus~4.5) upwards~\cite{ipi-competition}. Recent attack families include
 forged reasoning~\cite{cotforgery}, injected data rather than instructions~\cite{adi}, and dormant
-trigger-conditioned payloads~\cite{explosive}. Our frontier models resisted every family we tried;
+trigger-conditioned payloads~\cite{explosive}. Opus resisted every family we tried on it;
 our contribution is not a stronger attack but a measurement of what the defender sees when attacks
 fail.
 
@@ -26,7 +26,7 @@ fire on a request to email an internal file to a fresh domain.
 
 \paragraph{Views and windows.} Prompt Overflow~\cite{prompt-overflow} shows that open guardrail
 classifiers inspect a different window from the one the model reads, for direct injection;
-LongPIBench~\cite{longpibench} studies position effects in long contexts, and LogJack~\cite{logjack}
+LongPIBench~\cite{longpibench} benchmarks prompt injection in long contexts, and LogJack~\cite{logjack}
 measures Azure Prompt Shields on payloads embedded in cloud logs. We extend the window question to a
 commercial guardrail on both the user and the tool channel, and to the application's own log, measured
 end to end with attack success.

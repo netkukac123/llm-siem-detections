@@ -16,13 +16,15 @@ over stdio with the official Python SDK (version 2.3).
 For the frontier phase two event types were added. A \texttt{reasoning} event carries the model's
 reasoning text for each model round when the provider returns one; for Claude models this is always a
 provider-written summary, never the raw chain of thought, and is labelled as such. A
-\texttt{refusal} event records a refusal and its source: \texttt{provider} when the API stops
-generation with a refusal stop reason (for Claude, \texttt{stop\_reason: refusal} with a category),
-and \texttt{model} when the model declines in its own words.
+\texttt{refusal} event records a refusal by the provider: the API stopped generation with a refusal
+stop reason (for Claude, \texttt{stop\_reason: refusal} with a category) or a content filter blocked
+the request. A refusal in the model's own words is not an event; it is text in the answer or the
+reasoning summary that a rule (\llmd{023}) has to recognise.
 
 \paragraph{Rules.}
-The pack has 25 detections, each implemented as a Microsoft Sentinel scheduled analytic rule (KQL)
-and as Wazuh rules (Table~\ref{tab:rules} in the appendix). They fall into four families that matter
+The pack has 25 detections, each implemented as a Microsoft Sentinel scheduled analytic rule (KQL);
+23 are also implemented as Wazuh rules, and the two newest (\llmd{025} and \llmd{026}) are Sentinel
+only so far (Table~\ref{tab:rules} in the appendix). They fall into four families that matter
 for the results:
 \begin{itemize}
   \item \emph{Content signatures} match text: instruction-override phrasing in prompts (\llmd{001}),

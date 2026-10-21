@@ -23,8 +23,9 @@ rules. Benign signal: the refusal signal on the 50 held-out benign prompts per m
 \paragraph{What an action-only SIEM sees.} Rules over what the agent did (its tool calls, memory
 writes, configuration writes and output) fired on 13\% of the attack sessions. On Opus~5.5, which
 completed none of 100 attacks, they fired on none. This is not a detection failure in the usual
-sense: there was no action to see. It means that a SOC watching agent behaviour learns nothing about
-who is attacking its frontier-model agents, or how often.
+sense: there was no action to see. For an Opus deployment it means that a SOC watching agent behaviour learns nothing about who is
+attacking it, or how often; on Haiku and Sonnet it sees the 24\% and 16\% of sessions where the
+agent acted.
 
 \paragraph{What the refusal adds.} Adding the refusal signal raised coverage to 70\% of attack sessions
 (72\% on Opus~5.5) at a benign rate of 8\%. Where it comes from depends on the model. On Opus~5.5,
@@ -36,11 +37,13 @@ provider, 16 model text). The SOC therefore needs both paths: a provider refusal
 with a stop reason that an application must log as an event, and a model refusal is text that a rule
 must recognise.
 
-\paragraph{Capability changes which attacks work, not how detectable they are.} The frontier models
+\paragraph{Capability seems to change which attacks work, not how detectable they are.} The frontier models
 completed only three scenarios: MCP tool poisoning (L04), tool-output injection (L06) and agent
 configuration tampering (L08), all tool-channel or agent-action attacks. Within each of these,
-detectability matched the exploratory run exactly (Table~\ref{tab:rq5c-scen}): behavioural rules
-caught every completed attack, output-content rules only L04. An earlier reading of the exploratory
+detectability matched the exploratory frontier run exactly (Table~\ref{tab:rq5c-scen}): behavioural
+rules caught every completed attack, output-content rules only L04. The comparison with the smaller
+models, where per-scenario recall was the same or nearly so, rests on the exploratory data only, and
+on three scenarios with 10 to 12 completed attacks each. An earlier reading of the exploratory
 data, that behavioural recall is weakest for the weakest models, was an artefact of which scenarios
 each model fell for and has been withdrawn (Section~\ref{sec:process}).
 
@@ -51,14 +54,14 @@ completed by any Claude model.}
 \label{tab:rq5c-scen}
 \end{table}
 
-\paragraph{Attribution does not work as designed.} \llmd{023} names the external sources in the
+\paragraph{Attribution does not work as designed (exploratory run).} \llmd{023} names the external sources in the
 session as candidate carriers of the attack. On the exploratory run it named the true carrier in every
 alert on scenarios that have one, but named only the true carrier in 0.34 of them, and it named a
 source on every alert in scenarios without an external carrier. The clean MCP server is registered in
 every session and incidental retrievals count as carriers, so the source list is context for an
 analyst, not an attribution.
 
-\paragraph{Input rules see everything, until reworded.} In this harness, input rules saw every attack
+\paragraph{Input rules see everything, until reworded.} In the exploratory run, input rules saw every attack
 attempt on every tier (recall 1.00) at a 12\% benign rate, because the attacks use known phrasing.
 Section~\ref{sec:rq4a} shows how little rewording that survives, which is why the action-only baseline,
 not the input baseline, is the one that matters for robust models.

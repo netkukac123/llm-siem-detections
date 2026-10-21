@@ -14,13 +14,17 @@ writes injections with the rule set in mind?
 what does an attacker gain from the difference?
 
 \subsection{Protocol}
-Results are held to a written evidence standard (\texttt{docs/research/evidence-standard.md}). Every
-experiment from N1 onwards has a pre-registration committed to the public repository before its first
-run, so that the commit timestamp precedes the data; deviations are reported. An observation made on
+Results are held to a written evidence standard (\texttt{docs/research/evidence-standard.md}). RQ1 to
+RQ3 and RQ4 Part A follow a study design committed before they ran but have no per-experiment
+pre-registration. N1, N1b, C2, RQ4c, RQ5b, RQ5-C, RQ4d and RQ4e each have a pre-registration
+committed to the public repository before the first run (by seconds to minutes; these are git commit
+dates set by the author's machine, not external timestamps). The pre-registration of the first
+frontier run (RQ5) was committed after its runs, so RQ5 is reported as exploratory. An observation made on
 data already seen is not reported as a finding until a separately pre-registered confirmation on
-fresh material (new repetitions, new wordings, held-out benign prompts) reproduces it. Every result
-was reviewed by an adversarial reviewer (an independent model instance instructed to find errors);
-the errors it found, and the claims that were withdrawn, are listed in Section~\ref{sec:process}.
+fresh material (new repetitions, new wordings, held-out benign prompts) reproduces it. RQ4 Part A, RQ4c, RQ5 and RQ5b were reviewed
+by an adversarial reviewer (an independent model instance instructed to find errors) before the
+confirmatory runs; the whole paper, including RQ5-C, RQ4d and RQ4e, was reviewed the same way before
+release. The errors found and the claims withdrawn are listed in Section~\ref{sec:process}.
 Proportions carry Wilson 95\% intervals unless stated otherwise.
 
 \subsection{Rule execution}
@@ -30,12 +34,12 @@ overlapping scheduled runs, because replayed data is not ``recent''. Events are 
 with the production schema (\texttt{LLMAppLogs\_CL}).
 
 \subsection{RQ1 and RQ5: live attacks}
-\paragraph{Models.} Eleven models with tool calling. Five open-weight models from five vendors, small
+\paragraph{Models.} Twelve models with tool calling. Five open-weight models from five vendors, small
 enough for an 8~GB consumer GPU (NVIDIA RTX~4060), served by Ollama~0.40.6 at default quantisation:
 \input{generated/models.tex}. Three models deployed on Azure AI Foundry with the default content
 filter: \input{generated/azure_models.tex}. Three Claude models through the Anthropic Messages API
 (SDK 1.17.0): Haiku~4.5 with extended thinking (budget 1{,}024 tokens), Sonnet~5.5 and Opus~5.5 with
-adaptive thinking and summarised display. RQ4e adds Opus~4.8, configured like Opus~5.5.
+adaptive thinking and summarised display. RQ4d and RQ4e add Opus~4.8, configured like Opus~5.5.
 
 \paragraph{Scenarios.} Ten attack scenarios in which only attacker inputs are fixed and the model's
 behaviour is not scripted: a direct injection asking for the system prompt (L01); indirect injections
@@ -61,7 +65,8 @@ disjoint from every earlier benign run, with rule groups, metrics and decision c
 pre-registration committed before the first request.
 
 \subsection{RQ2 and RQ3: public datasets and classifiers}
-We assembled 112{,}894 items from 16 public datasets (Table~\ref{tab:rq2-datasets}): labelled direct
+We assembled 112{,}894 items from 14 public datasets (16 dataset-surface sets, since OASST2 and Dolly
+serve as both benign prompts and benign documents) (Table~\ref{tab:rq2-datasets}): labelled direct
 injections and jailbreaks (deepset, Lakera Gandalf, neuralchemy, SPML, jackhhao, TrustAIRLab
 in-the-wild), indirect injections embedded in documents (Microsoft's LLMail-Inject challenge
 submissions~\cite{llmail}, BIPIA~\cite{bipia}, NVIDIA's agentic indirect injection set), poisoned MCP
@@ -97,6 +102,7 @@ realistic shipment history (offsets 0, 1{,}500, 8{,}000, 40{,}000, 70{,}000; at 
 middle) and records, for each run, whether the model acted and whether each observer saw the
 instruction: the application log (first 1{,}000 characters, and optionally the last 1{,}000 as
 \texttt{tool\_result\_tail}), the Sentinel table after ingestion, and the two classifiers. RQ5b repeats
-the 1{,}000 to 2{,}000 character gap on the Claude models with head-only logging. C2 measures the
+the 1{,}000 to 2{,}000 character gap on the Claude models, first with tail logging on and then, in a
+confirmation, with head-only logging. C2 measures the
 inspection window of the Azure AI Foundry default content filter on the author's own deployment, in
 the user channel and in the tool-result channel.

@@ -2,7 +2,7 @@
 \label{app:rules}
 \begin{table}[h]\centering\small
 \resizebox{\textwidth}{!}{\input{tables/rules.tex}}
-\caption{The detection pack. OWASP LLM01 to LLM10 refer to the LLM Top~10 2025, ASI01 to ASI06 to the
+\caption{The detection pack. OWASP LLM01 to LLM10 refer to the LLM Top~10 2025, ASI01 to ASI09 to the
 Agentic Top~10 2026; ATLAS technique IDs are from release 2026.09 (prefix AML. omitted).}
 \label{tab:rules}
 \end{table}
@@ -18,5 +18,5 @@ Agentic Top~10 2026; ATLAS technique IDs are from release 2026.09 (prefix AML. o
 Every number in this paper is produced by scripts in \texttt{research/} from raw per-run records, and
 every table and figure by \texttt{research/report.py}. Datasets are downloaded from their public
 sources by \texttt{research/rq2\_data.py}; models are pulled by tag from the Ollama library; the Kusto
-emulator image is pinned by digest. Run manifests record the commit, model tags, seeds and software
-versions.
+emulator image is pinned by digest. Run manifests record the commit, Python version and platform; model tags and
+repetition numbers are in every run record.

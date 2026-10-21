@@ -1,0 +1,15 @@
+\begin{tabular}{llrlrl}
+\toprule
+Surface & Detector & Attacks & Recall \% [95\% CI] & Benign & FPR \% [95\% CI] \\
+\midrule
+prompt & rules & 3,999 & 4.5 [3.9, 5.2] & 27,948 & 0.01 [0.00, 0.03] \\
+prompt & DeBERTa v2 & 3,999 & 82.7 [81.5, 83.9] & 27,948 & 3.80 [3.59, 4.03] \\
+prompt & Prompt Guard 2 & 3,999 & 48.3 [46.7, 49.8] & 27,948 & 0.53 [0.45, 0.62] \\
+document & rules & 16,272 & 0.9 [0.8, 1.1] & 9,467 & 0.25 [0.17, 0.38] \\
+document & DeBERTa v2 & 16,272 & 26.6 [25.9, 27.3] & 9,467 & 5.67 [5.22, 6.16] \\
+document & Prompt Guard 2 & 16,272 & 3.7 [3.4, 4.0] & 9,467 & 0.56 [0.43, 0.73] \\
+tool description & rules & 485 & 23.7 [20.1, 27.7] & 10,001 & 0.17 [0.11, 0.27] \\
+tool description & DeBERTa v2 & 485 & 26.8 [23.1, 30.9] & 10,001 & 1.59 [1.36, 1.85] \\
+tool description & rules OR DeBERTa v2 & 485 & 44.7 [40.4, 49.2] & 10,001 & 1.76 [1.52, 2.04] \\
+\bottomrule
+\end{tabular}

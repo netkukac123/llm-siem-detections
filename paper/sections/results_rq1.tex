@@ -5,15 +5,19 @@ Across eight non-frontier models, 26\% to 50\% of attack runs complied and 13\% 
 attacker's goal (Table~\ref{tab:rq1-models}). When a model complied, at least one of the scenario's
 intended rules fired in 96\% to 100\% of runs. The only miss in 297 complied runs is one Llama~3.1~8B
 run on the reverse-shell scenario (L09) that complied without completing the attack; only an input
-rule fired on it. Detection is
+rule fired on it. Counting only output-side rules (output-content and behavioural), detection was
+281 of 297 complied runs and 269 of 269 runs in which the attack succeeded; the 16 misses are runs
+that complied without completing the attack. Behavioural rules alone caught 193 of the 269; the
+image-beacon exfiltration (L03) is caught only by an output-content rule. Detection is
 high because these models, once compromised, act: they call the email tool with the restricted data,
-write the agent configuration, or run the command, and behavioural rules see actions regardless of
-the words that caused them.
+write the agent configuration, or run the command, and rules over actions and output see these
+regardless of the words that caused them.
 
 \begin{table}[t]\centering\small
 \resizebox{\textwidth}{!}{\input{tables/rq1_models.tex}}
-\caption{RQ1, ten scenarios $\times$ ten runs per model. Detected $\mid$ compliance: an intended rule
-fired on a run where the model complied. Benign FP: any rule fired on a benign run (58 runs per
+\caption{RQ1, ten scenarios $\times$ ten runs per model (one gpt-4.1-mini run errored and is excluded). Detected $\mid$ compliance: an intended rule
+fired on a run where the model complied. Harm can exceed compliance: in three base64 runs (L10) the
+harm oracle fired while the compliance oracle did not. Benign FP: any rule fired on a benign run (58 runs per
 model), dominated by input rules on benign prompts.}
 \label{tab:rq1-models}
 \end{table}

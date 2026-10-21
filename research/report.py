@@ -257,6 +257,37 @@ def rq4():
         (TAB / "rq4_live.tex").write_text("\n".join(lines) + "\n")
 
 
+def rq3_pooled():
+    """Clean datasets pooled per surface; rules rows counted once (they repeat per classifier)."""
+    s = _load("rq3/summary.json")
+    if not s:
+        return
+    from .common import wilson
+    agg = defaultdict(lambda: [0, 0, 0, 0])
+    for r in s["rows"]:
+        if r["contamination"] != "clean":
+            continue
+        if r["variant"] == "rules" and r["classifier"] != "protectai-deberta-v3-base-v2":
+            continue
+        a = agg[(r["kind"], r["variant"])]
+        a[0] += r["tp"]; a[1] += r["fn"]; a[2] += r["fp"]; a[3] += r["tn"]
+    rows = [("prompt", "rules"), ("prompt", "protectai-deberta-v3-base-v2"), ("prompt", "prompt-guard-2-22m"),
+            ("document", "rules"), ("document", "protectai-deberta-v3-base-v2"), ("document", "prompt-guard-2-22m"),
+            ("tool_description", "rules"), ("tool_description", "protectai-deberta-v3-base-v2"),
+            ("tool_description", "rules OR protectai-deberta-v3-base-v2")]
+    lab = {"rules": "rules", "protectai-deberta-v3-base-v2": "DeBERTa v2", "prompt-guard-2-22m": "Prompt Guard 2",
+           "rules OR protectai-deberta-v3-base-v2": "rules OR DeBERTa v2"}
+    lines = [r"\begin{tabular}{llrlrl}", r"\toprule",
+             r"Surface & Detector & Attacks & Recall \% [95\% CI] & Benign & FPR \% [95\% CI] \\", r"\midrule"]
+    for k, v in rows:
+        tp, fn, fp, tn = agg[(k, v)]
+        lines.append(f"{k.replace('_', ' ')} & {lab[v]} & {tp + fn:,} & {ci(wilson(tp, tp + fn))} & {fp + tn:,} & "
+                     f"{ci(wilson(fp, fp + tn), 2)} \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    TAB.mkdir(parents=True, exist_ok=True)
+    (TAB / "rq3_pooled.tex").write_text("\n".join(lines) + "\n")
+
+
 def rq4_offline():
     rows = _load("rq4/offline_results.json")
     if not rows:
@@ -380,7 +411,7 @@ def static_tables():
 
 def main() -> None:
     static_tables()
-    for fn in (rq2, rq3, rq1, rq4, rq4_offline, rq5c, rq4d):
+    for fn in (rq2, rq3, rq3_pooled, rq1, rq4, rq4_offline, rq5c, rq4d):
         fn()
     print("figures:", sorted(p.name for p in FIG.glob("*.pdf")) if FIG.exists() else [])
     print("tables:", sorted(p.name for p in TAB.glob("*.tex")) if TAB.exists() else [])
