@@ -1,0 +1,48 @@
+id: 85358f77-22da-5756-8091-d2ca0ba634d5
+name: LLMD-026 Assistant answer passes an outside party's request for internal data to the user
+description: |
+  The model's answer names an internal-only document and an email address outside the organisation,
+  and does not warn the user. This is the shape of an injection that failed against the agent but was
+  handed to the human instead: the tool output asked the agent to send an internal file to an
+  external address, the agent did not do it, and its answer told the user that sending that file to
+  that address is the required next step. The agent becomes a relay for social engineering. Answers
+  that name the same file and address but warn the user (for example "you didn't ask for that, so I
+  ignored it") are excluded. The internal document list stands in for a watchlist of internal
+  resource names.
+severity: Medium
+requiredDataConnectors: []
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Exfiltration
+  - InitialAccess
+relevantTechniques: []
+tags:
+  - OWASP-ASI01:2026 Agent Goal Hijack
+  - OWASP-ASI09:2026 Human-Agent Trust Exploitation
+  - ATLAS AML.T0051.001 LLM Prompt Injection Indirect
+query: |
+  let corporate_domain = "acme-freight.hu";
+  let internal_docs = dynamic(["ops-integration-notes", "expense-policy", "hr-leave-policy", "it-vpn-howto"]);
+  let warning = @"(?i)\b(didn.?t ask|did not ask|ignored|ignore it|suspicious|not part of|sent nothing|haven.?t sent|have not sent|didn.?t send|did not send|didn.?t open|did not open|do not send|don.?t send|won.?t send|will not send|phishing|injection|injected|scam|be careful|caution|risk|not safe|not legitimate|unusual request|check with|verify (this|it|that) (with|through|before))\b";
+  LLMAppLogs_CL
+  | where event_type == "completion" and isnotempty(completion)
+  | where completion has_any (internal_docs)
+  | where not(completion matches regex warning)
+  | extend Domains = extract_all(@"[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})", completion)
+  | mv-expand Domain = Domains to typeof(string)
+  | extend Domain = tolower(Domain)
+  | where not(Domain == corporate_domain or Domain endswith strcat(".", corporate_domain))
+  | summarize TimeGenerated = min(TimeGenerated), ExternalDomains = make_set(Domain) by session_id, user_id, src_ip
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+customDetails:
+  SessionId: session_id
+  ExternalDomains: ExternalDomains
+version: 1.0.0
+kind: Scheduled
