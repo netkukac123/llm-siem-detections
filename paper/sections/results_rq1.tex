@@ -11,7 +11,10 @@ that complied without completing the attack. Behavioural rules alone caught 193 
 image-beacon exfiltration (L03) is caught only by an output-content rule. Detection is
 high because these models, once compromised, act: they call the email tool with the restricted data,
 write the agent configuration, or run the command, and rules over actions and output see these
-regardless of the words that caused them.
+actions. The wording of the attacks was not varied in RQ1, and the same author wrote the scenarios,
+the oracles and the rules; for several scenarios the harm oracle and a behavioural rule observe the
+same event, so these rates measure whether the telemetry captures the action, not whether a rule
+would anticipate an unknown attack.
 
 \paragraph{Three questions, kept apart.} ``Detection'' can mean three things, and the numbers differ.
 Input rules saw an attempt in 799 of 799 attack runs, because these attacks use known phrasing

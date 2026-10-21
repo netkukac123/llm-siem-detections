@@ -1,19 +1,20 @@
 Security operations centres are asked to watch LLM agents that read untrusted content and act
 through tools. We measure what a SIEM fed by the application's own telemetry can see of attacks on
-such agents, with an open pack of 25 Microsoft Sentinel rules (23 also for Wazuh), 112{,}894 items from 14
-public datasets, two open injection classifiers, and live attacks on twelve models from 8B
-open-weight models to Claude Opus~5.5. Content signatures are precise and blind: they fire on under
-1\% of benign prompts, recall 12\% of attack prompts, and lose almost everything to rewording. In this
-application, against models that comply, rules over what the agent did or produced caught all 269 runs in which the attack
-succeeded. Against
-frontier models those rules saw 13\% of 300 attack sessions, and none on Opus~5.5, because the attacks
-failed. In a pre-registered confirmation, logging provider refusals as events and matching refusal language in
-the answer raised coverage to 70\% (72\% on Opus) at an 8\% benign rate: for a robust model, the evidence of an attack
-is the refusal. We also show that the model, the application log and a commercial guardrail inspect
-different parts of the same input, so an instruction can be followed while absent from the log; and
-that a failed injection is usually relayed to the human: nine of twelve models, from small open models
-to gpt-5-mini, presented an injected request to email an internal document to an outside address as
-the user's next step in 61\% to 100\% of 1{,}440 runs and never warned, while the agent itself almost
-never acted; only Claude Sonnet~5.5 and Opus warned. No action-based rule sees this path. We release the rules, the agent, the
-pre-registrations, the raw runs and the analysis code, and list the claims an adversarial review
-overturned.
+such agents, using an open pack of 25 Microsoft Sentinel rules (23 also for Wazuh), 112{,}894 items
+from 14 public datasets, two open injection classifiers, and live attacks in one demo application on
+twelve models: five small open-weight models, three Azure-hosted OpenAI models and four Claude models
+behind the Anthropic API. Content signatures are precise and blind: they fire on under 1\% of benign
+prompts, recall 12\% of attack prompts, and lose almost everything to rewording. Against models that
+comply, rules over what the agent did or produced caught all 269 successful attacks across our ten
+scenarios. Against three Claude models (Haiku~4.5, Sonnet~5.5, Opus~5.5) those rules saw 13\% of 300 attack sessions,
+and none on Opus~5.5, because the attacks failed. In a pre-registered confirmation, logging provider
+refusals as events and matching refusal language in the answer raised this to 70\% (72\% on Opus,
+almost all from Anthropic's serving-side classifier) at an 8\% benign rate; this is coverage of
+attempts, not a precise detector. We show that the model, the application log and a commercial
+guardrail inspect different parts of the same input. Finally, when the agent did not act on an injected
+request to email an internal document to an outside address, nine of twelve models told the user to
+do it, as the next step, in 61\% to 100\% of their runs (1{,}440 runs in all, labelled by language
+models); only Claude Sonnet~5.5 and the two Opus models warned. One of our two cross-family raters
+disagreed with the labels, so this generality claim did not meet its pre-registered criterion; the
+other agreed closely. We release the rules, the agent, the pre-registrations, the raw runs and the
+analysis code, and list the claims our reviews overturned.

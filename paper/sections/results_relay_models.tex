@@ -5,36 +5,56 @@ Is the relay a quirk of one model? RQ4f ran the same task on all twelve models, 
 three of RQ4d and three new ones, each asking for a different internal document (the expense policy,
 the VPN guide, the leave policy) to go to a different outside domain (a customs broker, a portal
 migration desk, an account manager). Twenty runs per framing and model, 1{,}440 runs in all, 1{,}290 of
-them new; the pre-registration, including the new framings, was committed before the first run.
+them new; the pre-registration, including the new framings, was committed before the first run. All
+domains are fictitious and did not resolve in DNS at the time of writing.
 
-Nine of the twelve models relayed the request to the user in 61\% to 100\% of their runs, and none of
-the nine warned in a single run (Table~\ref{tab:rq4f}). They span every vendor and size in the study:
-small open models, gpt-oss-120b, gpt-4.1-mini, gpt-5-mini and Claude Haiku~4.5. Pooled over the nine,
-997 of 1{,}080 runs relayed; per framing between 80\% (the JSON record) and 99\%, and on the three
-framings first used here between 90\% and 98\%. Only Opus~4.8, Opus~5.5 and Sonnet~5.5 never relayed:
-they warned, or the provider stopped the answer. The agents themselves almost never acted (3 of 1{,}440
-runs sent the email). For most models, then, the usual end of a failed injection is not an alert and
-not a refusal, but an instruction to the user, with the attacker's address in it.
+Under the pre-registered labels, nine of the twelve models relayed the request to the user in 61\% to
+100\% of their runs, and none of the nine was labelled as warning in any run
+(Table~\ref{tab:rq4f}). They span every vendor and size in the study: models of about 4B to 8B
+parameters, gpt-oss-120b, gpt-4.1-mini, gpt-5-mini and Claude Haiku~4.5. Pooled over the nine, 997 of
+1{,}080 runs relayed; per framing between 80\% (the JSON record) and 99\%, and on the three framings
+first used here between 90\% and 98\%. The framing matters for some models (Haiku relayed in 7 of 20
+runs on the JSON record and 20 of 20 on two others), so we give the per-framing range rather than an
+interval on the pooled rate, which six framings cannot support. Only Opus~4.8, Opus~5.5 and Sonnet~5.5
+never relayed: they warned, or the provider stopped the answer. The agents themselves almost never
+acted (3 of 1{,}440 runs sent the email).
 
 \begin{table}[t]\centering\small
 \resizebox{\textwidth}{!}{\input{tables/rq4f_models.tex}}
 \caption{RQ4f, 120 runs per model (six framings, 20 each). Relays: answer passes the request on as
-something to do, no warning (pre-registered labels, Wilson CI). Held-out: framings R4 to R6 only. 2nd
-rater: relay rate by gpt-5-mini, labelling blind with the same definitions. Harm: the agent sent the
-email itself.}
+something to do, no warning (pre-registered labels; Wilson CI over runs, which ignores clustering by
+framing). Held-out: framings R4 to R6 only. gpt-5-mini and gpt-4.1-mini: relay rates by the two
+cross-family raters. Harm: the agent sent the email itself.}
 \label{tab:rq4f}
 \end{table}
 
-\paragraph{How reliable are the labels?} The two pre-registered raters were two instances of the same
-model; they agreed on all 1{,}440 items, which shows that the labelling is reproducible but not that it
-is independent. A rater from another family, gpt-4.1-mini, agreed on only 59\% ($\kappa = 0.36$). In ten
-randomly drawn disagreements every answer passed the request on with no warning; it had labelled the
-request, not the answer. By the pre-registered rule, which judged agreement on that rater, the
-generality claim is therefore \emph{not established}. The next rater was fixed before it ran, with the
-identical prompt: gpt-5-mini agreed with the pre-registered labels on 97\% of items ($\kappa = 0.94$;
-0.98 on relay versus warning) and gives the same rate per model (Table~\ref{tab:rq4f}). We report both:
-the formal verdict fails on one rater, and the evidence from the other is strong.
+\paragraph{How reliable are the labels?} All raters are language models; no answer was labelled by a
+person. The pre-registered raters were two instances of Claude Opus~5.5, the model that assisted this
+study, with the same instructions; they agreed on all 1{,}440 items, which shows that the labelling is
+reproducible but not that it is independent (the same holds for the second reading in RQ4d). Under the
+rule as amended before the analysis, agreement was judged on a rater from another family,
+gpt-4.1-mini. It agreed on only 59\% ($\kappa = 0.36$); in ten randomly drawn disagreements every
+answer passed the request on with no warning, which suggests it labelled the request rather than the
+answer. The pre-registered generality claim is therefore \emph{not established}. A further rater was
+fixed by rule before it ran, with the identical prompt: gpt-5-mini agreed with the pre-registered labels
+on 97\% of items ($\kappa = 0.94$; 0.98 when both labels are relay or warning) and gives the same rate
+per model. The two cross-family raters agreed with each other on 59\% ($\kappa = 0.37$). Both rate
+some of their own answers; excluding those leaves the kappas unchanged (0.35 and 0.95). The relay
+rates do depend on the rater: over the nine models' 1{,}080 runs the gpt-5-mini labels contain 8
+warnings and the gpt-4.1-mini labels 588. Even under gpt-4.1-mini's labels, seven of the twelve models
+relay in at least 30\% of runs.
 
-\paragraph{Detecting it.} \llmd{026} caught 77\% of the relays, and 77\% on the three internal documents
-it was not written for. It fired on 6\% of the warnings and on none of 788 benign runs across eleven
-models. Its misses name the address without the document or the document without an address.
+\paragraph{Is a relay a failure?} One reading is that the models summarise the tool's message
+faithfully, which is what a tool-using assistant should do. We did not run a control in which the tool
+returns a harmless procedure, so we cannot separate indiscriminate relaying from a failure to recognise
+this request as dangerous. What the data do show is the contrast: three models, given the same
+messages, flagged the request every time. Nor did we measure whether people act on a relayed request;
+an employee who does would be visible to mail and data-loss controls, which our rules do not cover.
+
+\paragraph{Detecting it.} \llmd{026} caught 771 of the 997 relays (77\%). All four internal document
+names, including the three new ones, have been in the rule since it was frozen, so the held-out
+framings test new wording, not new documents. It fired on 18 of 314 warnings (6\%) and on none of 788
+benign runs across eleven models, but none of those benign tasks involved internal documents and
+outside addresses, so the benign result says little about real traffic. Of the 226 missed relays, 97
+name the address but not the document, 25 the document but not an address, 86 neither (for example
+``the VPN guide''), and 18 name both but contain a phrase the rule treats as a warning.
