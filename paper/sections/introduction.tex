@@ -34,10 +34,12 @@ The main findings:
         between the application's logged preview and the model's input was followed while absent from
         the log; Azure's default content filter blocked nothing past the first 1{,}000 characters of a
         user message and nothing in tool results (Section~\ref{sec:views}).
-  \item \emph{A failed injection can be relayed to the human.} Instead of acting on an injected
-        exfiltration request, Claude Haiku~4.5 repeatedly presented it to the user as the required next
-        step, a path no action-based rule sees; we confirm this on fresh framings and give a first rule
-        for it (Section~\ref{sec:relay}).
+  \item \emph{A failed injection is usually relayed to the human.} Instead of acting on an injected
+        request to email an internal document outside, nine of twelve models told the user to do it,
+        as the required next step, in 61\% to 100\% of their runs, and never warned; only Claude
+        Sonnet~5.5 and the two Opus models warned (1{,}440 runs, six framings). No action-based rule
+        sees this path; we give a first answer-side rule for it (Sections~\ref{sec:relay}
+        and~\ref{sec:relay-models}).
 \end{itemize}
 
 The rules, the demo application, every pre-registration, every raw run record and the scripts that

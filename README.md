@@ -24,8 +24,10 @@ in those logs, and which do not.
   pre-registered confirmations: against models that comply, rules over the agent's actions and output
   caught all 269 successful attacks; against Claude frontier models they saw 13% of attack sessions,
   and logging provider and model refusals raised that to 70% (Opus 5.5: 0% to 72%) at an 8% benign
-  rate. A failed injection can also be relayed to the human: Claude Haiku 4.5 told the user to email
-  an internal file to the attacker's address in 47 of 60 fresh runs (LLMD-026).
+  rate. A failed injection is usually relayed to the human: nine of twelve models (open 8B models
+  to gpt-5-mini and Claude Haiku 4.5) told the user to email an internal document to the attacker's
+  address in 61% to 100% of 1,440 runs and never warned; only Claude Sonnet 5.5 and Opus warned
+  (LLMD-026 catches 77% of these answers, 0 of 788 benign runs).
 - **Agentic and MCP coverage built on 2025-2026 research**: tool poisoning and rug pulls (Invariant
   Labs), runtime-response poisoning ("Agentjacking", 2026), persistent memory injection (SpAIware,
   Unit 42), agent config tampering (CVE-2025-53773, CVE-2025-54135), EchoLeak's reference-style image

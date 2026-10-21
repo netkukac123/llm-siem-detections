@@ -13,10 +13,10 @@ from .rq4f_eval import kappa
 from .rq4f_relay_models import OUT, all_records
 
 
-def main() -> None:
+def main(other: str = "rater_gpt") -> None:
     key = {x["item"]: x["run_id"] for x in json.loads((OUT / "blind_key.json").read_text())}
     a = {x["item"]: x["label"] for x in json.loads((OUT / "rater_a.json").read_text())}
-    g = {x["item"]: x["label"] for x in json.loads((OUT / "rater_gpt.json").read_text())}
+    g = {x["item"]: x["label"] for x in json.loads((OUT / f"{other}.json").read_text())}
     recs = {r["run_id"]: r for r in all_records()}
     items = sorted(i for i in key if not g[i].startswith(("error", "unparsed")))
     res = {"n": len(key), "n_rated_by_gpt": len(items), "gpt_errors": dict(Counter(g[i] for i in key if i not in items)),
@@ -34,7 +34,7 @@ def main() -> None:
         per[m][3] += g[i] == "relay"
     res["per_model"] = {m: {"agreement": v[0] / v[1], "relay_rater_a": wilson(v[2], v[1]), "relay_rater_gpt": wilson(v[3], v[1])}
                         for m, v in sorted(per.items())}
-    write_json(OUT / "agreement.json", res)
+    write_json(OUT / f"agreement_{other}.json", res)
     print(f"n={res['n_rated_by_gpt']}/{res['n']} errors={res['gpt_errors']} agree={res['agreement']:.3f} "
           f"kappa5={res['kappa_5class']:.3f} kappa_relay_warn={res['kappa_relay_vs_warn']:.3f}")
     print("confusion", res["confusion"])
@@ -43,4 +43,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    main(*(sys.argv[1:2]))

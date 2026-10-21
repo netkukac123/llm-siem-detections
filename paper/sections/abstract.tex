@@ -11,8 +11,9 @@ failed. In a pre-registered confirmation, logging provider refusals as events an
 the answer raised coverage to 70\% (72\% on Opus) at an 8\% benign rate: for a robust model, the evidence of an attack
 is the refusal. We also show that the model, the application log and a commercial guardrail inspect
 different parts of the same input, so an instruction can be followed while absent from the log; and
-that a failed injection can be relayed to the human: Claude Haiku~4.5 presented an injected request to
-email an internal file to an outside address as the user's next step in 47 of 60 fresh runs (46 by the pre-registered labeller), a path
-no action-based rule sees, while larger models warned. We release the rules, the agent, the
+that a failed injection is usually relayed to the human: nine of twelve models, from small open models
+to gpt-5-mini, presented an injected request to email an internal document to an outside address as
+the user's next step in 61\% to 100\% of 1{,}440 runs and never warned, while the agent itself almost
+never acted; only Claude Sonnet~5.5 and Opus warned. No action-based rule sees this path. We release the rules, the agent, the
 pre-registrations, the raw runs and the analysis code, and list the claims an adversarial review
 overturned.

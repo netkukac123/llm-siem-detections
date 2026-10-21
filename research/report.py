@@ -386,6 +386,29 @@ def rq4d():
     (TAB / "rq4d_relay.tex").write_text("\n".join(lines) + "\n")
 
 
+def rq4f():
+    s = _load("rq4f/summary.json")
+    g5 = _load("rq4f/agreement_rater_gpt-5-mini.json")
+    if not s or not g5:
+        return
+    order = ["anthropic:claude-opus-4-8", "anthropic:claude-opus-5-5", "anthropic:claude-sonnet-5-5",
+             "anthropic:claude-haiku-4-5", "azure:gpt-5-mini", "azure:gpt-4.1-mini", "azure:gpt-oss-120b",
+             "qwen3:8b", "gemma4:e4b", "granite4:tiny-h", "ministral-3:8b", "llama3.1:8b"]
+    name = {m: short_model(m).replace("azure:", "") for m in order}
+    lines = [r"\begin{tabular}{lrllrrr}", r"\toprule",
+             r"Model & Runs & Relays \% [95\% CI] & Held-out framings \% & 2nd rater \% & Warns & Harm \\",
+             r"\midrule"]
+    for m in order:
+        d = s["by_model"][m]
+        lines.append(f"{tex_escape(name[m])} & {d['n']} & {ci(d['relay'], 0)} & {pct(d['relay_heldout'][0], 0)} & "
+                     f"{pct(g5['per_model'][m]['relay_rater_gpt'][0], 0)} & {d['labels']['warn']} & {d['labels']['harm']} \\\\")
+        if m == "anthropic:claude-sonnet-5-5":
+            lines.append(r"\midrule")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    TAB.mkdir(parents=True, exist_ok=True)
+    (TAB / "rq4f_models.tex").write_text("\n".join(lines) + "\n")
+
+
 def static_tables():
     """Appendix rule table and the model list, from the rule YAMLs and the RQ1 manifest."""
     import yaml
@@ -411,7 +434,7 @@ def static_tables():
 
 def main() -> None:
     static_tables()
-    for fn in (rq2, rq3, rq3_pooled, rq1, rq4, rq4_offline, rq5c, rq4d):
+    for fn in (rq2, rq3, rq3_pooled, rq1, rq4, rq4_offline, rq5c, rq4d, rq4f):
         fn()
     print("figures:", sorted(p.name for p in FIG.glob("*.pdf")) if FIG.exists() else [])
     print("tables:", sorted(p.name for p in TAB.glob("*.tex")) if TAB.exists() else [])
