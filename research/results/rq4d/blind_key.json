@@ -1,0 +1,602 @@
+[
+ {
+  "item": 0,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r0"
+ },
+ {
+  "item": 1,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r1"
+ },
+ {
+  "item": 2,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r2"
+ },
+ {
+  "item": 3,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r3"
+ },
+ {
+  "item": 4,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r4"
+ },
+ {
+  "item": 5,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r5"
+ },
+ {
+  "item": 6,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r6"
+ },
+ {
+  "item": 7,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r7"
+ },
+ {
+  "item": 8,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r8"
+ },
+ {
+  "item": 9,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r9"
+ },
+ {
+  "item": 10,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r10"
+ },
+ {
+  "item": 11,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r11"
+ },
+ {
+  "item": 12,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r12"
+ },
+ {
+  "item": 13,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r13"
+ },
+ {
+  "item": 14,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r14"
+ },
+ {
+  "item": 15,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r15"
+ },
+ {
+  "item": 16,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r16"
+ },
+ {
+  "item": 17,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r17"
+ },
+ {
+  "item": 18,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r18"
+ },
+ {
+  "item": 19,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-haiku-4-5-r19"
+ },
+ {
+  "item": 20,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r0"
+ },
+ {
+  "item": 21,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r1"
+ },
+ {
+  "item": 22,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r2"
+ },
+ {
+  "item": 23,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r3"
+ },
+ {
+  "item": 24,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r4"
+ },
+ {
+  "item": 25,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r5"
+ },
+ {
+  "item": 26,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r6"
+ },
+ {
+  "item": 27,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r7"
+ },
+ {
+  "item": 28,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r8"
+ },
+ {
+  "item": 29,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r9"
+ },
+ {
+  "item": 30,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r10"
+ },
+ {
+  "item": 31,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r11"
+ },
+ {
+  "item": 32,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r12"
+ },
+ {
+  "item": 33,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r13"
+ },
+ {
+  "item": 34,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r14"
+ },
+ {
+  "item": 35,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r15"
+ },
+ {
+  "item": 36,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r16"
+ },
+ {
+  "item": 37,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r17"
+ },
+ {
+  "item": 38,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r18"
+ },
+ {
+  "item": 39,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-haiku-4-5-r19"
+ },
+ {
+  "item": 40,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r0"
+ },
+ {
+  "item": 41,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r1"
+ },
+ {
+  "item": 42,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r2"
+ },
+ {
+  "item": 43,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r3"
+ },
+ {
+  "item": 44,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r4"
+ },
+ {
+  "item": 45,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r5"
+ },
+ {
+  "item": 46,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r6"
+ },
+ {
+  "item": 47,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r7"
+ },
+ {
+  "item": 48,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r8"
+ },
+ {
+  "item": 49,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r9"
+ },
+ {
+  "item": 50,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r10"
+ },
+ {
+  "item": 51,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r11"
+ },
+ {
+  "item": 52,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r12"
+ },
+ {
+  "item": 53,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r13"
+ },
+ {
+  "item": 54,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r14"
+ },
+ {
+  "item": 55,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r15"
+ },
+ {
+  "item": 56,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r16"
+ },
+ {
+  "item": 57,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r17"
+ },
+ {
+  "item": 58,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r18"
+ },
+ {
+  "item": 59,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-haiku-4-5-r19"
+ },
+ {
+  "item": 60,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-sonnet-5-5-r0"
+ },
+ {
+  "item": 61,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-sonnet-5-5-r1"
+ },
+ {
+  "item": 62,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-sonnet-5-5-r2"
+ },
+ {
+  "item": 63,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-sonnet-5-5-r3"
+ },
+ {
+  "item": 64,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-sonnet-5-5-r4"
+ },
+ {
+  "item": 65,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-sonnet-5-5-r5"
+ },
+ {
+  "item": 66,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-sonnet-5-5-r6"
+ },
+ {
+  "item": 67,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-sonnet-5-5-r7"
+ },
+ {
+  "item": 68,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-sonnet-5-5-r8"
+ },
+ {
+  "item": 69,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-sonnet-5-5-r9"
+ },
+ {
+  "item": 70,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-sonnet-5-5-r0"
+ },
+ {
+  "item": 71,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-sonnet-5-5-r1"
+ },
+ {
+  "item": 72,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-sonnet-5-5-r2"
+ },
+ {
+  "item": 73,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-sonnet-5-5-r3"
+ },
+ {
+  "item": 74,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-sonnet-5-5-r4"
+ },
+ {
+  "item": 75,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-sonnet-5-5-r5"
+ },
+ {
+  "item": 76,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-sonnet-5-5-r6"
+ },
+ {
+  "item": 77,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-sonnet-5-5-r7"
+ },
+ {
+  "item": 78,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-sonnet-5-5-r8"
+ },
+ {
+  "item": 79,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-sonnet-5-5-r9"
+ },
+ {
+  "item": 80,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-sonnet-5-5-r0"
+ },
+ {
+  "item": 81,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-sonnet-5-5-r1"
+ },
+ {
+  "item": 82,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-sonnet-5-5-r2"
+ },
+ {
+  "item": 83,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-sonnet-5-5-r3"
+ },
+ {
+  "item": 84,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-sonnet-5-5-r4"
+ },
+ {
+  "item": 85,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-sonnet-5-5-r5"
+ },
+ {
+  "item": 86,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-sonnet-5-5-r6"
+ },
+ {
+  "item": 87,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-sonnet-5-5-r7"
+ },
+ {
+  "item": 88,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-sonnet-5-5-r8"
+ },
+ {
+  "item": 89,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-sonnet-5-5-r9"
+ },
+ {
+  "item": 90,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-5-5-r0"
+ },
+ {
+  "item": 91,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-5-5-r1"
+ },
+ {
+  "item": 92,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-5-5-r2"
+ },
+ {
+  "item": 93,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-5-5-r3"
+ },
+ {
+  "item": 94,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-5-5-r4"
+ },
+ {
+  "item": 95,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-5-5-r5"
+ },
+ {
+  "item": 96,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-5-5-r6"
+ },
+ {
+  "item": 97,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-5-5-r7"
+ },
+ {
+  "item": 98,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-5-5-r8"
+ },
+ {
+  "item": 99,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-5-5-r9"
+ },
+ {
+  "item": 100,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-5-5-r0"
+ },
+ {
+  "item": 101,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-5-5-r1"
+ },
+ {
+  "item": 102,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-5-5-r2"
+ },
+ {
+  "item": 103,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-5-5-r3"
+ },
+ {
+  "item": 104,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-5-5-r4"
+ },
+ {
+  "item": 105,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-5-5-r5"
+ },
+ {
+  "item": 106,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-5-5-r6"
+ },
+ {
+  "item": 107,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-5-5-r7"
+ },
+ {
+  "item": 108,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-5-5-r8"
+ },
+ {
+  "item": 109,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-5-5-r9"
+ },
+ {
+  "item": 110,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-5-5-r0"
+ },
+ {
+  "item": 111,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-5-5-r1"
+ },
+ {
+  "item": 112,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-5-5-r2"
+ },
+ {
+  "item": 113,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-5-5-r3"
+ },
+ {
+  "item": 114,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-5-5-r4"
+ },
+ {
+  "item": 115,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-5-5-r5"
+ },
+ {
+  "item": 116,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-5-5-r6"
+ },
+ {
+  "item": 117,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-5-5-r7"
+ },
+ {
+  "item": 118,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-5-5-r8"
+ },
+ {
+  "item": 119,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-5-5-r9"
+ },
+ {
+  "item": 120,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-4-8-r0"
+ },
+ {
+  "item": 121,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-4-8-r1"
+ },
+ {
+  "item": 122,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-4-8-r2"
+ },
+ {
+  "item": 123,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-4-8-r3"
+ },
+ {
+  "item": 124,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-4-8-r4"
+ },
+ {
+  "item": 125,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-4-8-r5"
+ },
+ {
+  "item": 126,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-4-8-r6"
+ },
+ {
+  "item": 127,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-4-8-r7"
+ },
+ {
+  "item": 128,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-4-8-r8"
+ },
+ {
+  "item": 129,
+  "run_id": "rq4d~RQ4d-R1-anthropic_claude-opus-4-8-r9"
+ },
+ {
+  "item": 130,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-4-8-r0"
+ },
+ {
+  "item": 131,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-4-8-r1"
+ },
+ {
+  "item": 132,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-4-8-r2"
+ },
+ {
+  "item": 133,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-4-8-r3"
+ },
+ {
+  "item": 134,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-4-8-r4"
+ },
+ {
+  "item": 135,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-4-8-r5"
+ },
+ {
+  "item": 136,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-4-8-r6"
+ },
+ {
+  "item": 137,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-4-8-r7"
+ },
+ {
+  "item": 138,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-4-8-r8"
+ },
+ {
+  "item": 139,
+  "run_id": "rq4d~RQ4d-R2-anthropic_claude-opus-4-8-r9"
+ },
+ {
+  "item": 140,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-4-8-r0"
+ },
+ {
+  "item": 141,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-4-8-r1"
+ },
+ {
+  "item": 142,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-4-8-r2"
+ },
+ {
+  "item": 143,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-4-8-r3"
+ },
+ {
+  "item": 144,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-4-8-r4"
+ },
+ {
+  "item": 145,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-4-8-r5"
+ },
+ {
+  "item": 146,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-4-8-r6"
+ },
+ {
+  "item": 147,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-4-8-r7"
+ },
+ {
+  "item": 148,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-4-8-r8"
+ },
+ {
+  "item": 149,
+  "run_id": "rq4d~RQ4d-R3-anthropic_claude-opus-4-8-r9"
+ }
+]
