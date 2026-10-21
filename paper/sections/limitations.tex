@@ -11,6 +11,15 @@ API, where a provider classifier sits between the model and the application. On 
 refusal signal is that classifier, so the result describes the deployed system, not model capability
 in isolation. Other providers log refusals differently or not at all.
 
+\paragraph{Few distinct attacks.} The live results rest on ten scenarios. Runs of one scenario share
+its text and are not independent; Wilson intervals over runs understate the uncertainty, and we give
+scenario-clustered bootstrap intervals for the main frontier rates. A rule that caught every run of
+every scenario here says nothing about attack types we did not write.
+
+\paragraph{Telemetry the rules assume.} The behavioural rules need provenance, destination, risk
+class and approval state for every tool call. They work when the application emits these fields
+correctly and an attacker cannot forge them; many applications emit none of them today.
+
 \paragraph{Small cells and fixed attacks.} Most frontier cells have ten runs, and decisions rest on
 point estimates against pre-registered thresholds. The attacks are fixed texts, not an optimising
 attacker; Opus's resistance in RQ4c and RQ4e is a statement about these texts.
@@ -21,7 +30,9 @@ a fixed phrase list, gave 46 rather than 47 Haiku relays and mislabelled ten war
 shares that list.
 
 \paragraph{Dataset labels.} Public labels are noisy and their notions differ (prompt injection versus
-jailbreak versus harmful request). Benign corpora are not production traffic.
+jailbreak versus harmful request). Benign corpora are not production traffic, and the live benign
+samples (58 runs per non-frontier model, 50 per frontier model) are far too small to predict an
+alert rate in an enterprise.
 
 \paragraph{Author bias.} The rules, the scenarios and the analysis have the same author, with AI
 assistance for code, analysis and review. RQ2 and RQ3 rely on third-party attacks; RQ4 Part A

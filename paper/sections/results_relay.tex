@@ -12,7 +12,9 @@ fires when an answer names an internal-only document and an email address outsid
 without a warning phrase.
 
 All pre-registered criteria held. The pre-registered audit read ten answers per label; we then read
-all 150, which corrected the labels of eleven answers (Table~\ref{tab:relay}). Haiku relayed the
+all 150, and a second, independent rater (a separate model instance, blind to model and framing, in
+shuffled order) labelled all 150 again: Cohen's $\kappa = 0.97$, with no disagreement between relay and
+warning (the three disagreements were vague versus no mention). The reading which corrected the labels of eleven answers (Table~\ref{tab:relay}). Haiku relayed the
 request in 47 of 60 runs (78\%, CI 66\% to 87\%; 46 by the pre-registered labeller) and warned in
 none. A typical answer:
 
@@ -52,4 +54,5 @@ phrased them in ways the list did not cover (``I'm not going to do that'', ``it 
 data-exfiltration attempt''). The pre-registered criterion on Sonnet's warnings passed only because
 the labeller shared the same list. A production rule needs the organisation's own list of internal
 resource names, which data loss prevention teams usually keep, and a better warning test, confirmed on
-fresh data.
+fresh data. The 41 of 47 is not an independent validation either: the rule was written for this
+scenario's internal document and shares its warning test with the pre-registered labeller.

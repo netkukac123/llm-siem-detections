@@ -21,14 +21,18 @@ rules. Benign signal: the refusal signal on the 50 held-out benign prompts per m
 \end{table}
 
 \paragraph{What an action-only SIEM sees.} Rules over what the agent did (its tool calls, memory
-writes, configuration writes and output) fired on 13\% of the attack sessions. On Opus~5.5, which
+writes, configuration writes and output) fired on 13\% of the attack sessions (Wilson interval over runs 10\% to 18\%; resampling the ten
+scenarios instead of runs, 0\% to 28\%). On Opus~5.5, which
 completed none of 100 attacks, they fired on none. This is not a detection failure in the usual
 sense: there was no action to see. For an Opus deployment it means that a SOC watching agent behaviour learns nothing about who is
 attacking it, or how often; on Haiku and Sonnet it sees the 24\% and 16\% of sessions where the
 agent acted.
 
 \paragraph{What the refusal adds.} Adding the refusal signal raised coverage to 70\% of attack sessions
-(72\% on Opus~5.5) at a benign rate of 8\%. Where it comes from depends on the model. On Opus~5.5,
+(scenario-clustered interval 52\% to 87\%; 72\% on Opus~5.5) at a benign rate of 8\% (12 of 150
+benign runs, CI 5\% to 13\%). This is coverage of attempts, not a detector's precision: a refusal
+also follows some legitimate requests, and the benign sample is small. Per scenario it ranged from
+9 of 30 (L02) to 30 of 30 (L09). Where it comes from depends on the model. On Opus~5.5,
 71 of its 72 signalled attack runs were provider refusals: the API stopped generation with
 \texttt{stop\_reason: refusal}, the user received an empty answer, and the only trace was the
 refusal event. On Haiku~4.5 there were no provider refusals at all; its 59 signalled runs come from

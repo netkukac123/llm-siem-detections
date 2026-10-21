@@ -11,6 +11,12 @@ it is being targeted, and not only that it has been breached, needs the applicat
 answer text for a rule to read. In our runs this raised coverage of frontier attack sessions from 13\% to 70\% at an 8\%
 benign rate.
 
+\paragraph{Attempt, compromise and harm are different detections.} Input rules see attempts and are
+easily evaded; rules over actions and output see compromise and harm, but only when the model acts;
+the refusal signal sees attempts that failed. A single ``coverage'' number mixes these, so we report
+them apart, and a SOC should route them apart: an attempt is intelligence, a compromise is an
+incident.
+
 \paragraph{Log what the model saw.} In our experiments an application preview shorter than the model's
 input hid a followed instruction from the log, a guardrail blocked nothing past the first 1{,}000
 characters of a user message and nothing in tool results, and the classifiers did not recognise the

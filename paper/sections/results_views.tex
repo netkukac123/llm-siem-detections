@@ -21,8 +21,10 @@ at all.
 A rule for the gap itself, \llmd{022} (an untrusted tool result longer than its logged view followed
 by a high-risk tool call in the same turn), caught 88\% of complied runs in a pre-registered
 confirmation (N1b, 479 attack runs), but fired on 53\% of benign runs, and a refined version still on
-32\%, failing the false-positive criterion; it is not part of the pack. The fix belongs in the application: log what the model saw,
-or log its length and a hash of what was cut.
+32\%, failing the false-positive criterion; it is not part of the pack. The 1{,}000 and 2{,}000 character limits are this application's design; the experiment shows the
+consequence of any such mismatch, not how common it is. The fix belongs in the application: the log
+should let an auditor reconstruct what the model was given, for example its length, head, tail and a
+hash of the rest, which avoids storing every credential or personal record that a tool returns.
 
 \paragraph{The gap on frontier models (RQ5b).} On the Claude models with head-only logging and a
 reworded instruction in the 1{,}000 to 2{,}000 gap, no model complied (0 of 30), and on Sonnet~5.5
@@ -42,8 +44,9 @@ and none at 1{,}100 or any larger offset (0 of 39 at each of six
 offsets up to 20{,}000). In the tool-result message it blocked none at any offset, including 0. In
 this deployment, then, the default filter blocked nothing that arrived as a tool result, which is
 where indirect injection arrives, and nothing in user messages beyond the first 1{,}000 characters.
-The 85\% at offset 900 missed the pre-registered 90\% threshold. This is documented behaviour
-measured, not a vulnerability; it means that a SOC cannot treat the absence of
+The 85\% at offset 900 missed the pre-registered 90\% threshold. This is one deployment, one model, one region and the default configuration; it is not a
+statement about Azure AI Foundry in general. It is documented behaviour measured, not a
+vulnerability; it means that a SOC cannot treat the absence of
 guardrail events as evidence that no injection reached the model.
 
 One further result is under coordinated disclosure and is omitted from this version.

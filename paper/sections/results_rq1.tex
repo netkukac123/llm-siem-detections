@@ -13,6 +13,15 @@ high because these models, once compromised, act: they call the email tool with 
 write the agent configuration, or run the command, and rules over actions and output see these
 regardless of the words that caused them.
 
+\paragraph{Three questions, kept apart.} ``Detection'' can mean three things, and the numbers differ.
+Input rules saw an attempt in 799 of 799 attack runs, because these attacks use known phrasing
+(Section~\ref{sec:rq4a} shows how little of that survives rewording). Output-side rules saw a
+compromise (the model complied) in 281 of 297 runs, 95\%, with a scenario-clustered bootstrap
+interval of 88\% to 100\%. They saw harm in 269 of 269 runs. These runs are repetitions of nine
+scenarios on eight models, not 269 independent attacks: every one of the nine scenarios was caught
+every time, which no resampling can widen, and the uncertainty that matters is about attack types
+outside the ten we wrote.
+
 \begin{table}[t]\centering\small
 \resizebox{\textwidth}{!}{\input{tables/rq1_models.tex}}
 \caption{RQ1, ten scenarios $\times$ ten runs per model (one gpt-4.1-mini run errored and is excluded). Detected $\mid$ compliance: an intended rule
