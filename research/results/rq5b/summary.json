@@ -1,0 +1,256 @@
+{
+  "by_model": {
+    "anthropic:claude-haiku-4-5": {
+      "n_gap": 10,
+      "n_p0": 10,
+      "n_beyond": 60,
+      "H-G1 LLMD-021 recall P0": [
+        1.0,
+        0.7224598312333834,
+        1.0
+      ],
+      "H-G1 LLMD-021 recall in-view": [
+        1.0,
+        0.8388698745050667,
+        1.0
+      ],
+      "H-G1 LLMD-021 recall gap": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "compliance P0": [
+        0.8,
+        0.49015684672072335,
+        0.9433190520193067
+      ],
+      "compliance gap": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "compliance beyond": [
+        0.0,
+        0.0,
+        0.06017393047793289
+      ],
+      "saw instruction gap": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "gap resisted n": 10,
+      "gap resisted that saw it n": 0,
+      "H-G2 refusal/reasoning on gap-resisted": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "H-G2 other rules on gap-resisted": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "H-G2 refusal/reasoning on gap-resisted-saw": null,
+      "H-G3 LLMD-017 on gap-compliant": null,
+      "H-G4 refusal/reasoning FP beyond": [
+        0.0,
+        0.0,
+        0.06017393047793289
+      ],
+      "other-rule hits on gap-resisted": []
+    },
+    "anthropic:claude-opus-5-5": {
+      "n_gap": 10,
+      "n_p0": 10,
+      "n_beyond": 60,
+      "H-G1 LLMD-021 recall P0": [
+        1.0,
+        0.7224598312333834,
+        1.0
+      ],
+      "H-G1 LLMD-021 recall in-view": [
+        1.0,
+        0.8388698745050667,
+        1.0
+      ],
+      "H-G1 LLMD-021 recall gap": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "compliance P0": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "compliance gap": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "compliance beyond": [
+        0.0,
+        0.0,
+        0.06017393047793289
+      ],
+      "saw instruction gap": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "gap resisted n": 10,
+      "gap resisted that saw it n": 0,
+      "H-G2 refusal/reasoning on gap-resisted": [
+        1.0,
+        0.7224598312333834,
+        1.0
+      ],
+      "H-G2 other rules on gap-resisted": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "H-G2 refusal/reasoning on gap-resisted-saw": null,
+      "H-G3 LLMD-017 on gap-compliant": null,
+      "H-G4 refusal/reasoning FP beyond": [
+        0.0,
+        0.0,
+        0.06017393047793289
+      ],
+      "other-rule hits on gap-resisted": []
+    },
+    "anthropic:claude-sonnet-5-5": {
+      "n_gap": 10,
+      "n_p0": 10,
+      "n_beyond": 60,
+      "H-G1 LLMD-021 recall P0": [
+        1.0,
+        0.7224598312333834,
+        1.0
+      ],
+      "H-G1 LLMD-021 recall in-view": [
+        1.0,
+        0.8388698745050667,
+        1.0
+      ],
+      "H-G1 LLMD-021 recall gap": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "compliance P0": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "compliance gap": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "compliance beyond": [
+        0.0,
+        0.0,
+        0.06017393047793289
+      ],
+      "saw instruction gap": [
+        0.8,
+        0.49015684672072335,
+        0.9433190520193067
+      ],
+      "gap resisted n": 10,
+      "gap resisted that saw it n": 8,
+      "H-G2 refusal/reasoning on gap-resisted": [
+        0.6,
+        0.3126695474501864,
+        0.8318224187964902
+      ],
+      "H-G2 other rules on gap-resisted": [
+        0.0,
+        0.0,
+        0.2775401687666166
+      ],
+      "H-G2 refusal/reasoning on gap-resisted-saw": [
+        0.5,
+        0.21521252682444186,
+        0.7847874731755582
+      ],
+      "H-G3 LLMD-017 on gap-compliant": null,
+      "H-G4 refusal/reasoning FP beyond": [
+        0.1,
+        0.04664219945723587,
+        0.20149694492511044
+      ],
+      "other-rule hits on gap-resisted": []
+    },
+    "pooled": {
+      "n_gap": 30,
+      "n_p0": 30,
+      "n_beyond": 180,
+      "H-G1 LLMD-021 recall P0": [
+        1.0,
+        0.8864829086095221,
+        1.0
+      ],
+      "H-G1 LLMD-021 recall in-view": [
+        1.0,
+        0.9398260695220669,
+        0.9999999999999999
+      ],
+      "H-G1 LLMD-021 recall gap": [
+        0.0,
+        0.0,
+        0.113517091390478
+      ],
+      "compliance P0": [
+        0.26666666666666666,
+        0.14182495553910618,
+        0.4444830204431169
+      ],
+      "compliance gap": [
+        0.0,
+        0.0,
+        0.113517091390478
+      ],
+      "compliance beyond": [
+        0.0,
+        0.0,
+        0.02089624981505818
+      ],
+      "saw instruction gap": [
+        0.26666666666666666,
+        0.14182495553910618,
+        0.4444830204431169
+      ],
+      "gap resisted n": 30,
+      "gap resisted that saw it n": 8,
+      "H-G2 refusal/reasoning on gap-resisted": [
+        0.5333333333333333,
+        0.3614201328152505,
+        0.6976787277587178
+      ],
+      "H-G2 other rules on gap-resisted": [
+        0.0,
+        0.0,
+        0.113517091390478
+      ],
+      "H-G2 refusal/reasoning on gap-resisted-saw": [
+        0.5,
+        0.21521252682444186,
+        0.7847874731755582
+      ],
+      "H-G3 LLMD-017 on gap-compliant": null,
+      "H-G4 refusal/reasoning FP beyond": [
+        0.03333333333333333,
+        0.015364581427704492,
+        0.07080525173301647
+      ],
+      "other-rule hits on gap-resisted": []
+    }
+  },
+  "created": "2026-10-21T13:51:05+00:00",
+  "commit": "5ebc58db0d4edd7db07bf8a733fbab62e8450486",
+  "python": "3.14.8",
+  "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44"
+}

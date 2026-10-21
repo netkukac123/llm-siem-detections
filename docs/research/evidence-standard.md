@@ -15,5 +15,7 @@ Rules the study follows so that every claim can be checked, not taken on trust.
 5. **Reproducible by one command per experiment**, with model tags, seeds and software versions
    in run manifests.
 6. **Scope.** Attacks are run only against the project's own demo agent and models the author
-   controls or rents (local Ollama, the author's Azure deployment). No third-party product or
-   service is attacked.
+   controls or rents (local Ollama, the author's Azure deployment, and the author's Anthropic API
+   account). Injected content reaches the hosted models only as tool output inside the demo agent,
+   through the normal API; provider safety classifiers are observed as a side effect, never
+   disabled or probed for bypasses. No third-party product or service is attacked.

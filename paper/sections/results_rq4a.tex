@@ -1,0 +1,20 @@
+\subsection{RQ4 Part A: rewording}
+\label{sec:rq4a}
+
+Of 300 real attack prompts that the rules detect, 1\% are still detected after a synonym swap and 8\%
+after a paraphrase (Table~\ref{tab:rq4-offline}); the rules survive base64 wrapping only because one
+rule looks for base64 blobs as such. The classifiers survive character-level operators (DeBERTa 93\%
+to 100\%) and degrade under semantic rewriting (58\% on paraphrase, 63\% to 73\% on translation).
+Even the union of rules and both classifiers catches 61\% of paraphrased seeds. Since 210 of the 300
+seeds come from Lakera Gandalf, which may overlap DeBERTa's training data, its survival rates are an
+upper bound. The seeds are
+clustered (70\% come from one near-duplicate family), but the collapse is the same in both main seed
+datasets. The operators are fixed and receive no feedback from the detectors, so a real attacker does
+at least this well.
+
+\begin{table}[t]\centering\small
+\input{tables/rq4_offline.tex}
+\caption{Share of 300 detected attack prompts still detected after each fixed operator (Wilson 95\% CI;
+some LLM rewrites failed and were dropped).}
+\label{tab:rq4-offline}
+\end{table}

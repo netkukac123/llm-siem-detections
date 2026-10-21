@@ -35,6 +35,7 @@ def _cfg(name: str, variant: str, extra_env: tuple = ()) -> McpServerConfig:
 
 
 AZURE_ENV = Path.home() / ".config" / "llmd" / "azure.env"
+ANTHROPIC_ENV = Path.home() / ".config" / "llmd" / "anthropic.env"
 REASONING = ("gpt-5", "o3", "o4")
 
 
@@ -44,7 +45,18 @@ def make_model(model_tag: str, base_url: str, temperature: float, seed: int) -> 
     A per-call output cap keeps thinking models from generating for minutes; 2048 tokens is generous
     for an assistant answer plus reasoning (reasoning models get 4096, their thinking counts too).
     Reasoning models only accept the default temperature, so none is sent for them.
+    `anthropic:<alias>` = Claude via the official SDK (key, and for an org-level key the workspace
+    id, in ~/.config/llmd/anthropic.env). The SDK takes no sampling parameters, so none are sent
+    and run-to-run variability comes from repetitions.
     """
+    if model_tag.startswith("anthropic:"):
+        from ragdemo.llm import AnthropicModel
+        env = dict(line.split("=", 1) for line in ANTHROPIC_ENV.read_text().split() if "=" in line)
+        alias = model_tag.split(":", 1)[1]
+        small = alias.startswith("claude-haiku")
+        return AnthropicModel(alias, api_key=env["ANTHROPIC_API_KEY"], max_tokens=4096,
+                              thinking="enabled" if small else "adaptive",
+                              workspace_id=env.get("ANTHROPIC_WORKSPACE_ID"))
     if not model_tag.startswith("azure:"):
         return OpenAICompatModel(base_url, model_tag, temperature=temperature, seed=seed, max_tokens=2048)
     env = dict(line.split("=", 1) for line in AZURE_ENV.read_text().split() if "=" in line)

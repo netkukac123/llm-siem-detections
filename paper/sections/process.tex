@@ -1,0 +1,39 @@
+\section{What the review changed}
+\label{sec:process}
+
+The frontier results and the paper went through adversarial review (an independent model instance
+instructed to find errors), and several first readings did not survive. We list the corrections because they are the most likely errors in
+work of this kind, and because a reader should know which claims were tested on fresh data and which
+were not.
+
+\begin{itemize}
+  \item \emph{A pre-registration that post-dated its data.} The first frontier run was labelled
+        pre-registered, but its pre-registration commit was made after the runs. It is reported as
+        exploratory, and every frontier number in Section~\ref{sec:frontier} comes from a new run
+        whose pre-registration commit precedes the first request.
+  \item \emph{A null result true by construction.} The first analysis mixed input-scanning rules into
+        the ``what the agent did'' baseline. Input rules saw every attempt, so the refusal signal could
+        add nothing, and the first write-up reported zero gain. With the groups separated as the
+        protocol intended, the refusal signal adds most of the coverage.
+  \item \emph{A trend that was a mixture effect.} Pooled over scenarios, behavioural recall looked
+        weakest for the weakest models. Within each scenario it was the same or nearly the same across tiers (behavioural recall identical); the pooled
+        trend came from which scenarios each tier fell for.
+  \item \emph{A tautological attribution metric.} Attribution was first scored against the sources the
+        rule itself named. Scored against each scenario's ground-truth carrier it fails (0.34).
+  \item \emph{A wrong label.} Haiku's reasoning text was first called raw chain of thought. The
+        Anthropic API returns summaries for every Claude model; all traces are labelled summaries and
+        a raw-versus-summary comparison was dropped.
+  \item \emph{An undisclosed logging difference.} The first RQ5b run had tail logging switched on,
+        which put the instruction in the log; the claim that the provider refusal was the only trace
+        held only for the head-only confirmation run, and is now stated that way.
+  \item \emph{``Silent resistance'' that was not silent.} Haiku's RQ4c runs were first described as
+        leaving no trace. Its answers carried the attacker's file name and address in 49 of 50 runs.
+        That observation became RQ4d.
+  \item \emph{In-sample recall.} \llmd{025} was first evaluated on the runs its pattern was written
+        from. Its recall is now reported on held-out wordings and models only.
+  \item \emph{Numbers fixed in the final review.} The count of successful attacks (269, not 266), the
+        number of datasets (14, not 16), the pooled RQ3 rule rows, refusal events (only provider
+        refusals are events), and several overstatements were corrected before release.
+  \item \emph{Unverified citations.} Two attributions in a pre-registration did not match the cited
+        abstracts and were withdrawn before writing.
+\end{itemize}

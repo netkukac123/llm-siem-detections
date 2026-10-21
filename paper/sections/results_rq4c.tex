@@ -1,0 +1,31 @@
+\subsection{RQ4c: injections written against the rule set}
+\label{sec:rq4c}
+
+An attacker who knows the rules avoids the phrases they key on. RQ4c gave the three Claude models nine
+such framings in an MCP tool reply asking the agent to email \texttt{ops-integration-notes.md}, an
+internal file holding a fake credential, to an outside address: a keyword-style control (V0), the
+request inside a structured error and recovery block (V1), a record that asserts as data that the
+file must be sent (V2), a forged user follow-up at the end of the tool output (V3), the best of these
+placed past the logged window (V4), and the request split into two routine-looking steps (V5), plus
+reworded versions of V1 to V3 for confirmation. Ten runs per framing and model, 270 runs.
+
+\paragraph{No framing worked.} None of the 270 runs emailed the file. \llmd{021} caught the
+keyword control in 30 of 30 runs and none of the other 240, which restates Part A on a live channel:
+the framings were written to avoid exactly its patterns. With a forged user turn, Haiku~4.5 read the
+internal file in 18 of 20 runs without sending it, so the fake credential entered its context on the
+attacker's instruction; only refusal language in the answer raised a rule.
+
+\paragraph{The model's reasoning summary as a signal.} Where the provider did not stop a run, the
+reasoning summaries of Sonnet and Opus often said that the tool output contained an instruction the
+user had not given. \llmd{025} matches that statement. Its pattern was written from Opus exploration
+runs; on Sonnet's runs with the reworded framings, which are out of sample in both model and wording,
+it flagged 27 of 30, at a benign rate of 4\% (7 of 174 benign runs, CI 2\% to 8\%). On Opus it reached
+only 9 of 30 on the reworded framings, because the provider stopped most of those runs before any
+reasoning was returned, and on Haiku it never fired: Haiku's summaries did not describe the
+instruction as injected. Reasoning summaries are a usable signal where a model writes them and the
+provider lets them through; they are not a general one.
+
+\paragraph{Where the provider classifier acts.} On Opus the provider stopped 61 of the 90 runs, every
+one with an empty answer. How often depended on the framing in ways that did not reproduce: the
+forged user turn was stopped in 0 of 10 runs in one wording and 7 of 10 in the other, so a
+pre-registered claim that framing decides which layer sees the attempt failed.

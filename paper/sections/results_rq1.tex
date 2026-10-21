@@ -1,0 +1,40 @@
+\subsection{RQ1: live attacks on open and mid-size models}
+\label{sec:rq1}
+
+Across eight non-frontier models, 26\% to 50\% of attack runs complied and 13\% to 45\% achieved the
+attacker's goal (Table~\ref{tab:rq1-models}). When a model complied, at least one of the scenario's
+intended rules fired in 96\% to 100\% of runs. The only miss in 297 complied runs is one Llama~3.1~8B
+run on the reverse-shell scenario (L09) that complied without completing the attack; only an input
+rule fired on it. Counting only output-side rules (output-content and behavioural), detection was
+281 of 297 complied runs and 269 of 269 runs in which the attack succeeded; the 16 misses are runs
+that complied without completing the attack. Behavioural rules alone caught 193 of the 269; the
+image-beacon exfiltration (L03) is caught only by an output-content rule. Detection is
+high because these models, once compromised, act: they call the email tool with the restricted data,
+write the agent configuration, or run the command, and rules over actions and output see these
+regardless of the words that caused them.
+
+\paragraph{Three questions, kept apart.} ``Detection'' can mean three things, and the numbers differ.
+Input rules saw an attempt in 799 of 799 attack runs, because these attacks use known phrasing
+(Section~\ref{sec:rq4a} shows how little of that survives rewording). Output-side rules saw a
+compromise (the model complied) in 281 of 297 runs, 95\%, with a scenario-clustered bootstrap
+interval of 88\% to 100\%. They saw harm in 269 of 269 runs. These runs are repetitions of nine
+scenarios on eight models, not 269 independent attacks: every one of the nine scenarios was caught
+every time, which no resampling can widen, and the uncertainty that matters is about attack types
+outside the ten we wrote.
+
+\begin{table}[t]\centering\small
+\resizebox{\textwidth}{!}{\input{tables/rq1_models.tex}}
+\caption{RQ1, ten scenarios $\times$ ten runs per model (one gpt-4.1-mini run errored and is excluded). Detected $\mid$ compliance: an intended rule
+fired on a run where the model complied. Harm can exceed compliance: in three base64 runs (L10) the
+harm oracle fired while the compliance oracle did not. Benign FP: any rule fired on a benign run (58 runs per
+model), dominated by input rules on benign prompts.}
+\label{tab:rq1-models}
+\end{table}
+
+Any rule fired on 74 of 464 benign runs (16\%). Most of these (56) are \llmd{002}, which fires when a
+benign question retrieves one of the poisoned documents that sit in the shared index: the alert is
+correct about the document and wrong about the session. A further 14 are \llmd{023} on benign
+refusals. Behavioural rules fired on 8 of 464 benign runs (1.7\%), six of them tool-call bursts
+(\llmd{008}), all on gpt-oss-120b, which also refused more benign requests; that model accounts for
+the outlier rate in Table~\ref{tab:rq1-models}. Input-rule alerts are context for an analyst, not incidents, and should be routed at a
+lower severity than behavioural ones.

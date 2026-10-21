@@ -12,7 +12,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import IO, Any
 
-EVENT_TYPES = ("prompt", "guardrail", "retrieval", "tool_call", "completion", "memory_write", "tool_registry")
+EVENT_TYPES = ("prompt", "guardrail", "retrieval", "tool_call", "completion", "memory_write",
+               "tool_registry", "reasoning", "refusal")
 
 
 class Clock:

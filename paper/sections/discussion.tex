@@ -1,1 +1,37 @@
-\todo{discussion}
+\section{Discussion: what to log and what to watch}
+\label{sec:discussion}
+
+\paragraph{Actions show what worked; the refusal shows what was tried.} Against models that act
+on injections, rules over the agent's actions and output caught every one of 269 successful attacks,
+whatever the wording. Against
+frontier models the same rules have almost nothing to see, because the attack fails before any action.
+The attempt still leaves evidence, but in a place most applications do not log: a provider refusal
+(an empty answer with a stop reason) or a refusal in the model's own words. A SOC that wants to know
+it is being targeted, and not only that it has been breached, needs the application to log provider refusals as events and the
+answer text for a rule to read. In our runs this raised coverage of frontier attack sessions from 13\% to 70\% at an 8\%
+benign rate.
+
+\paragraph{Attempt, compromise and harm are different detections.} Input rules see attempts and are
+easily evaded; rules over actions and output see compromise and harm, but only when the model acts;
+the refusal signal sees attempts that failed. A single ``coverage'' number mixes these, so we report
+them apart, and a SOC should route them apart: an attempt is intelligence, a compromise is an
+incident.
+
+\paragraph{Log what the model saw.} In our experiments an application preview shorter than the model's
+input hid a followed instruction from the log, a guardrail blocked nothing past the first 1{,}000
+characters of a user message and nothing in tool results, and the classifiers did not recognise the
+N1 payload at any offset. The cheapest fix is in the application. It should log the full tool result,
+or its length together with the head, the tail and a hash of the rest, so that a rule can at least
+tell that something was not inspected. A guardrail's silence is not evidence that nothing arrived.
+
+\paragraph{Watch the answer, not only the actions.} When nine of twelve models declined to act on an
+injection, they passed the attacker's request on to the user as a legitimate next step, almost every
+time (Section~\ref{sec:relay-models}). The attack then depends on the human, and the only telemetry is the answer
+text. \llmd{026} is a first, narrow rule for this: an internal resource name and an outside address
+in the same answer, without a warning. A production version needs the organisation's own list of
+internal resource names, which most SOCs already keep for data loss prevention.
+
+\paragraph{Content signatures are context.} The input rules are precise on benign public traffic and
+blind to reworded attacks; the classifiers recall far more direct injections but little indirect
+injection in documents. Both are useful for triage and for explaining an alert, and neither should be
+the only line. Their alerts should be routed at a lower severity than behavioural and refusal signals.

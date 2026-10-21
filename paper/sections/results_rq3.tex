@@ -1,0 +1,21 @@
+\subsection{RQ3: rules and ML classifiers}
+\label{sec:rq3}
+
+On the clean datasets, pooled per surface (Table~\ref{tab:rq3-pooled}), ProtectAI's DeBERTa
+classifier recalls 82.7\% of attack prompts at a 3.8\% false-positive rate on real benign prompts,
+against 4.5\% recall and a 0.01\% false-positive rate (3 of 27{,}948) for the prompt rules. On injected
+documents and poisoned tool descriptions every detector is weak: DeBERTa recalls 26.6\% of injected
+documents (5.7\% FPR) and 26.8\% of poisoned tool descriptions (1.6\% FPR); Prompt Guard~2 recalls
+3.7\% of injected documents. The rules and DeBERTa overlap little on tool descriptions, so their union
+reaches 44.7\% at 1.8\% FPR, the only surface where combining them pays.
+
+\begin{table}[t]\centering\small
+\resizebox{\textwidth}{!}{\input{tables/rq3_pooled.tex}}
+\caption{Rules and classifiers on the clean (uncontaminated) datasets, pooled per surface, threshold
+0.5, Wilson intervals.}
+\label{tab:rq3-pooled}
+\end{table}
+
+The classifiers are the better input filter for direct prompts, and neither they nor the rules see
+indirect injection in documents well. That is the gap the behavioural rules are meant to cover:
+they do not read the injected text at all.

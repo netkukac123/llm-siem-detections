@@ -1,0 +1,22 @@
+{
+  "created": "2026-10-21T14:33:24+00:00",
+  "commit": "b697ea74760564066b232d557fa2243e7cabf1ca",
+  "python": "3.14.8",
+  "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44",
+  "seeds": 300,
+  "operators": [
+    "original",
+    "synonyms",
+    "homoglyphs",
+    "leetspeak",
+    "zero_width",
+    "split_words",
+    "base64_wrap",
+    "paraphrase",
+    "translate_german",
+    "translate_hungarian",
+    "translate_spanish",
+    "translate_chinese",
+    "translate_russian"
+  ]
+}

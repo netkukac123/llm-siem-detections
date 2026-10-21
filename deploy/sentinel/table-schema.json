@@ -167,6 +167,26 @@
           "name": "memory_text",
           "type": "string",
           "description": "Text written to the agent's long-term memory"
+        },
+        {
+          "name": "reasoning",
+          "type": "string"
+        },
+        {
+          "name": "reasoning_chars",
+          "type": "int"
+        },
+        {
+          "name": "reasoning_kind",
+          "type": "string"
+        },
+        {
+          "name": "refusal_source",
+          "type": "string"
+        },
+        {
+          "name": "refusal_detail",
+          "type": "string"
         }
       ]
     },

@@ -12,7 +12,7 @@ import pytest
 import yaml
 
 from . import kusto
-from .groundtruth import DATASET, ROOT, RULE_IDS, describe, expectation
+from .groundtruth import DATASET, RESEARCH_RULE_IDS, ROOT, RULE_IDS, describe, expectation
 
 RULE_FILES = {p.name[:8]: p for p in (ROOT / "detections" / "sentinel").glob("LLMD-*.yaml")}
 
@@ -26,7 +26,7 @@ def loaded_table():
 
 
 def test_every_rule_has_a_sentinel_file():
-    assert sorted(RULE_FILES) == RULE_IDS
+    assert sorted(RULE_FILES) == RULE_IDS + RESEARCH_RULE_IDS
 
 
 def _minutes(d: str) -> int:

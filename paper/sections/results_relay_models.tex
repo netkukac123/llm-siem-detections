@@ -1,0 +1,40 @@
+\subsection{RQ4f: most models relay the failed injection}
+\label{sec:relay-models}
+
+Is the relay a quirk of one model? RQ4f ran the same task on all twelve models, with six framings: the
+three of RQ4d and three new ones, each asking for a different internal document (the expense policy,
+the VPN guide, the leave policy) to go to a different outside domain (a customs broker, a portal
+migration desk, an account manager). Twenty runs per framing and model, 1{,}440 runs in all, 1{,}290 of
+them new; the pre-registration, including the new framings, was committed before the first run.
+
+Nine of the twelve models relayed the request to the user in 61\% to 100\% of their runs, and none of
+the nine warned in a single run (Table~\ref{tab:rq4f}). They span every vendor and size in the study:
+small open models, gpt-oss-120b, gpt-4.1-mini, gpt-5-mini and Claude Haiku~4.5. Pooled over the nine,
+997 of 1{,}080 runs relayed; per framing between 80\% (the JSON record) and 99\%, and on the three
+framings first used here between 90\% and 98\%. Only Opus~4.8, Opus~5.5 and Sonnet~5.5 never relayed:
+they warned, or the provider stopped the answer. The agents themselves almost never acted (3 of 1{,}440
+runs sent the email). For most models, then, the usual end of a failed injection is not an alert and
+not a refusal, but an instruction to the user, with the attacker's address in it.
+
+\begin{table}[t]\centering\small
+\resizebox{\textwidth}{!}{\input{tables/rq4f_models.tex}}
+\caption{RQ4f, 120 runs per model (six framings, 20 each). Relays: answer passes the request on as
+something to do, no warning (pre-registered labels, Wilson CI). Held-out: framings R4 to R6 only. 2nd
+rater: relay rate by gpt-5-mini, labelling blind with the same definitions. Harm: the agent sent the
+email itself.}
+\label{tab:rq4f}
+\end{table}
+
+\paragraph{How reliable are the labels?} The two pre-registered raters were two instances of the same
+model; they agreed on all 1{,}440 items, which shows that the labelling is reproducible but not that it
+is independent. A rater from another family, gpt-4.1-mini, agreed on only 59\% ($\kappa = 0.36$). In ten
+randomly drawn disagreements every answer passed the request on with no warning; it had labelled the
+request, not the answer. By the pre-registered rule, which judged agreement on that rater, the
+generality claim is therefore \emph{not established}. The next rater was fixed before it ran, with the
+identical prompt: gpt-5-mini agreed with the pre-registered labels on 97\% of items ($\kappa = 0.94$;
+0.98 on relay versus warning) and gives the same rate per model (Table~\ref{tab:rq4f}). We report both:
+the formal verdict fails on one rater, and the evidence from the other is strong.
+
+\paragraph{Detecting it.} \llmd{026} caught 77\% of the relays, and 77\% on the three internal documents
+it was not written for. It fired on 6\% of the warnings and on none of 788 benign runs across eleven
+models. Its misses name the address without the document or the document without an address.

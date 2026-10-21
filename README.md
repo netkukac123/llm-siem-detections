@@ -1,7 +1,7 @@
 # LLM and AI agent attack detections for SIEM
 
 [![test](https://github.com/netkukac123/llm-siem-detections/actions/workflows/test.yml/badge.svg)](https://github.com/netkukac123/llm-siem-detections/actions/workflows/test.yml)
-![rules](https://img.shields.io/badge/detections-21-blue)
+![rules](https://img.shields.io/badge/detections-25-blue)
 ![Sentinel](https://img.shields.io/badge/Microsoft%20Sentinel-KQL-0078D4)
 ![Wazuh](https://img.shields.io/badge/Wazuh-4.14-3595F2)
 ![MCP](https://img.shields.io/badge/MCP-Python%20SDK%20v2-black)
@@ -9,7 +9,7 @@
 
 Detection engineering for attacks on LLM applications and AI agents: prompt injection, RAG and
 memory poisoning, MCP tool poisoning and rug pulls, agent tool abuse, data exfiltration and cost
-harvesting. **21 detections** for **Microsoft Sentinel (KQL)** and **Wazuh**, mapped to the **OWASP
+harvesting. **25 detections** for **Microsoft Sentinel (KQL)**, 23 of them also for **Wazuh**, mapped to the **OWASP
 Top 10 for LLM Applications 2025**, the **OWASP Top 10 for Agentic Applications 2026** and **MITRE
 ATLAS 2026.09**. A deliberately vulnerable RAG agent with a real MCP integration produces the
 telemetry, and every rule is tested against a labelled dataset on the real query engines.
@@ -20,6 +20,14 @@ in those logs, and which do not.
 
 ## Highlights
 
+- **An empirical study of what a SIEM sees** ([paper](paper/), [results](docs/research/)), with
+  pre-registered confirmations: against models that comply, rules over the agent's actions and output
+  caught all 269 successful attacks; against Claude frontier models they saw 13% of attack sessions,
+  and logging provider and model refusals raised that to 70% (Opus 5.5: 0% to 72%) at an 8% benign
+  rate. A failed injection is usually relayed to the human: nine of twelve models (open 8B models
+  to gpt-5-mini and Claude Haiku 4.5) told the user to email an internal document to the attacker's
+  address in 61% to 100% of 1,440 runs and never warned; only Claude Sonnet 5.5 and Opus warned
+  (LLMD-026 catches 77% of these answers, 0 of 788 benign runs).
 - **Agentic and MCP coverage built on 2025-2026 research**: tool poisoning and rug pulls (Invariant
   Labs), runtime-response poisoning ("Agentjacking", 2026), persistent memory injection (SpAIware,
   Unit 42), agent config tampering (CVE-2025-53773, CVE-2025-54135), EchoLeak's reference-style image
@@ -43,8 +51,8 @@ flowchart LR
     A <-->|stdio, MCP SDK v2| S[Third-party MCP server<br/>clean / poisoned / rug pull / runtime]
     A -->|tools: email, http, files,<br/>shell, delete| T[Simulated side effects]
     A -->|JSONL telemetry<br/>OTel GenAI aligned| L[(LLMAppLogs)]
-    L -->|Logs Ingestion API + DCR| SE[Microsoft Sentinel<br/>21 analytic rules]
-    L -->|agent log_format json| W[Wazuh<br/>21 detections]
+    L -->|Logs Ingestion API + DCR| SE[Microsoft Sentinel<br/>25 analytic rules]
+    L -->|agent log_format json| W[Wazuh<br/>23 detections]
     G[simulate/ scenarios<br/>+ ground truth] --> A
     G -.labels.-> CI[CI: Kustainer + wazuh-logtest]
     L -.dataset.-> CI
@@ -75,6 +83,10 @@ flowchart LR
 | **LLMD-019** | Private data read and sent out in the same turn (lethal trifecta) | ASI02, ASI01 | AML.T0085.001, AML.T0086 |
 | **LLMD-020** | Agent modifies agent configuration (auto-approve, MCP config) | ASI03, ASI05 | AML.T0081 |
 | **LLMD-021** | Instructions aimed at the agent inside a tool result | ASI01, ASI04 | AML.T0110.002 |
+| **LLMD-023** | Attempted but refused injection (provider or model refusal after external content) | ASI01, ASI06 | AML.T0051.001 |
+| **LLMD-024** | Reasoning summary states intent to follow injected content | ASI01 | AML.T0051.001 |
+| **LLMD-025** | Reasoning summary notes an injected instruction (Sentinel only) | ASI01 | AML.T0051.001 |
+| **LLMD-026** | Answer passes an outside party's request for internal data to the user (Sentinel only) | ASI01, ASI09 | AML.T0051.001 |
 
 ATLAS IDs are checked against ATLAS data 2026.09. OWASP LLM03, LLM04 and LLM09 are model and supply
 chain risks that do not show up in application telemetry, so they are out of scope.
@@ -112,7 +124,7 @@ The evasion scenarios exist to show the limits and are asserted to stay undetect
 - token abuse spread thinly gets past LLMD-009;
 - a payload staged earlier and run as `python3 /tmp/update_check.py` gets past LLMD-017.
 
-Wazuh implements all 21 detections, with two engine limits pinned in the tests (frequency counting
+Wazuh implements 23 of the 25 detections (all of LLMD-001 to 021), with two engine limits pinned in the tests (frequency counting
 and nested correlation; see [docs/coverage.md](docs/coverage.md#wazuh-and-sentinel-differences)).
 This is a synthetic dataset written by the same person who wrote the rules: it proves the rules
 behave as designed, it does not measure real-world precision. Full grid:

@@ -195,7 +195,8 @@ def rq1():
     lines = [r"\begin{tabular}{lrllll}", r"\toprule",
              r"Model & Runs & Compliance \% & Harm \% & Detected $\mid$ compliance \% & Benign FP \% \\",
              r"\midrule"]
-    for r in s["by_model"]:
+    # Claude rows here are the exploratory RQ5 run; the paper reports Claude from the confirmatory run (rq5c)
+    for r in (r for r in s["by_model"] if not r["model"].startswith("anthropic:")):
         lines.append(f"{tex_escape(r['model'])} & {r['attack_runs']} & {ci(r['compliance'])} & {ci(r['asr'])} & "
                      f"{ci(r['detected_given_compliance'])} & {ci(r['benign_fp'])} \\\\")
     lines += [r"\bottomrule", r"\end{tabular}"]
@@ -256,6 +257,158 @@ def rq4():
         (TAB / "rq4_live.tex").write_text("\n".join(lines) + "\n")
 
 
+def rq3_pooled():
+    """Clean datasets pooled per surface; rules rows counted once (they repeat per classifier)."""
+    s = _load("rq3/summary.json")
+    if not s:
+        return
+    from .common import wilson
+    agg = defaultdict(lambda: [0, 0, 0, 0])
+    for r in s["rows"]:
+        if r["contamination"] != "clean":
+            continue
+        if r["variant"] == "rules" and r["classifier"] != "protectai-deberta-v3-base-v2":
+            continue
+        a = agg[(r["kind"], r["variant"])]
+        a[0] += r["tp"]; a[1] += r["fn"]; a[2] += r["fp"]; a[3] += r["tn"]
+    rows = [("prompt", "rules"), ("prompt", "protectai-deberta-v3-base-v2"), ("prompt", "prompt-guard-2-22m"),
+            ("document", "rules"), ("document", "protectai-deberta-v3-base-v2"), ("document", "prompt-guard-2-22m"),
+            ("tool_description", "rules"), ("tool_description", "protectai-deberta-v3-base-v2"),
+            ("tool_description", "rules OR protectai-deberta-v3-base-v2")]
+    lab = {"rules": "rules", "protectai-deberta-v3-base-v2": "DeBERTa v2", "prompt-guard-2-22m": "Prompt Guard 2",
+           "rules OR protectai-deberta-v3-base-v2": "rules OR DeBERTa v2"}
+    lines = [r"\begin{tabular}{llrlrl}", r"\toprule",
+             r"Surface & Detector & Attacks & Recall \% [95\% CI] & Benign & FPR \% [95\% CI] \\", r"\midrule"]
+    for k, v in rows:
+        tp, fn, fp, tn = agg[(k, v)]
+        lines.append(f"{k.replace('_', ' ')} & {lab[v]} & {tp + fn:,} & {ci(wilson(tp, tp + fn))} & {fp + tn:,} & "
+                     f"{ci(wilson(fp, fp + tn), 2)} \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    TAB.mkdir(parents=True, exist_ok=True)
+    (TAB / "rq3_pooled.tex").write_text("\n".join(lines) + "\n")
+
+
+def rq4_offline():
+    rows = _load("rq4/offline_results.json")
+    if not rows:
+        return
+    from .common import wilson
+    dets = ["rules", "clf:protectai-deberta-v3-base-v2", "clf:prompt-guard-2-22m"]
+    by = defaultdict(list)
+    for r in rows:
+        by[r["operator"]].append(r)
+    order = ["original"] + sorted((o for o in by if o != "original"),
+                                  key=lambda o: sum(r["rules"] for r in by[o]) / len(by[o]))
+    lines = [r"\begin{tabular}{lrllll}", r"\toprule",
+             r"Operator & $n$ & Rules \% & DeBERTa v2 \% & Prompt Guard 2 \% & Any \% \\", r"\midrule"]
+    for o in order:
+        rs = by[o]
+        cells = [ci(wilson(sum(bool(r[d]) for r in rs), len(rs)), 0) for d in dets]
+        cells.append(ci(wilson(sum(any(r[d] for d in dets) for r in rs), len(rs)), 0))
+        lines.append(f"{tex_escape(o.replace('_', ' '))} & {len(rs)} & " + " & ".join(cells) + r" \\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    TAB.mkdir(parents=True, exist_ok=True)
+    (TAB / "rq4_offline.tex").write_text("\n".join(lines) + "\n")
+
+
+def short_model(m: str) -> str:
+    return {"anthropic:claude-haiku-4-5": "Haiku 4.5", "anthropic:claude-sonnet-5-5": "Sonnet 5.5",
+            "anthropic:claude-opus-5-5": "Opus 5.5", "anthropic:claude-opus-4-8": "Opus 4.8"}.get(m, m)
+
+
+def rq5c():
+    s = _load("rq5c/summary.json")
+    if not s:
+        return
+    TAB.mkdir(parents=True, exist_ok=True)
+    FIG.mkdir(parents=True, exist_ok=True)
+    keys = ["compliance", "success", "OUTPUT_recall", "OUTPUT_plus_refusal_recall", "benign_refusal_signal_rate"]
+    lines = [r"\begin{tabular}{lllll}", r"\toprule",
+             r"Model & Completed attack \% & Action-only rules \% & Action + refusal signal \% & Benign signal \% \\",
+             r"\midrule"]
+    for m, d in s["by_model"].items():
+        if m == "pooled":
+            lines.append(r"\midrule")
+        lines.append(f"{short_model(m).capitalize()} & " + " & ".join(ci(d[k], 0) for k in keys[1:]) + r" \\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    (TAB / "rq5c_models.tex").write_text("\n".join(lines) + "\n")
+
+    lines = [r"\begin{tabular}{lrll}", r"\toprule",
+             r"Scenario & Completed attacks & Output-content rules \% & Behavioural rules \% \\", r"\midrule"]
+    for sc, d in s["per_scenario"].items():
+        if d.get("n_success"):
+            lines.append(f"{tex_escape(sc)} & {d['n_success']} & {ci(d['output_content'], 0)} & "
+                         f"{ci(d['behavioural'], 0)} \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    (TAB / "rq5c_scenarios.tex").write_text("\n".join(lines) + "\n")
+
+    # the main figure: what an action-only SIEM sees vs. with the refusal signal, per model
+    models = [m for m in s["by_model"] if m != "pooled"]
+    fig, ax = plt.subplots(figsize=(6.6, 1.9))
+    for k, (key, lab) in enumerate((("success", "Attack completed"), ("OUTPUT_recall", "Seen by action-only rules"),
+                                    ("OUTPUT_plus_refusal_recall", "Seen with the refusal signal"))):
+        for i, m in enumerate(models):
+            v = s["by_model"][m][key]
+            y = i + (k - 1) * 0.24
+            ax.errorbar([100 * v[0]], [y], xerr=[[100 * (v[0] - v[1])], [100 * (v[2] - v[0])]], fmt="o", ms=5,
+                        color=SERIES[k], ecolor=SERIES[k], elinewidth=1, capsize=0,
+                        markeredgecolor=SURFACE, markeredgewidth=0.8, label=lab if i == 0 else None)
+    ax.set_yticks(range(len(models)), [short_model(m) for m in models])
+    ax.invert_yaxis()
+    ax.set_xlim(-2, 100)
+    ax.set_xlabel("Share of 100 attack sessions per model (%), Wilson 95% CI")
+    ax.grid(axis="y", visible=False)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.38), ncol=3)
+    fig.tight_layout()
+    fig.savefig(FIG / "rq5c_coverage.pdf")
+    plt.close(fig)
+
+
+def rq4d():
+    s = _load("rq4d/human_labels.json")  # from research/rq4d_human.py
+    if not s:
+        return
+    lines = [r"\begin{tabular}{lrrrrl}", r"\toprule",
+             r"Model & Runs & Relays & Warns & Empty & \llmd{026} fired \\", r"\midrule"]
+    order = ["anthropic:claude-haiku-4-5", "anthropic:claude-sonnet-5-5", "anthropic:claude-opus-5-5",
+             "anthropic:claude-opus-4-8"]
+    for m in order:
+        d = s[m]
+        lab = d["human_labels"]
+        if lab.get("relay"):
+            fired = f"{d['LLMD-026_on_relay_count'][0]} of {d['LLMD-026_on_relay_count'][1]} relays"
+        else:
+            fired = f"{d['LLMD-026_on_warn_count'][0]} of {d['LLMD-026_on_warn_count'][1]} warnings"
+        lines.append(f"{short_model(m)} & {d['n']} & {lab.get('relay', 0)} & {lab.get('warn', 0)} & "
+                     f"{lab.get('empty', 0)} & {fired} \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    TAB.mkdir(parents=True, exist_ok=True)
+    (TAB / "rq4d_relay.tex").write_text("\n".join(lines) + "\n")
+
+
+def rq4f():
+    s = _load("rq4f/summary.json")
+    g5 = _load("rq4f/agreement_rater_gpt-5-mini.json")
+    if not s or not g5:
+        return
+    order = ["anthropic:claude-opus-4-8", "anthropic:claude-opus-5-5", "anthropic:claude-sonnet-5-5",
+             "anthropic:claude-haiku-4-5", "azure:gpt-5-mini", "azure:gpt-4.1-mini", "azure:gpt-oss-120b",
+             "qwen3:8b", "gemma4:e4b", "granite4:tiny-h", "ministral-3:8b", "llama3.1:8b"]
+    name = {m: short_model(m).replace("azure:", "") for m in order}
+    lines = [r"\begin{tabular}{lrllrrr}", r"\toprule",
+             r"Model & Runs & Relays \% [95\% CI] & Held-out framings \% & 2nd rater \% & Warns & Harm \\",
+             r"\midrule"]
+    for m in order:
+        d = s["by_model"][m]
+        lines.append(f"{tex_escape(name[m])} & {d['n']} & {ci(d['relay'], 0)} & {pct(d['relay_heldout'][0], 0)} & "
+                     f"{pct(g5['per_model'][m]['relay_rater_gpt'][0], 0)} & {d['labels']['warn']} & {d['labels']['harm']} \\\\")
+        if m == "anthropic:claude-sonnet-5-5":
+            lines.append(r"\midrule")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    TAB.mkdir(parents=True, exist_ok=True)
+    (TAB / "rq4f_models.tex").write_text("\n".join(lines) + "\n")
+
+
 def static_tables():
     """Appendix rule table and the model list, from the rule YAMLs and the RQ1 manifest."""
     import yaml
@@ -272,12 +425,8 @@ def static_tables():
     (TAB / "rules.tex").write_text("\n".join(lines) + "\n")
     # Models = whatever has run records (two collectors run in parallel, local and Azure).
     runs = sorted((RESULTS / "rq1" / "runs").glob("*.jsonl"))
-    tags = []
-    for p in runs:
-        first = p.open().readline()
-        if first:
-            tags.append(json.loads(first)["model"])
-    local = [t for t in tags if not t.startswith("azure:")]
+    tags = sorted({json.loads(line)["model"] for p in runs for line in p.open() if line.strip()})
+    local = [t for t in tags if not t.startswith(("azure:", "anthropic:"))]
     azure = [t.removeprefix("azure:") for t in tags if t.startswith("azure:")]
     (gen / "models.tex").write_text(", ".join(rf"\texttt{{{x}}}" for x in local))
     (gen / "azure_models.tex").write_text(", ".join(rf"\texttt{{{x}}}" for x in azure))
@@ -285,7 +434,7 @@ def static_tables():
 
 def main() -> None:
     static_tables()
-    for fn in (rq2, rq3, rq1, rq4):
+    for fn in (rq2, rq3, rq3_pooled, rq1, rq4, rq4_offline, rq5c, rq4d, rq4f):
         fn()
     print("figures:", sorted(p.name for p in FIG.glob("*.pdf")) if FIG.exists() else [])
     print("tables:", sorted(p.name for p in TAB.glob("*.tex")) if TAB.exists() else [])

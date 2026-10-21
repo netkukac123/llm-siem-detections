@@ -1,0 +1,61 @@
+id: eeda42da-8acb-580c-a4dd-6c381aec168c
+name: LLMD-023 Attempted but refused injection, attributed to its source
+description: |
+  A session that pulled in external content (a non-internal retrieved document, or a registered or
+  called third-party MCP tool) ended with the model declining to act: a refusal signal appears in
+  the reasoning or the final answer, and the agent took no egress, destructive or exec action. A
+  refused injection produces no malicious tool call, so rules over actions never see it, and the
+  attempted attack is invisible. This rule turns the refusal into a detection and names the document
+  or MCP server that carried the instruction, so a SOC can find who is poisoning the source even when
+  no harm occurred. The refusal signal is a provider refusal event or refusal phrasing in the logged
+  reasoning or completion text; most model-native refusals are the latter, since the provider stop
+  reason fires only for its own streaming classifier.
+severity: Medium
+requiredDataConnectors: []
+queryFrequency: 10m
+queryPeriod: 20m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+relevantTechniques: []
+tags:
+  - OWASP-ASI01:2026 Agent Goal Hijack
+  - OWASP-ASI06:2026 Memory and Context Poisoning
+  - ATLAS AML.T0051.001 LLM Prompt Injection Indirect
+query: |
+  let refusal = @"(?i)\bI\s+(can.?t|cannot|won.?t|will not|am not able to|.?m not able to|am unable|.?m unable)\b[^.\n]{0,40}\b(help|assist|comply|do that|with that|follow|perform|execute|send|run|email)\b|\bI (must|have to) (decline|refuse)\b|\b(that|this) (request|instruction|action) (is|appears|seems)[^.\n]{0,30}\b(malicious|injection|unsafe|not (safe|appropriate|allowed)|against)\b|\bI (should|will) not (follow|act on|comply)\b|\b(prompt|indirect) injection\b|\bI notice[^.\n]{0,40}\b(instruction|injection|tells me|trying to)\b";
+  let external = union
+      (LLMAppLogs_CL | where event_type == "retrieval" and doc_source != "internal-wiki"
+         | project session_id, Source = doc_id, SourceKind = doc_source),
+      (LLMAppLogs_CL | where event_type == "tool_registry"
+         | project session_id, Source = tool_name, SourceKind = mcp_server);
+  let refused = LLMAppLogs_CL
+      | where event_type in ("reasoning", "completion", "refusal")
+      | where (event_type == "refusal")
+          or (event_type == "reasoning" and reasoning matches regex refusal)
+          or (event_type == "completion" and completion matches regex refusal)
+      | summarize RefusedAt = min(TimeGenerated) by session_id, user_id, src_ip;
+  let acted = LLMAppLogs_CL
+      | where event_type == "tool_call" and tool_risk in ("egress", "destructive", "exec")
+      | distinct session_id;
+  refused
+  | where session_id !in (acted)
+  | join kind=inner external on session_id
+  | summarize TimeGenerated = min(RefusedAt), Sources = make_set(Source), SourceKinds = make_set(SourceKind)
+      by session_id, user_id, src_ip
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: src_ip
+customDetails:
+  SessionId: session_id
+  Sources: Sources
+  SourceKinds: SourceKinds
+version: 1.0.0
+kind: Scheduled

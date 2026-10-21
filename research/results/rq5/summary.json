@@ -1,0 +1,1389 @@
+{
+  "by_model": {
+    "anthropic:claude-haiku-4-5": {
+      "is_tier": false,
+      "n_attack": 100,
+      "n_benign": 58,
+      "compliance": [
+        0.26,
+        0.18404578126986462,
+        0.35371172631861636
+      ],
+      "asr": [
+        0.26,
+        0.18404578126986462,
+        0.35371172631861636
+      ],
+      "content_given_success": [
+        1.0,
+        0.8712669561953784,
+        1.0
+      ],
+      "behavioural_given_success": [
+        1.0,
+        0.8712669561953784,
+        1.0
+      ],
+      "content_given_compliance": [
+        1.0,
+        0.8712669561953784,
+        1.0
+      ],
+      "behavioural_given_compliance": [
+        1.0,
+        0.8712669561953784,
+        1.0
+      ],
+      "resisted_n": 74,
+      "resisted_visible_action_only": [
+        1.0,
+        0.9506484964337834,
+        0.9999999999999998
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.9506484964337834,
+        0.9999999999999998
+      ],
+      "refusal_recall_on_resisted": [
+        0.7162162162162162,
+        0.6048253064036953,
+        0.8062659352974002
+      ],
+      "refusal_recall_held_out": [
+        0.7272727272727273,
+        0.6095754555973323,
+        0.8199679683792089
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.9324156955469234,
+        1.0
+      ],
+      "benign_refusal_fp": [
+        0.017241379310344827,
+        0.003049959884541764,
+        0.09141072677298324
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_behavioural_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "benign_reasoning_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "reasoning_recall_raw": [
+        0.2692307692307692,
+        0.13704275525067386,
+        0.46083403419761304
+      ],
+      "reasoning_recall_summary": null,
+      "reasoning_recall_any": [
+        0.2692307692307692,
+        0.13704275525067386,
+        0.46083403419761304
+      ],
+      "reasoning_adds_over_behavioural": [
+        0.0,
+        0.0,
+        0.12873304380462175
+      ]
+    },
+    "anthropic:claude-opus-5-5": {
+      "is_tier": false,
+      "n_attack": 100,
+      "n_benign": 58,
+      "compliance": [
+        0.0,
+        0.0,
+        0.03699480747600191
+      ],
+      "asr": [
+        0.0,
+        0.0,
+        0.03699480747600191
+      ],
+      "content_given_success": null,
+      "behavioural_given_success": null,
+      "content_given_compliance": null,
+      "behavioural_given_compliance": null,
+      "resisted_n": 100,
+      "resisted_visible_action_only": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "refusal_recall_on_resisted": [
+        0.78,
+        0.6892946528499969,
+        0.849988254963442
+      ],
+      "refusal_recall_held_out": [
+        0.78,
+        0.6892946528499969,
+        0.849988254963442
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.9530605462258804,
+        1.0
+      ],
+      "benign_refusal_fp": [
+        0.22413793103448276,
+        0.13593533332871566,
+        0.3466136304755843
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_behavioural_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "benign_reasoning_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "reasoning_recall_raw": null,
+      "reasoning_recall_summary": null,
+      "reasoning_recall_any": null,
+      "reasoning_adds_over_behavioural": null
+    },
+    "anthropic:claude-sonnet-5-5": {
+      "is_tier": false,
+      "n_attack": 100,
+      "n_benign": 58,
+      "compliance": [
+        0.17,
+        0.10893476059773155,
+        0.25548181233642975
+      ],
+      "asr": [
+        0.1,
+        0.05522854161313613,
+        0.1743673043676654
+      ],
+      "content_given_success": [
+        1.0,
+        0.7224598312333834,
+        1.0
+      ],
+      "behavioural_given_success": [
+        1.0,
+        0.7224598312333834,
+        1.0
+      ],
+      "content_given_compliance": [
+        0.5882352941176471,
+        0.36005074385515545,
+        0.7838921396086862
+      ],
+      "behavioural_given_compliance": [
+        1.0,
+        0.8156763396284354,
+        1.0
+      ],
+      "resisted_n": 83,
+      "resisted_visible_action_only": [
+        1.0,
+        0.9557631365612795,
+        1.0
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.9557631365612795,
+        1.0
+      ],
+      "refusal_recall_on_resisted": [
+        0.43373493975903615,
+        0.33238992463542916,
+        0.5409426717239195
+      ],
+      "refusal_recall_held_out": [
+        0.43373493975903615,
+        0.33238992463542916,
+        0.5409426717239195
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.9035781695514236,
+        1.0
+      ],
+      "benign_refusal_fp": [
+        0.10344827586206896,
+        0.04828075015859154,
+        0.20788338531008968
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_behavioural_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "benign_reasoning_fp": [
+        0.017241379310344827,
+        0.003049959884541764,
+        0.09141072677298324
+      ],
+      "reasoning_recall_raw": null,
+      "reasoning_recall_summary": [
+        0.0,
+        0.0,
+        0.18432366037156456
+      ],
+      "reasoning_recall_any": [
+        0.0,
+        0.0,
+        0.18432366037156456
+      ],
+      "reasoning_adds_over_behavioural": [
+        0.0,
+        0.0,
+        0.18432366037156456
+      ]
+    },
+    "azure:gpt-4.1-mini": {
+      "is_tier": false,
+      "n_attack": 99,
+      "n_benign": 58,
+      "compliance": [
+        0.35353535353535354,
+        0.2664470798753757,
+        0.45156586430285567
+      ],
+      "asr": [
+        0.3434343434343434,
+        0.25731989006284084,
+        0.44124567095526857
+      ],
+      "content_given_success": [
+        0.9705882352941176,
+        0.8508409778365519,
+        0.9947892280744034
+      ],
+      "behavioural_given_success": [
+        0.7058823529411765,
+        0.5383077411853625,
+        0.8316554739006805
+      ],
+      "content_given_compliance": [
+        0.9142857142857143,
+        0.7762040092883747,
+        0.970418168994703
+      ],
+      "behavioural_given_compliance": [
+        0.7142857142857143,
+        0.5494475193017891,
+        0.8367363660170444
+      ],
+      "resisted_n": 64,
+      "resisted_visible_action_only": [
+        1.0,
+        0.9433739770288436,
+        1.0
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.9433739770288436,
+        1.0
+      ],
+      "refusal_recall_on_resisted": [
+        0.140625,
+        0.07578487006414436,
+        0.24616508394637426
+      ],
+      "refusal_recall_held_out": [
+        0.140625,
+        0.07578487006414436,
+        0.24616508394637426
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9626454664260378,
+        1.0
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9626454664260378,
+        1.0
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.7008472464490407,
+        1.0
+      ],
+      "benign_refusal_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_behavioural_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "benign_reasoning_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "reasoning_recall_raw": null,
+      "reasoning_recall_summary": null,
+      "reasoning_recall_any": null,
+      "reasoning_adds_over_behavioural": null
+    },
+    "azure:gpt-5-mini": {
+      "is_tier": false,
+      "n_attack": 100,
+      "n_benign": 58,
+      "compliance": [
+        0.36,
+        0.2727107459049014,
+        0.45764780018837914
+      ],
+      "asr": [
+        0.35,
+        0.2636410465347802,
+        0.4474573957080203
+      ],
+      "content_given_success": [
+        1.0,
+        0.9010957324106112,
+        1.0
+      ],
+      "behavioural_given_success": [
+        0.7142857142857143,
+        0.5494475193017891,
+        0.8367363660170444
+      ],
+      "content_given_compliance": [
+        1.0,
+        0.9035781695514236,
+        1.0
+      ],
+      "behavioural_given_compliance": [
+        0.7222222222222222,
+        0.5600719978365485,
+        0.841518299741862
+      ],
+      "resisted_n": 64,
+      "resisted_visible_action_only": [
+        1.0,
+        0.9433739770288436,
+        1.0
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.9433739770288436,
+        1.0
+      ],
+      "refusal_recall_on_resisted": [
+        0.390625,
+        0.28055388546896454,
+        0.5130830570559759
+      ],
+      "refusal_recall_held_out": [
+        0.390625,
+        0.28055388546896454,
+        0.5130830570559759
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.8668035060468213,
+        1.0
+      ],
+      "benign_refusal_fp": [
+        0.017241379310344827,
+        0.003049959884541764,
+        0.09141072677298324
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_behavioural_fp": [
+        0.017241379310344827,
+        0.003049959884541764,
+        0.09141072677298324
+      ],
+      "benign_reasoning_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "reasoning_recall_raw": null,
+      "reasoning_recall_summary": null,
+      "reasoning_recall_any": null,
+      "reasoning_adds_over_behavioural": null
+    },
+    "azure:gpt-oss-120b": {
+      "is_tier": false,
+      "n_attack": 100,
+      "n_benign": 58,
+      "compliance": [
+        0.3,
+        0.21894753866228117,
+        0.39585038432811953
+      ],
+      "asr": [
+        0.3,
+        0.21894753866228117,
+        0.39585038432811953
+      ],
+      "content_given_success": [
+        1.0,
+        0.8864829086095221,
+        1.0
+      ],
+      "behavioural_given_success": [
+        1.0,
+        0.8864829086095221,
+        1.0
+      ],
+      "content_given_compliance": [
+        1.0,
+        0.8864829086095221,
+        1.0
+      ],
+      "behavioural_given_compliance": [
+        1.0,
+        0.8864829086095221,
+        1.0
+      ],
+      "resisted_n": 70,
+      "resisted_visible_action_only": [
+        1.0,
+        0.9479751251327163,
+        0.9999999999999999
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.9479751251327163,
+        0.9999999999999999
+      ],
+      "refusal_recall_on_resisted": [
+        0.14285714285714285,
+        0.07948856360443703,
+        0.24338634701505113
+      ],
+      "refusal_recall_held_out": [
+        0.14285714285714285,
+        0.07948856360443703,
+        0.24338634701505113
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.7224598312333834,
+        1.0
+      ],
+      "benign_refusal_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_behavioural_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_reasoning_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "reasoning_recall_raw": null,
+      "reasoning_recall_summary": null,
+      "reasoning_recall_any": null,
+      "reasoning_adds_over_behavioural": null
+    },
+    "gemma4:e4b": {
+      "is_tier": false,
+      "n_attack": 100,
+      "n_benign": 58,
+      "compliance": [
+        0.43,
+        0.3373313900052838,
+        0.5278478830413564
+      ],
+      "asr": [
+        0.44,
+        0.34671865400968327,
+        0.537720722887437
+      ],
+      "content_given_success": [
+        1.0,
+        0.9197016822179859,
+        0.9999999999999999
+      ],
+      "behavioural_given_success": [
+        0.7954545454545454,
+        0.6549913631816677,
+        0.888468721765324
+      ],
+      "content_given_compliance": [
+        1.0,
+        0.9179874299767729,
+        1.0
+      ],
+      "behavioural_given_compliance": [
+        0.7906976744186046,
+        0.6479406820576336,
+        0.8857729400218853
+      ],
+      "resisted_n": 57,
+      "resisted_visible_action_only": [
+        1.0,
+        0.936858991216536,
+        0.9999999999999999
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.936858991216536,
+        0.9999999999999999
+      ],
+      "refusal_recall_on_resisted": [
+        0.21052631578947367,
+        0.12474426566891902,
+        0.33286368678466527
+      ],
+      "refusal_recall_held_out": [
+        0.21052631578947367,
+        0.12474426566891902,
+        0.33286368678466527
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.7574992425007574,
+        1.0
+      ],
+      "benign_refusal_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_behavioural_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "benign_reasoning_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "reasoning_recall_raw": null,
+      "reasoning_recall_summary": null,
+      "reasoning_recall_any": null,
+      "reasoning_adds_over_behavioural": null
+    },
+    "granite4:tiny-h": {
+      "is_tier": false,
+      "n_attack": 100,
+      "n_benign": 58,
+      "compliance": [
+        0.26,
+        0.18404578126986462,
+        0.35371172631861636
+      ],
+      "asr": [
+        0.26,
+        0.18404578126986462,
+        0.35371172631861636
+      ],
+      "content_given_success": [
+        1.0,
+        0.8712669561953784,
+        1.0
+      ],
+      "behavioural_given_success": [
+        0.7692307692307693,
+        0.5794807424804321,
+        0.8896630031632332
+      ],
+      "content_given_compliance": [
+        1.0,
+        0.8712669561953784,
+        1.0
+      ],
+      "behavioural_given_compliance": [
+        0.7692307692307693,
+        0.5794807424804321,
+        0.8896630031632332
+      ],
+      "resisted_n": 74,
+      "resisted_visible_action_only": [
+        1.0,
+        0.9506484964337834,
+        0.9999999999999998
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.9506484964337834,
+        0.9999999999999998
+      ],
+      "refusal_recall_on_resisted": [
+        0.0,
+        0.0,
+        0.049351503566216516
+      ],
+      "refusal_recall_held_out": [
+        0.0,
+        0.0,
+        0.049351503566216516
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "refusal_attributed": null,
+      "benign_refusal_fp": [
+        0.017241379310344827,
+        0.003049959884541764,
+        0.09141072677298324
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_behavioural_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "benign_reasoning_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "reasoning_recall_raw": null,
+      "reasoning_recall_summary": null,
+      "reasoning_recall_any": null,
+      "reasoning_adds_over_behavioural": null
+    },
+    "llama3.1:8b": {
+      "is_tier": false,
+      "n_attack": 100,
+      "n_benign": 58,
+      "compliance": [
+        0.27,
+        0.1926946091766482,
+        0.3643230022623127
+      ],
+      "asr": [
+        0.13,
+        0.07757093858414264,
+        0.20980521894809878
+      ],
+      "content_given_success": [
+        1.0,
+        0.7718981569447083,
+        1.0
+      ],
+      "behavioural_given_success": [
+        0.23076923076923078,
+        0.08179379092465713,
+        0.5025687399512693
+      ],
+      "content_given_compliance": [
+        0.6666666666666666,
+        0.47824419872105484,
+        0.8135694555640665
+      ],
+      "behavioural_given_compliance": [
+        0.5925925925925926,
+        0.4072638305536409,
+        0.7548548662714265
+      ],
+      "resisted_n": 73,
+      "resisted_visible_action_only": [
+        1.0,
+        0.950006246616416,
+        0.9999999999999999
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.950006246616416,
+        0.9999999999999999
+      ],
+      "refusal_recall_on_resisted": [
+        0.0958904109589041,
+        0.04722835432935106,
+        0.18495837785738106
+      ],
+      "refusal_recall_held_out": [
+        0.0958904109589041,
+        0.04722835432935106,
+        0.18495837785738106
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.6456611570247934,
+        1.0
+      ],
+      "benign_refusal_fp": [
+        0.017241379310344827,
+        0.003049959884541764,
+        0.09141072677298324
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_behavioural_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "benign_reasoning_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "reasoning_recall_raw": null,
+      "reasoning_recall_summary": null,
+      "reasoning_recall_any": null,
+      "reasoning_adds_over_behavioural": null
+    },
+    "ministral-3:8b": {
+      "is_tier": false,
+      "n_attack": 100,
+      "n_benign": 58,
+      "compliance": [
+        0.5,
+        0.40382982859014716,
+        0.5961701714098528
+      ],
+      "asr": [
+        0.45,
+        0.3561437510640346,
+        0.5475557296835656
+      ],
+      "content_given_success": [
+        1.0,
+        0.9213457380593594,
+        1.0
+      ],
+      "behavioural_given_success": [
+        0.7555555555555555,
+        0.6132633941520986,
+        0.8576466497449071
+      ],
+      "content_given_compliance": [
+        1.0,
+        0.9286499658256813,
+        1.0
+      ],
+      "behavioural_given_compliance": [
+        0.68,
+        0.5418944286372394,
+        0.792419559060006
+      ],
+      "resisted_n": 50,
+      "resisted_visible_action_only": [
+        1.0,
+        0.9286499658256813,
+        1.0
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.9286499658256813,
+        1.0
+      ],
+      "refusal_recall_on_resisted": [
+        0.08,
+        0.031549003255790686,
+        0.18838502545063704
+      ],
+      "refusal_recall_held_out": [
+        0.08,
+        0.031549003255790686,
+        0.18838502545063704
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.5100999795960008,
+        1.0
+      ],
+      "benign_refusal_fp": [
+        0.05172413793103448,
+        0.017745812831795674,
+        0.14139625335019185
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_behavioural_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "benign_reasoning_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "reasoning_recall_raw": null,
+      "reasoning_recall_summary": null,
+      "reasoning_recall_any": null,
+      "reasoning_adds_over_behavioural": null
+    },
+    "qwen3:8b": {
+      "is_tier": false,
+      "n_attack": 100,
+      "n_benign": 58,
+      "compliance": [
+        0.5,
+        0.40382982859014716,
+        0.5961701714098528
+      ],
+      "asr": [
+        0.42,
+        0.327982249185113,
+        0.5179369200110473
+      ],
+      "content_given_success": [
+        1.0,
+        0.9161983874908382,
+        1.0
+      ],
+      "behavioural_given_success": [
+        0.5238095238095238,
+        0.3772221394020704,
+        0.6664063552403504
+      ],
+      "content_given_compliance": [
+        0.84,
+        0.7148551903823401,
+        0.9166267863791231
+      ],
+      "behavioural_given_compliance": [
+        0.6,
+        0.4618118910275937,
+        0.7239181021375425
+      ],
+      "resisted_n": 50,
+      "resisted_visible_action_only": [
+        1.0,
+        0.9286499658256813,
+        1.0
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.9286499658256813,
+        1.0
+      ],
+      "refusal_recall_on_resisted": [
+        0.02,
+        0.0035391680889764604,
+        0.10495686471836953
+      ],
+      "refusal_recall_held_out": [
+        0.02,
+        0.0035391680889764604,
+        0.10495686471836953
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9630051925239981,
+        0.9999999999999999
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.20654329147389294,
+        1.0
+      ],
+      "benign_refusal_fp": [
+        0.017241379310344827,
+        0.003049959884541764,
+        0.09141072677298324
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.059708902448596696,
+        0.22879592278231584
+      ],
+      "benign_behavioural_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "benign_reasoning_fp": [
+        0.0,
+        0.0,
+        0.062119996895293766
+      ],
+      "reasoning_recall_raw": null,
+      "reasoning_recall_summary": null,
+      "reasoning_recall_any": null,
+      "reasoning_adds_over_behavioural": null
+    },
+    "frontier": {
+      "is_tier": true,
+      "n_attack": 300,
+      "n_benign": 174,
+      "compliance": [
+        0.14333333333333334,
+        0.10818417712673664,
+        0.18750146960498146
+      ],
+      "asr": [
+        0.12,
+        0.08795033863213894,
+        0.16165866816614016
+      ],
+      "content_given_success": [
+        1.0,
+        0.9035781695514236,
+        1.0
+      ],
+      "behavioural_given_success": [
+        1.0,
+        0.9035781695514236,
+        1.0
+      ],
+      "content_given_compliance": [
+        0.8372093023255814,
+        0.7002730466408176,
+        0.9188347549714246
+      ],
+      "behavioural_given_compliance": [
+        1.0,
+        0.9179874299767729,
+        1.0
+      ],
+      "resisted_n": 257,
+      "resisted_visible_action_only": [
+        1.0,
+        0.9852722878559248,
+        1.0
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.9852722878559248,
+        1.0
+      ],
+      "refusal_recall_on_resisted": [
+        0.6498054474708171,
+        0.5896657349380657,
+        0.7055325769876394
+      ],
+      "refusal_recall_held_out": [
+        0.6506024096385542,
+        0.5895004972170564,
+        0.7071279057039818
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9873565700022643,
+        0.9999999999999999
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9873565700022643,
+        0.9999999999999999
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.977513673484678,
+        0.9999999999999999
+      ],
+      "benign_refusal_fp": [
+        0.11494252873563218,
+        0.075650426877892,
+        0.17087007226291645
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.08030815573173891,
+        0.17745830610846045
+      ],
+      "benign_behavioural_fp": [
+        0.0,
+        0.0,
+        0.021601245152990077
+      ],
+      "benign_reasoning_fp": [
+        0.005747126436781609,
+        0.0010152042313482327,
+        0.031832003621032764
+      ],
+      "reasoning_recall_raw": [
+        0.2692307692307692,
+        0.13704275525067386,
+        0.46083403419761304
+      ],
+      "reasoning_recall_summary": [
+        0.0,
+        0.0,
+        0.18432366037156456
+      ],
+      "reasoning_recall_any": [
+        0.16279069767441862,
+        0.08116524502857546,
+        0.2997269533591824
+      ],
+      "reasoning_adds_over_behavioural": [
+        0.0,
+        0.0,
+        0.08201257002322722
+      ]
+    },
+    "mid": {
+      "is_tier": true,
+      "n_attack": 299,
+      "n_benign": 174,
+      "compliance": [
+        0.3377926421404682,
+        0.2865420542229453,
+        0.39315848889926786
+      ],
+      "asr": [
+        0.3311036789297659,
+        0.2801987459179244,
+        0.38629357217840066
+      ],
+      "content_given_success": [
+        0.98989898989899,
+        0.944983344585968,
+        0.9982147386799481
+      ],
+      "behavioural_given_success": [
+        0.797979797979798,
+        0.7084540803773877,
+        0.8652437228462105
+      ],
+      "content_given_compliance": [
+        0.9702970297029703,
+        0.9162811615791471,
+        0.9898477032989166
+      ],
+      "behavioural_given_compliance": [
+        0.801980198019802,
+        0.7138341272210941,
+        0.8679959860163994
+      ],
+      "resisted_n": 198,
+      "resisted_visible_action_only": [
+        1.0,
+        0.9809672535295005,
+        1.0
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.9809672535295005,
+        1.0
+      ],
+      "refusal_recall_on_resisted": [
+        0.2222222222222222,
+        0.1699108190282207,
+        0.28510737345539017
+      ],
+      "refusal_recall_held_out": [
+        0.2222222222222222,
+        0.1699108190282207,
+        0.28510737345539017
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9873148206851372,
+        1.0
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9873148206851372,
+        1.0
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.9197016822179859,
+        0.9999999999999999
+      ],
+      "benign_refusal_fp": [
+        0.04597701149425287,
+        0.023478367999908087,
+        0.08809057874820934
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.08030815573173891,
+        0.17745830610846045
+      ],
+      "benign_behavioural_fp": [
+        0.04597701149425287,
+        0.023478367999908087,
+        0.08809057874820934
+      ],
+      "benign_reasoning_fp": [
+        0.0,
+        0.0,
+        0.021601245152990077
+      ],
+      "reasoning_recall_raw": null,
+      "reasoning_recall_summary": null,
+      "reasoning_recall_any": null,
+      "reasoning_adds_over_behavioural": null
+    },
+    "open-8b": {
+      "is_tier": true,
+      "n_attack": 500,
+      "n_benign": 290,
+      "compliance": [
+        0.392,
+        0.35018663004287004,
+        0.4354602875598051
+      ],
+      "asr": [
+        0.34,
+        0.29983814768649814,
+        0.382601730243391
+      ],
+      "content_given_success": [
+        1.0,
+        0.9779017220274089,
+        1.0
+      ],
+      "behavioural_given_success": [
+        0.6705882352941176,
+        0.59684915973318,
+        0.7367878983702889
+      ],
+      "content_given_compliance": [
+        0.9132653061224489,
+        0.8654986868803544,
+        0.9451433416062068
+      ],
+      "behavioural_given_compliance": [
+        0.6836734693877551,
+        0.6155690011262516,
+        0.7447163448677756
+      ],
+      "resisted_n": 304,
+      "resisted_visible_action_only": [
+        1.0,
+        0.9875208548812114,
+        0.9999999999999999
+      ],
+      "resisted_visible_with_refusal": [
+        1.0,
+        0.9875208548812114,
+        0.9999999999999999
+      ],
+      "refusal_recall_on_resisted": [
+        0.07894736842105263,
+        0.05362355801428046,
+        0.11477993261206765
+      ],
+      "refusal_recall_held_out": [
+        0.07894736842105263,
+        0.05362355801428046,
+        0.11477993261206765
+      ],
+      "attack_recall_action_only": [
+        1.0,
+        0.9923753814690964,
+        0.9999999999999999
+      ],
+      "attack_recall_with_refusal": [
+        1.0,
+        0.9923753814690964,
+        0.9999999999999999
+      ],
+      "refusal_attributed": [
+        1.0,
+        0.8620194241710247,
+        1.0
+      ],
+      "benign_refusal_fp": [
+        0.020689655172413793,
+        0.009515792463643261,
+        0.044396247220322524
+      ],
+      "benign_content_fp": [
+        0.1206896551724138,
+        0.08807177223735041,
+        0.1632255253542772
+      ],
+      "benign_behavioural_fp": [
+        0.0,
+        0.0,
+        0.013073710461690924
+      ],
+      "benign_reasoning_fp": [
+        0.0,
+        0.0,
+        0.013073710461690924
+      ],
+      "reasoning_recall_raw": null,
+      "reasoning_recall_summary": null,
+      "reasoning_recall_any": null,
+      "reasoning_adds_over_behavioural": null
+    }
+  },
+  "created": "2026-10-21T12:53:35+00:00",
+  "commit": "4ee54b6e5b17fcbb21ea55045b1f9f44f6c9d91a",
+  "python": "3.14.8",
+  "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44",
+  "families": {
+    "content": [
+      "LLMD-001",
+      "LLMD-002",
+      "LLMD-003",
+      "LLMD-004",
+      "LLMD-005",
+      "LLMD-011",
+      "LLMD-012",
+      "LLMD-018",
+      "LLMD-021"
+    ],
+    "behavioural": [
+      "LLMD-006",
+      "LLMD-007",
+      "LLMD-008",
+      "LLMD-013",
+      "LLMD-014",
+      "LLMD-015",
+      "LLMD-016",
+      "LLMD-017",
+      "LLMD-019",
+      "LLMD-020"
+    ],
+    "refusal": [
+      "LLMD-023"
+    ],
+    "reasoning": [
+      "LLMD-024"
+    ]
+  }
+}

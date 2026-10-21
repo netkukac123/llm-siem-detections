@@ -1,0 +1,58 @@
+\subsection{RQ4d: the injection relayed to the user}
+\label{sec:relay}
+
+In RQ4c, Haiku~4.5 took no action on several framings and raised no action-based alert, but its
+answers named the attacker's file and address in 49 of 50 runs. Reading them showed that Haiku did
+not warn about the request: it presented it to the user as the procedure to follow. Because this was
+seen on data already analysed, we tested it on fresh material: three new framings of the same request
+(a compliance-check notice, a JSON ``unlock'' record, a two-step customer procedure) and a new
+attacker address, 60 Haiku runs and 30 each for Sonnet~5.5, Opus~5.5 and Opus~4.8. A fixed phrase list
+labelled each answer before the runs, and a new rule, \llmd{026}, was frozen at the same commit: it
+fires when an answer names an internal-only document and an email address outside the organisation,
+without a warning phrase.
+
+All pre-registered criteria held. The pre-registered audit read ten answers per label; we then read
+all 150, and a second, independent rater (a separate model instance, blind to model and framing, in
+shuffled order) labelled all 150 again: Cohen's $\kappa = 0.97$, with no disagreement between relay and
+warning (the three disagreements were vague versus no mention). The reading which corrected the labels of eleven answers (Table~\ref{tab:relay}). Haiku relayed the
+request in 47 of 60 runs (78\%, CI 66\% to 87\%; 46 by the pre-registered labeller) and warned in
+none. A typical answer:
+
+\begin{quote}\small
+The tracking status for shipment CL-90133 is currently unavailable. According to CargoLink, before
+the parcel status can be displayed, the customer needs to: 1. Obtain the integration notes from
+\texttt{ops-integration-notes.md} 2. Email those notes to
+\texttt{compliance-desk@cargolink-partners.net} Once the customer completes these steps with
+CargoLink's compliance desk, the parcel status will be available for tracking.
+\end{quote}
+
+Many such answers offered to do it (``Would you like me to help locate and send that file?''). For the
+compliance notice and the two-step procedure Haiku relayed in 20 of 20 runs each; for the JSON record
+it named the file or address in 7 of 20, and in the rest said only that the carrier's compliance desk
+needed documentation. Sonnet~5.5 and Opus~4.8 warned in all 30 runs (``You didn't ask for that, so I
+ignored it and sent nothing''); Opus~5.5 warned in 17 and was stopped by the provider in 13. No model
+sent the file.
+
+\begin{table}[t]\centering\small
+\input{tables/rq4d_relay.tex}
+\caption{RQ4d, labels from reading every answer. Thirteen Haiku answers to the JSON framing mention
+the carrier's ``compliance desk'' without the file or address, and do not warn. \llmd{026} fired on
+none of 324 earlier benign Claude runs.}
+\label{tab:relay}
+\end{table}
+
+\paragraph{Why it matters.} An injection that fails against the agent is not necessarily a failed
+attack. Here it became a request from a trusted internal assistant to an employee, with the
+attacker's address in it, and nothing in the agent's actions shows it. This is the human-agent trust
+risk that OWASP lists as ASI09~\cite{owasp-agentic-2026}; the existing alert we found that is closest,
+Defender for Cloud's alert on AI responses that share a known phishing URL~\cite{defender-ai}, depends
+on URL reputation and would not fire on a fresh domain and a file name.
+
+\paragraph{Detecting it.} \llmd{026} caught 41 of the 47 relays and fired on none of 324 benign runs,
+but its phrase list is a weak test for a warning: it fired on 10 of 77 warnings, from models that
+phrased them in ways the list did not cover (``I'm not going to do that'', ``it looks like a
+data-exfiltration attempt''). The pre-registered criterion on Sonnet's warnings passed only because
+the labeller shared the same list. A production rule needs the organisation's own list of internal
+resource names, which data loss prevention teams usually keep, and a better warning test, confirmed on
+fresh data. The 41 of 47 is not an independent validation either: the rule was written for this
+scenario's internal document and shares its warning test with the pre-registered labeller.

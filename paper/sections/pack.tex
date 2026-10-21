@@ -8,14 +8,23 @@ conventions~\cite{otel-genai}: \texttt{prompt}, \texttt{guardrail}, \texttt{retr
 what an LLM gateway usually logs, it records four fields that most of the agentic rules depend on:
 the provenance of every retrieved chunk (\texttt{doc\_source}), the normalised destination, risk class
 and human-approval state of every tool call (\texttt{tool\_target}, \texttt{tool\_risk},
-\texttt{tool\_approval}), a preview of every tool result (\texttt{tool\_result}), and, for every MCP
-tool the client discovers, the advertised description and its SHA-256 (\texttt{tool\_registry}).
-The MCP integration is real: the agent connects to a third-party server over stdio with the official
-Python SDK (version 2.3).
+\texttt{tool\_approval}), a preview of every tool result (\texttt{tool\_result}, the first 1{,}000
+characters), and, for every MCP tool the client discovers, the advertised description and its SHA-256
+(\texttt{tool\_registry}). The MCP integration is real: the agent connects to a third-party server
+over stdio with the official Python SDK (version 2.3).
+
+For the frontier phase two event types were added. A \texttt{reasoning} event carries the model's
+reasoning text for each model round when the provider returns one; for Claude models this is always a
+provider-written summary, never the raw chain of thought, and is labelled as such. A
+\texttt{refusal} event records a refusal by the provider: the API stopped generation with a refusal
+stop reason (for Claude, \texttt{stop\_reason: refusal} with a category) or a content filter blocked
+the request. A refusal in the model's own words is not an event; it is text in the answer or the
+reasoning summary that a rule (\llmd{023}) has to recognise.
 
 \paragraph{Rules.}
-The pack has 21 detections, each implemented as a Microsoft Sentinel scheduled analytic rule (KQL)
-and as Wazuh rules (Table~\ref{tab:rules} in the appendix). They fall into three families that matter
+The pack has 25 detections, each implemented as a Microsoft Sentinel scheduled analytic rule (KQL);
+23 are also implemented as Wazuh rules, and the two newest (\llmd{025} and \llmd{026}) are Sentinel
+only so far (Table~\ref{tab:rules} in the appendix). They fall into four families that matter
 for the results:
 \begin{itemize}
   \item \emph{Content signatures} match text: instruction-override phrasing in prompts (\llmd{001}),
@@ -32,10 +41,23 @@ for the results:
         (\llmd{010}), memory writes with standing instructions (\llmd{013}), destructive tools without
         approval (\llmd{016}), and a private read followed by egress in one turn (\llmd{019}), the
         ``lethal trifecta'' of Willison~\cite{trifecta}.
+  \item \emph{Refusal, reasoning and answer signals}, added for this study: a refusal (provider or
+        model) in a session that pulled in external content and took no high-risk action
+        (\llmd{023}); a reasoning summary that states intent to follow injected content
+        (\llmd{024}) or notes that an instruction was injected (\llmd{025}); and an answer that
+        names an internal document and an outside email address without warning the user
+        (\llmd{026}, Section~\ref{sec:relay}).
 \end{itemize}
 
+\paragraph{Rule groups used in the analysis.}
+For the frontier analysis the rules are grouped by what they read. INPUT rules scan what enters the
+model (\llmd{001}, 002, 010, 011, 012, 014, 015, 021). OUTPUT rules read what the agent produced or
+did, split into \emph{output-content} rules (\llmd{003}, 004, 005, 018) and \emph{behavioural} rules
+(\llmd{006}, 007, 008, 013, 016, 017, 019, 020). The \emph{refusal signal} is \llmd{023} or a
+provider refusal event. The groups are defined in the pre-registration of the confirmatory run.
+
 \paragraph{Prior validation.}
-Before this study the pack was validated on a synthetic, labelled dataset of 70 scenarios: all 21
-KQL rules match the labels exactly on the Kusto engine (Kustainer) and on a live Sentinel workspace,
-and the Wazuh rules match except for two documented engine limits. That dataset was written by the
-author of the rules; this paper replaces it with third-party data and live models.
+Before this study the first 21 rules were validated on a synthetic, labelled dataset of 70 scenarios:
+all KQL rules match the labels exactly on the Kusto engine (Kustainer) and on a live Sentinel
+workspace, and the Wazuh rules match except for two documented engine limits. That dataset was
+written by the author of the rules; this paper replaces it with third-party data and live models.

@@ -1,0 +1,38 @@
+id: 993d4d9a-bff7-519e-83fe-324504d96840
+name: LLMD-025 Model reasoning notes an injected instruction
+description: |
+  The model's logged reasoning says it has recognised an instruction inside tool output or retrieved
+  content that did not come from the user ("this looks like an injected instruction", "an embedded
+  User: message", "the user never asked for that"). The model usually resists in these cases, so no
+  harmful action follows and no action rule fires; the reasoning is then the only place the attempt is
+  visible. Role-confusion and action-decomposition injections did not trigger the provider's safety
+  classifier on Opus 5.5 in RQ4c exploration but did produce this kind of reasoning. Defined after
+  that exploration and evaluated only on the confirmation data and the benign workload.
+severity: Medium
+requiredDataConnectors: []
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+relevantTechniques: []
+tags:
+  - OWASP-ASI01:2026 Agent Goal Hijack
+  - ATLAS AML.T0051.001 LLM Prompt Injection Indirect
+query: |
+  let noticed = @"(?i)\b(injected|embedded|hidden|smuggled|planted)\b[^.\n]{0,30}\b(instruction|instructions|message|request|command|prompt|user turn)\b|\bprompt injection\b|\bnot (from|a request from|something requested by|something) (the )?user\b|\b(the )?user (never|didn.?t|did not) ask(ed)? for\b|\bnot (an )?actual (user )?request\b";
+  LLMAppLogs_CL
+  | where event_type == "reasoning" and isnotempty(reasoning)
+  | where reasoning matches regex noticed
+  | project TimeGenerated, user_id, src_ip, session_id, request_id, reasoning_kind, reasoning
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: user_id
+customDetails:
+  SessionId: session_id
+  ReasoningKind: reasoning_kind
+version: 1.0.0
+kind: Scheduled

@@ -9,6 +9,8 @@ ROOT = Path(__file__).resolve().parent.parent
 DATASET = ROOT / "datasets" / "sample.jsonl"
 LABELS = ROOT / "datasets" / "labels.json"
 RULE_IDS = [f"LLMD-{i:03d}" for i in range(1, 22)]
+# Rules added by the empirical study; evaluated on live runs in research/, not on the reference dataset.
+RESEARCH_RULE_IDS = ["LLMD-023", "LLMD-024", "LLMD-025", "LLMD-026"]
 
 
 @dataclass(frozen=True)
