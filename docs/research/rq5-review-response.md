@@ -82,5 +82,3 @@ called through the author's own Anthropic API account. The study observed the pr
 classifier as a side effect of sending injected content through the normal API; it did not attempt to
 disable, reverse-engineer or bypass that classifier, and no payload aimed at harmful content outside
 the simulated exfiltration. `evidence-standard.md` item 6 is updated to include the Anthropic API.
-The Wazuh logcollector finding is under coordinated disclosure (GHSA-78vx-6j3c-5jjv) and is not
-detailed in this repository.
