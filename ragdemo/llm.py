@@ -162,9 +162,9 @@ class AnthropicModel:
         refusal = ""
         if r.stop_reason == "refusal" and getattr(r, "stop_details", None):
             refusal = f"{r.stop_details.category or 'unspecified'}: {r.stop_details.explanation or ''}".strip()
-        # adaptive thinking on 5.x returns a summary written by a separate model; enabled thinking
-        # (Haiku) returns the model's own reasoning tokens. Recorded so strand C can separate them.
-        kind = "summary" if self.thinking == "adaptive" else ("raw" if thinking else "")
+        # The Messages API never returns raw chain of thought: thinking text is always a summary of the
+        # model's reasoning, in both adaptive and enabled (budget) mode, Haiku 4.5 included.
+        kind = "summary" if thinking else ""
         return ModelResponse(content=text, tool_calls=calls, input_tokens=r.usage.input_tokens,
                              output_tokens=r.usage.output_tokens, finish_reason=finish,
                              thinking=thinking, refusal=refusal, reasoning_kind=kind)
