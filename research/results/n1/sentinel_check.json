@@ -1,0 +1,24 @@
+{
+  "stored_lengths": {
+    "P70000-middle": 70238,
+    "P70000-end": 70237,
+    "P1500-middle": 1738,
+    "P40000-middle": 40238,
+    "P8000-end": 8237,
+    "P40000-end": 40237,
+    "P8000-middle": 8238,
+    "P1500-end": 1737,
+    "P0-end": 237
+  },
+  "llmd021_hits": [
+    "P0-end",
+    "P1500-end",
+    "P1500-middle",
+    "P40000-end",
+    "P40000-middle",
+    "P70000-end",
+    "P70000-middle",
+    "P8000-end",
+    "P8000-middle"
+  ]
+}

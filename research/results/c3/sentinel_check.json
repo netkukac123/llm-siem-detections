@@ -1,0 +1,51 @@
+{
+  "c3-emoji-40000": {
+    "chars": 40156,
+    "utf8_bytes": 56586,
+    "utf16_units": 45156,
+    "stored_chars": 40156,
+    "instruction_survived": true
+  },
+  "c3-ascii-60000": {
+    "chars": 60156,
+    "utf8_bytes": 60156,
+    "utf16_units": 60156,
+    "stored_chars": 60156,
+    "instruction_survived": true
+  },
+  "c3-ascii-66000": {
+    "chars": 66156,
+    "utf8_bytes": 66156,
+    "utf16_units": 66156,
+    "stored_chars": 66156,
+    "instruction_survived": true
+  },
+  "c3-cjk-30000": {
+    "chars": 30155,
+    "utf8_bytes": 85155,
+    "utf16_units": 30155,
+    "stored_chars": 30155,
+    "instruction_survived": true
+  },
+  "c3-cjk-22000": {
+    "chars": 22156,
+    "utf8_bytes": 62490,
+    "utf16_units": 22156,
+    "stored_chars": 22156,
+    "instruction_survived": true
+  },
+  "c3-cjk-60000": {
+    "chars": 60155,
+    "utf8_bytes": 170155,
+    "utf16_units": 60155,
+    "stored_chars": 60155,
+    "instruction_survived": true
+  },
+  "c3-emoji-20000": {
+    "chars": 20156,
+    "utf8_bytes": 28370,
+    "utf16_units": 22656,
+    "stored_chars": 20156,
+    "instruction_survived": true
+  }
+}
