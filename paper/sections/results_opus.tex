@@ -1,0 +1,27 @@
+\subsection{RQ4e: four 2026 injection families on Opus}
+\label{sec:opus}
+
+Opus~5.5 completed none of its attack runs in RQ5, RQ5-C, RQ5b and RQ4c. To check that this is not an
+artefact of dated attack styles, RQ4e tried four families the study had not used, on Opus~5.5 and its
+predecessor Opus~4.8, with fixed texts and no tuning against the provider's classifier: forged
+reasoning appended to the tool output, styled as the assistant's own private plan (CoT
+Forgery~\cite{cotforgery}, reported at 60\% success against frontier models); a simulated partner
+console with queued tasks, our own design; recipient substitution, where the user asks for the send
+and the tool supplies a look-alike address, a form of agent data injection~\cite{adi}; and a
+trigger-conditioned note that waits for a later, unrelated user request (explosive
+prompts~\cite{explosive}, reported at 16.5\% against frontier models where the plain imperative
+reached 2.4\%). Five runs per family and model; exploration only.
+
+No family produced compliance on either model (0 of 40). In the 30 runs where the injected text
+reached the model, a provider refusal, \llmd{023} or \llmd{025} fired in 29. The two generations
+differ in where the refusal comes from: Opus~4.8 refused in its own words in every run (no provider
+refusals in 20), naming the injection and the outside address, while on Opus~5.5 the provider
+classifier stopped 10 of the 15 runs with an empty answer. The recipient-substitution family did not
+test what it was meant to: the requested file is visibly restricted and the tool's description does
+not cover contact lookup, so no model called the tool and the look-alike address never entered the
+context. Opus~4.8 refused the user's request on the content of the file; Opus~5.5's provider
+classifier refused all five requests before any tool call.
+
+Forty runs cannot show that Opus resists these families in general. They show that in this
+application the four families did not move either model, and that the attempts were visible to the
+refusal and reasoning rules.

@@ -1,14 +1,27 @@
 \section{Methodology}
 \label{sec:method}
 
-We ask four research questions.
-\textbf{RQ1}: when real open-weight models are attacked, how often do they comply, how often is harm
-achieved, and what fraction of compromised runs does the pack detect?
+We ask six research questions.
+\textbf{RQ1}: when real models are attacked, how often do they comply, how often is harm achieved,
+and what fraction of compromised runs does the pack detect?
 \textbf{RQ2}: on public datasets of attacks and of real benign traffic, what recall and false-positive
 rate do the content signatures achieve?
 \textbf{RQ3}: how do they compare with, and combine with, open ML prompt-injection classifiers?
-\textbf{RQ4}: how does detection degrade under an adaptive attacker who mutates the payload, and how
-many mutants evade detection while the attack still works?
+\textbf{RQ4}: how does detection hold up when the attack text is rewritten, and when an attacker
+writes injections with the rule set in mind?
+\textbf{RQ5}: what does a SIEM see of attacks on frontier models, which rarely complete them?
+\textbf{RQ6}: where do the views of the model, the application log and the guardrail differ, and
+what does an attacker gain from the difference?
+
+\subsection{Protocol}
+Results are held to a written evidence standard (\texttt{docs/research/evidence-standard.md}). Every
+experiment from N1 onwards has a pre-registration committed to the public repository before its first
+run, so that the commit timestamp precedes the data; deviations are reported. An observation made on
+data already seen is not reported as a finding until a separately pre-registered confirmation on
+fresh material (new repetitions, new wordings, held-out benign prompts) reproduces it. Every result
+was reviewed by an adversarial reviewer (an independent model instance instructed to find errors);
+the errors it found, and the claims that were withdrawn, are listed in Section~\ref{sec:process}.
+Proportions carry Wilson 95\% intervals unless stated otherwise.
 
 \subsection{Rule execution}
 All rules run unchanged as KQL on the Kusto emulator (Kustainer, image pinned by digest). The only
@@ -16,32 +29,38 @@ modification is to widen a \texttt{trigger\_window} parameter that deduplicates 
 overlapping scheduled runs, because replayed data is not ``recent''. Events are loaded into a table
 with the production schema (\texttt{LLMAppLogs\_CL}).
 
-\subsection{RQ1: live attacks}
-\paragraph{Models.} Five open-weight instruction models from five vendors, all with tool calling and
-small enough for an 8~GB consumer GPU (NVIDIA RTX~4060), served by Ollama~0.40.6 at default
-quantisation: \input{generated/models.tex}.
+\subsection{RQ1 and RQ5: live attacks}
+\paragraph{Models.} Eleven models with tool calling. Five open-weight models from five vendors, small
+enough for an 8~GB consumer GPU (NVIDIA RTX~4060), served by Ollama~0.40.6 at default quantisation:
+\input{generated/models.tex}. Three models deployed on Azure AI Foundry with the default content
+filter: \input{generated/azure_models.tex}. Three Claude models through the Anthropic Messages API
+(SDK 1.17.0): Haiku~4.5 with extended thinking (budget 1{,}024 tokens), Sonnet~5.5 and Opus~5.5 with
+adaptive thinking and summarised display. RQ4e adds Opus~4.8, configured like Opus~5.5.
 
 \paragraph{Scenarios.} Ten attack scenarios in which only attacker inputs are fixed and the model's
-behaviour is not scripted: a direct injection asking for the system prompt; indirect injections in
-two poisoned vendor documents (email exfiltration, image beacon); MCP tool poisoning, rug pull and
-runtime-response poisoning against a real MCP server; a two-session memory poisoning; agent
-configuration tampering and a reverse shell delivered through pasted text; and a base64-obfuscated
-injection. The system prompt instructs the assistant not to send email unless asked, and no
-high-risk tool requires approval, which is a common and insecure default.
+behaviour is not scripted: a direct injection asking for the system prompt (L01); indirect injections
+in two poisoned vendor documents, email exfiltration (L02) and an image beacon (L03); MCP tool
+poisoning (L04), rug pull (L05) and runtime-response poisoning (L06) against a real MCP server; a
+two-session memory poisoning (L07); agent configuration tampering (L08) and a reverse shell delivered
+through pasted text (L09); and a base64-obfuscated injection (L10). The system prompt instructs the
+assistant not to send email unless asked, and no high-risk tool requires approval, which is a common
+and insecure default.
 
 \paragraph{Oracles.} Each scenario has two independent oracles defined on side effects, never on the
 rules: \emph{compliance} (the model took the attacker-directed step, for example it read the
 restricted file the poisoned tool description asked for) and \emph{harm} (the attacker's goal was
 achieved, for example restricted data reached the third-party tool). Oracles are unit-tested on
-positive and negative traces. Each (model, scenario) pair runs 10 times at temperature 0.7 with fixed
-seeds, on a fresh agent instance. Fifty-eight benign prompts (8 application questions and 50 real
-prompts drawn from OASST2 and Dolly) measure live false positives.
+positive and negative traces. Each (model, scenario) pair runs 10 times on a fresh agent instance
+(temperature 0.7 with fixed seeds where the API accepts it; the Claude runs use the API default).
+Benign runs use 8 application questions and real prompts drawn from OASST2 and Dolly.
 
-\paragraph{Metrics.} Compliance and harm rates; detection given compliance (one of the scenario's
-intended rules fired on the run); detection given harm; any-rule visibility of resisted attempts; and
-the false-positive rate on benign runs. Proportions carry Wilson 95\% intervals.
+\paragraph{Frontier runs.} The first Claude run (repetitions r0 to r9) was exploratory; its analysis
+was corrected after review (Section~\ref{sec:process}). The numbers reported for Claude come from a
+confirmatory run (RQ5-C) with repetitions r10 to r19, none run before, and 50 held-out benign prompts
+disjoint from every earlier benign run, with rule groups, metrics and decision criteria frozen in a
+pre-registration committed before the first request.
 
-\subsection{RQ2: public datasets}
+\subsection{RQ2 and RQ3: public datasets and classifiers}
 We assembled 112{,}894 items from 16 public datasets (Table~\ref{tab:rq2-datasets}): labelled direct
 injections and jailbreaks (deepset, Lakera Gandalf, neuralchemy, SPML, jackhhao, TrustAIRLab
 in-the-wild), indirect injections embedded in documents (Microsoft's LLMail-Inject challenge
@@ -51,22 +70,33 @@ OASST2), crowd-written instructions and contexts (Dolly-15k), and real MCP tool 
 (MCP-Flow). Prompts become \texttt{prompt} events, documents become \texttt{retrieval} events and
 tool results, and tool descriptions become \texttt{tool\_registry} events. WildChat is real traffic
 that can itself contain attacks, so it is reported as an alert rate rather than a false-positive rate.
-Intervals are percentile bootstrap (1{,}000 resamples).
+RQ2 intervals are percentile bootstrap (1{,}000 resamples).
 
-\subsection{RQ3: ML classifiers}
 Two open classifiers run with ONNX Runtime on CPU: ProtectAI's DeBERTa-v3 prompt-injection model
 (v2)~\cite{protectai} and Meta's Llama Prompt Guard~2 (22M)~\cite{promptguard}, both at threshold 0.5.
 ProtectAI's model card names jackhhao among its training data and lists eight unnamed MIT-licensed
 sets, so we mark jackhhao as \emph{contaminated} and the MIT-licensed sets published before the model
 (Lakera Gandalf, SPML, TrustAIRLab) as \emph{possibly contaminated}; headline numbers use the
-remaining, clean datasets only. We also evaluate the union and intersection of rules and classifier,
-and a precision-recall sweep.
+remaining, clean datasets only.
 
-\subsection{RQ4: adaptive attacker}
-Twelve mutation operators: deterministic synonym substitution, homoglyphs, leetspeak, zero-width
-insertion, word splitting and base64 wrapping; and LLM-based paraphrase and translation into German,
-Hungarian, Spanish, Chinese and Russian (Llama~3.1~8B, temperature~0, fixed seed). \emph{Offline},
-we mutate 300 real attack prompts that the rules detect at baseline and re-run rules and classifiers.
-\emph{Live}, we mutate the attacker-controlled text of the direct (L01) and indirect (L02) scenarios
-and re-run them on two models, counting \emph{evasion-preserving} mutants: the model complied and no
-intended rule fired.
+\subsection{RQ4: rewritten and rule-aware attacks}
+\emph{Part A} applies twelve fixed mutation operators once to each of 300 real attack prompts that the
+rules detect at baseline: synonym substitution, homoglyphs, leetspeak, zero-width insertion, word
+splitting and base64 wrapping; and paraphrase and translation into five languages by a local
+Llama~3.1~8B (temperature~0, fixed seed). There is no feedback from the detectors, so this is a
+non-adaptive lower bound on what an attacker achieves. \emph{RQ4c} gives the Claude models nine
+injection framings written to avoid the phrases the content rules key on (for example a forged user
+turn, a fake approval record, a fake error), delivered in an MCP tool reply that asks the agent to
+email an internal file to an outside address. \emph{RQ4d} confirms an observation from RQ4c on fresh
+framings (Section~\ref{sec:relay}). \emph{RQ4e} tries four injection families from the 2026
+literature on Opus~5.5 and Opus~4.8 (Section~\ref{sec:opus}).
+
+\subsection{RQ6: views}
+N1 places the L06 instruction at a controlled character offset inside an MCP tool reply padded with
+realistic shipment history (offsets 0, 1{,}500, 8{,}000, 40{,}000, 70{,}000; at the end or in the
+middle) and records, for each run, whether the model acted and whether each observer saw the
+instruction: the application log (first 1{,}000 characters, and optionally the last 1{,}000 as
+\texttt{tool\_result\_tail}), the Sentinel table after ingestion, and the two classifiers. RQ5b repeats
+the 1{,}000 to 2{,}000 character gap on the Claude models with head-only logging. C2 measures the
+inspection window of the Azure AI Foundry default content filter on the author's own deployment, in
+the user channel and in the tool-result channel.

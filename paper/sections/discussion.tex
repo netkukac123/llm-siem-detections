@@ -1,1 +1,30 @@
-\todo{discussion}
+\section{Discussion: what to log and what to watch}
+\label{sec:discussion}
+
+\paragraph{Behaviour catches what works; the refusal shows what was tried.} Against models that act
+on injections, behavioural rules caught 296 of 297 complied runs, whatever the wording. Against
+frontier models the same rules have almost nothing to see, because the attack fails before any action.
+The attempt still leaves evidence, but in a place most applications do not log: a provider refusal
+(an empty answer with a stop reason) or a refusal in the model's own words. A SOC that wants to know
+it is being targeted, and not only that it has been breached, needs the application to emit both as
+events. In our runs this raised coverage of frontier attack sessions from 13\% to 70\% at an 8\%
+benign rate.
+
+\paragraph{Log what the model saw.} Three different views lost the same instruction in our
+experiments: an application preview shorter than the model's input, a guardrail that inspects the
+first 1{,}000 characters of a user message and no tool results, and classifiers that did not recognise
+a payload at any offset. The cheapest fix is in the application. It should log the full tool result,
+or its length together with the head, the tail and a hash of the rest, so that a rule can at least
+tell that something was not inspected. A guardrail's silence is not evidence that nothing arrived.
+
+\paragraph{Watch the answer, not only the actions.} When Haiku declined to act on an injection it
+often passed the attacker's request on to the user as a legitimate next step
+(Section~\ref{sec:relay}). The attack then depends on the human, and the only telemetry is the answer
+text. \llmd{026} is a first, narrow rule for this: an internal resource name and an outside address
+in the same answer, without a warning. A production version needs the organisation's own list of
+internal resource names, which most SOCs already keep for data loss prevention.
+
+\paragraph{Content signatures are context.} The input rules are precise on benign public traffic and
+blind to reworded attacks; the classifiers recall far more direct injections but little indirect
+injection in documents. Both are useful for triage and for explaining an alert, and neither should be
+the only line. Their alerts should be routed at a lower severity than behavioural and refusal signals.

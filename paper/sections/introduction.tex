@@ -1,1 +1,44 @@
-\todo{introduction}
+\section{Introduction}
+\label{sec:intro}
+
+Enterprises are deploying LLM assistants that read documents, call tools and act on behalf of users,
+and attackers are reaching them through the content those assistants read: poisoned documents, MCP
+tool descriptions and tool replies, memories, pasted text~\cite{greshake,echoleak,invariant-tp}. Most
+of the defensive work aims at prevention: hardening models, guardrail classifiers, design patterns
+that keep untrusted data away from privileged actions~\cite{camel,design-patterns}. A security
+operations centre (SOC) asks a different question of any new system: if an attack happens, will we
+see it in our logs, and at what cost in false alarms?
+
+This paper answers that question empirically, for a SIEM fed by the application's own telemetry. We
+built a detection pack of 25 rules for Microsoft Sentinel and Wazuh and tested it against 112{,}894
+items from 16 public datasets, against two open ML classifiers, against rewritten and rule-aware
+attacks, and against live attacks on eleven models, from 8B open-weight models on a consumer GPU to
+Claude Opus~5.5. The experiments from the telemetry-view study onwards have pre-registrations in the
+public repository (one was committed after its runs and is reported as exploratory), and every
+frontier claim rests on a confirmation run on fresh data.
+
+The main findings:
+\begin{itemize}
+  \item \emph{Content signatures are precise and blind.} On public data the input rules fire on under
+        1\% of benign prompts but recall 12\% of attack prompts and 1\% of injected documents, and
+        rewording removes almost all of what they catch (Sections~\ref{sec:rq2} to \ref{sec:rq4a}).
+  \item \emph{Against models that comply, behavioural rules work.} On eight non-frontier models an
+        intended rule fired on 296 of 297 runs where the model complied, regardless of the attack's
+        wording (Section~\ref{sec:rq1}).
+  \item \emph{Against frontier models, the evidence of an attack is the refusal.} Rules over the
+        agent's actions saw 13\% of 300 frontier attack sessions and none on Opus~5.5. Logging
+        provider and model refusals as events, with one rule over them, raised this to 70\% (72\% on
+        Opus) at an 8\% benign rate, in a pre-registered confirmation (Section~\ref{sec:frontier}).
+  \item \emph{The model, the log and the guardrail see different things.} An instruction placed
+        between the application's logged preview and the model's input was followed while absent from
+        the log; Azure's default content filter inspected only the first 1{,}000 characters of user
+        messages and no tool results (Section~\ref{sec:views}).
+  \item \emph{A failed injection can be relayed to the human.} Instead of acting on an injected
+        exfiltration request, Claude Haiku~4.5 repeatedly presented it to the user as the required next
+        step, a path no action-based rule sees; we confirm this on fresh framings and give a first rule
+        for it (Section~\ref{sec:relay}).
+\end{itemize}
+
+The rules, the demo application, every pre-registration, every raw run record and the scripts that
+produce every number and table are public. Section~\ref{sec:process} lists the claims that an
+adversarial review overturned before publication.

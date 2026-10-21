@@ -1,16 +1,41 @@
 \section{Related work}
 \label{sec:related}
 
-\paragraph{Prompt injection.} Greshake et~al.~\cite{greshake} established indirect prompt injection
-against LLM-integrated applications; BIPIA~\cite{bipia} and AgentDojo~\cite{agentdojo} benchmark it,
-and Microsoft's LLMail-Inject challenge~\cite{llmail} collected adaptive attacks against an email
-agent at scale. MCPTox~\cite{mcptox} measured tool poisoning across real MCP servers.
+\paragraph{Prompt injection against agents.} Greshake et~al.~\cite{greshake} established indirect
+prompt injection against LLM-integrated applications and showed that an injected model can act as a
+social engineer against its own user. BIPIA~\cite{bipia} and AgentDojo~\cite{agentdojo} benchmark
+indirect injection; Microsoft's LLMail-Inject challenge~\cite{llmail} collected adaptive attacks
+against an email agent at scale, and MCPTox~\cite{mcptox} measured tool poisoning across real MCP
+servers. Large public red-teaming competitions found that nearly all frontier agents can be made to
+violate policy with enough attempts and that robustness correlates little with model
+size~\cite{grayswan-art}, and that concealed attacks succeed against every frontier model tested, at
+rates from 0.5\% (Claude Opus~4.5) upwards~\cite{ipi-competition}. Recent attack families include
+forged reasoning~\cite{cotforgery}, injected data rather than instructions~\cite{adi}, and dormant
+trigger-conditioned payloads~\cite{explosive}. Our frontier models resisted every family we tried;
+our contribution is not a stronger attack but a measurement of what the defender sees when attacks
+fail.
+
+\paragraph{What the user sees.} ICoA~\cite{icoa} separates successful injections into covert and overt
+by whether the final answer reveals them; its taxonomy requires the injected action to be executed.
+Provider-side injection in proactive agents~\cite{provider-ipi} steers the user's decisions through the
+agent. The relay we report in Section~\ref{sec:relay} sits outside both: the action fails and the
+request reaches the user instead. OWASP lists the general risk as human-agent trust exploitation
+(ASI09)~\cite{owasp-agentic-2026}. Microsoft Defender for Cloud alerts when an AI application shares a
+known malicious URL with a user~\cite{defender-ai}; that alert depends on URL reputation and would not
+fire on a request to email an internal file to a fresh domain.
+
+\paragraph{Views and windows.} Prompt Overflow~\cite{prompt-overflow} shows that open guardrail
+classifiers inspect a different window from the one the model reads, for direct injection;
+LongPIBench~\cite{longpibench} studies position effects in long contexts, and LogJack~\cite{logjack}
+measures Azure Prompt Shields on payloads embedded in cloud logs. We extend the window question to a
+commercial guardrail on both the user and the tool channel, and to the application's own log, measured
+end to end with attack success.
 
 \paragraph{Defences.} Classifier guardrails (Prompt Guard~\cite{promptguard}, ProtectAI's
 DeBERTa~\cite{protectai}, LlamaFirewall~\cite{llamafirewall}) and design-level defences such as
 Spotlighting~\cite{spotlighting}, CaMeL~\cite{camel} and the design patterns of Beurer-Kellner
 et~al.~\cite{design-patterns} aim at prevention. Our study is complementary: it measures what a SOC
-can \emph{detect} from application telemetry, with standard SIEM rules, after the fact.
+can \emph{detect} from application telemetry with standard SIEM rules.
 
 \paragraph{Frameworks.} OWASP's LLM~\cite{owasp-llm-2025} and Agentic~\cite{owasp-agentic-2026} Top~10
 lists and MITRE ATLAS~\cite{atlas} provide the taxonomy we map every rule to.

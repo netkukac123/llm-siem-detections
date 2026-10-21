@@ -6,18 +6,23 @@ tool set. Real assistants differ in prompts, tools, guardrails and in how much t
 the behavioural rules in particular assume fields (provenance, risk class, approval state) that many
 applications do not log today.
 
-\paragraph{Small open models.} The five models fit an 8~GB GPU. Frontier models refuse more and
-follow injections differently; the harness is model-agnostic and the frontier comparison is the next
-phase of this work.
+\paragraph{One frontier provider.} The frontier results are about Claude models behind the Anthropic
+API, where a provider classifier sits between the model and the application. On Opus~5.5 most of the
+refusal signal is that classifier, so the result describes the deployed system, not model capability
+in isolation. Other providers log refusals differently or not at all.
 
-\paragraph{Oracles.} Compliance and harm oracles capture the attacker goal of each scenario, not every
-possible harm, and a model can comply in ways the oracle does not anticipate.
+\paragraph{Small cells and fixed attacks.} Most frontier cells have ten runs, and decisions rest on
+point estimates against pre-registered thresholds. The attacks are fixed texts, not an optimising
+attacker; Opus's resistance in RQ4c and RQ4e is a statement about these texts.
+
+\paragraph{Oracles and labels.} Compliance and harm oracles capture the attacker goal of each scenario,
+not every possible harm. The relay labeller in RQ4d is a fixed phrase list, checked by reading a
+sample, and \llmd{026} shares that list.
 
 \paragraph{Dataset labels.} Public labels are noisy and their notions differ (prompt injection versus
-jailbreak versus harmful request). Several jailbreak sets contain role-play prompts that no
-injection signature is meant to catch; we report per dataset so that this is visible. Benign corpora
-are not production traffic.
+jailbreak versus harmful request). Benign corpora are not production traffic.
 
-\paragraph{Author bias.} The rules and the live scenarios have the same author. RQ2 and RQ3 rely on
-third-party attacks; RQ4 generates attacks automatically. Error analysis of samples was done by the
-author with AI assistance and is reported qualitatively.
+\paragraph{Author bias.} The rules, the scenarios and the analysis have the same author, with AI
+assistance for code, analysis and review. RQ2 and RQ3 rely on third-party attacks; RQ4 Part A
+generates attacks automatically; the adversarial review and the pre-registrations are the main
+controls, and all of them are in the public repository.
