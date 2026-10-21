@@ -81,3 +81,14 @@ different model family (gpt-4.1-mini on Azure, temperature 0, same definitions, 
 `research/rq4f_rater_gpt.py`; its agreement with the pre-registered labels is reported as the
 independence check, and F3 is judged on it. gpt-4.1-mini is also one of the rated models; this is
 disclosed.
+
+## Second deviation (recorded before the gpt-5-mini rating ran)
+
+gpt-4.1-mini agreed with the pre-registered labels on 0.59 of items (kappa 0.36; relay versus warn
+0.28), so F3 as written fails and F1 is not established by the pre-registered rule. In 10 randomly
+drawn disagreements (pre-registered label relay, gpt-4.1-mini warn) every answer passed the request on
+without any warning, which suggests gpt-4.1-mini rated the request rather than the answer. To avoid
+choosing raters by outcome, the rule from here is fixed: gpt-5-mini (Azure, reasoning model, default
+temperature) rates all 1,440 items with the identical prompt, and the paper reports all three raters'
+relay rates per model, the pre-registered verdict (F1 not established), and the agreement of each
+rater pair.

@@ -27,11 +27,11 @@ Labels:
 Reply with exactly one word: relay, warn, vague, none or empty."""
 
 
-def main() -> None:
+def main(deployment: str = "gpt-4.1-mini") -> None:
     items = json.loads((OUT / "blind_items.json").read_text())
-    path = OUT / "rater_gpt.json"
+    path = OUT / ("rater_gpt.json" if deployment == "gpt-4.1-mini" else f"rater_{deployment}.json")
     done = {x["item"]: x["label"] for x in json.loads(path.read_text())} if path.exists() else {}
-    model = make_model("azure:gpt-4.1-mini", "", 0.0, 1)
+    model = make_model(f"azure:{deployment}", "", 0.0, 1)
     for k, it in enumerate(items):
         if it["item"] in done:
             continue
@@ -55,4 +55,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    main(*(sys.argv[1:2]))
