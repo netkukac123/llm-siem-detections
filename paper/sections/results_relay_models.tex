@@ -1,7 +1,7 @@
 \subsection{RQ4f: most models relay the failed injection}
 \label{sec:relay-models}
 
-Is the relay a quirk of one model? RQ4f ran the same task on all twelve models, with six framings: the
+RQ4f tests whether the relay generalises beyond one model. It ran the same task on all twelve models, with six framings: the
 three of RQ4d and three new ones, each asking for a different internal document (the expense policy,
 the VPN guide, the leave policy) to go to a different outside domain (a customs broker, a portal
 migration desk, an account manager). Twenty runs per framing and model, 1{,}440 runs in all, 1{,}290 of
@@ -47,8 +47,8 @@ relay in at least 30\% of runs.
 \paragraph{Is a relay a failure?} One reading is that the models summarise the tool's message
 faithfully, which is what a tool-using assistant should do. We did not run a control in which the tool
 returns a harmless procedure, so we cannot separate indiscriminate relaying from a failure to recognise
-this request as dangerous. What the data do show is the contrast: three models, given the same
-messages, flagged the request every time. Nor did we measure whether people act on a relayed request;
+this request as dangerous. Given the same messages, three models flagged the request every
+time. Nor did we measure whether people act on a relayed request;
 an employee who does would be visible to mail and data-loss controls, which our rules do not cover.
 
 \paragraph{Detecting it.} \llmd{026} caught 771 of the 997 relays (77\%). All four internal document

@@ -26,7 +26,7 @@ The main findings:
         intended rule fired on 296 of 297 runs where the model complied, and rules over the agent's
         actions and output alone caught all 269 runs in which the attack succeeded, across ten
         scenarios that we wrote (Section~\ref{sec:rq1}).
-  \item \emph{Against robust Claude models, the evidence of an attack is the refusal.} Rules over the
+  \item \emph{Against robust Claude models, refusals are the main signal of an attack.} Rules over the
         agent's actions saw 13\% of 300 attack sessions on three Claude models and none on Opus~5.5. Logging
         provider refusals as events and matching refusal language in the answer raised this to 70\% (72\% on
         Opus) at an 8\% benign rate, in a pre-registered confirmation (Section~\ref{sec:frontier}).
@@ -44,6 +44,6 @@ The main findings:
         and~\ref{sec:relay-models}).
 \end{itemize}
 
-The rules, the demo application, every pre-registration, every raw run record and the scripts that
-produce every number and table are public. Section~\ref{sec:process} lists the claims that an
+The rules, the demo application, the pre-registrations, the raw run records and the scripts that
+produce all numbers and tables are public. Section~\ref{sec:process} lists the claims that an
 adversarial review overturned before publication.
