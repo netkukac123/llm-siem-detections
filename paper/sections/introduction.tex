@@ -12,7 +12,7 @@ see it in our logs, and at what cost in false alarms?
 This paper answers that question empirically, for a SIEM fed by the application's own telemetry. We
 built a detection pack of 25 rules for Microsoft Sentinel, 23 of them also for Wazuh, and tested it against 112{,}894
 items from 14 public datasets, against two open ML classifiers, against rewritten and rule-aware
-attacks, and against live attacks on twelve models, from 8B open-weight models on a consumer GPU to
+attacks, and against live attacks on twelve models, from 4B to 8B open-weight models on a consumer GPU to
 Claude Opus~5.5. The experiments from the telemetry-view study onwards have pre-registrations in the
 public repository (one was committed after its runs and is reported as exploratory), and the
 main frontier claims rest on confirmation runs on fresh data.
@@ -24,10 +24,10 @@ The main findings:
         rewording removes almost all of what they catch (Sections~\ref{sec:rq2} to \ref{sec:rq4a}).
   \item \emph{Against models that comply, rules over actions and output work.} On eight non-frontier models an
         intended rule fired on 296 of 297 runs where the model complied, and rules over the agent's
-        actions and output alone caught all 269 runs in which the attack succeeded, regardless of
-        its wording (Section~\ref{sec:rq1}).
-  \item \emph{Against frontier models, the evidence of an attack is the refusal.} Rules over the
-        agent's actions saw 13\% of 300 frontier attack sessions and none on Opus~5.5. Logging
+        actions and output alone caught all 269 runs in which the attack succeeded, across ten
+        scenarios that we wrote (Section~\ref{sec:rq1}).
+  \item \emph{Against robust Claude models, refusals are the main signal of an attack.} Rules over the
+        agent's actions saw 13\% of 300 attack sessions on three Claude models and none on Opus~5.5. Logging
         provider refusals as events and matching refusal language in the answer raised this to 70\% (72\% on
         Opus) at an 8\% benign rate, in a pre-registered confirmation (Section~\ref{sec:frontier}).
   \item \emph{The model, the log and the guardrail see different things.} An instruction placed
@@ -36,12 +36,14 @@ The main findings:
         user message and nothing in tool results (Section~\ref{sec:views}).
   \item \emph{A failed injection is usually relayed to the human.} Instead of acting on an injected
         request to email an internal document outside, nine of twelve models told the user to do it,
-        as the required next step, in 61\% to 100\% of their runs, and never warned; only Claude
-        Sonnet~5.5 and the two Opus models warned (1{,}440 runs, six framings). No action-based rule
+        as the required next step, in 61\% to 100\% of their runs, without a warning; only Claude
+        Sonnet~5.5 and the two Opus models warned (1{,}440 runs, six framings, labelled by language
+        models; one cross-family rater disagreed, so the pre-registered generality criterion was
+        not met). No action-based rule
         sees this path; we give a first answer-side rule for it (Sections~\ref{sec:relay}
         and~\ref{sec:relay-models}).
 \end{itemize}
 
-The rules, the demo application, every pre-registration, every raw run record and the scripts that
-produce every number and table are public. Section~\ref{sec:process} lists the claims that an
+The rules, the demo application, the pre-registrations, the raw run records and the scripts that
+produce all numbers and tables are public. Section~\ref{sec:process} lists the claims that an
 adversarial review overturned before publication.

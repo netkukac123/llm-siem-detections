@@ -41,12 +41,12 @@ first 1{,}000 characters of text~\cite{foundry-guardrails}. On the author's own 
 filter, 39 injection prompts that the filter blocks when sent alone were placed after benign filler.
 In the user message the filter blocked 97\% of them at offset 0, 95\% at 500 and 85\% at 900,
 and none at 1{,}100 or any larger offset (0 of 39 at each of six
-offsets up to 20{,}000). In the tool-result message it blocked none at any offset, including 0. In
+offsets up to 20{,}000). In the tool-result message it blocked none at any offset, including 0. Every block was raised by the
+jailbreak (user prompt attack) shield; no response carried an indirect-attack annotation, so the
+opt-in shield for documents was not active in this default configuration. In
 this deployment, then, the default filter blocked nothing that arrived as a tool result, which is
 where indirect injection arrives, and nothing in user messages beyond the first 1{,}000 characters.
 The 85\% at offset 900 missed the pre-registered 90\% threshold. This is one deployment, one model, one region and the default configuration; it is not a
 statement about Azure AI Foundry in general. It is documented behaviour measured, not a
 vulnerability; it means that a SOC cannot treat the absence of
 guardrail events as evidence that no injection reached the model.
-
-One further result is under coordinated disclosure and is omitted from this version.

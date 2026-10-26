@@ -3,13 +3,13 @@
 
 A SIEM can watch LLM agents, but what it sees depends on the model it is watching and on what the
 application chooses to log. Against models that act on injections, rules over the agent's actions
-catch almost every compromise, whatever the attack's wording. Against frontier models those rules go
-quiet, because the attacks fail; the evidence that an attack was attempted is the refusal, and it
-reaches the SIEM only if the application logs provider refusals as events and the SIEM reads the
-answer for refusal language. Between the
-model's input, the application's log and the guardrail's window there are gaps that an attacker can
-use and that logging can close. And when an injection fails against the agent, it can still reach the
-human through the agent's answer, and the SOC can watch for that in the answer text.
+caught every successful attack in our scenarios. Against frontier models those rules go quiet,
+because the attacks fail. The attempt is then visible mainly as a refusal, and it reaches the SIEM
+only if the application logs provider refusals as events and the SIEM reads the answer for refusal
+language. The application log, the model's input and the guardrail's inspection window covered
+different parts of the same input; logging the full tool result, or its length and a hash, would
+expose the difference. An injection that fails against the agent can still reach the user through
+the answer, where an answer-side rule such as \llmd{026} can detect it.
 
 The rule pack, the demo application, the pre-registrations, the raw runs and the analysis code are at
 \url{https://github.com/netkukac123/llm-siem-detections}.

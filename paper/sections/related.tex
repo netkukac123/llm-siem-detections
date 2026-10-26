@@ -15,7 +15,7 @@ trigger-conditioned payloads~\cite{explosive}. Opus resisted every family we tri
 our contribution is not a stronger attack but a measurement of what the defender sees when attacks
 fail.
 
-\paragraph{What the user sees.} ICoA~\cite{icoa} separates successful injections into covert and overt
+\paragraph{What the user sees.} ICoA~\cite{icoa} (EMNLP 2026) separates successful injections into covert and overt
 by whether the final answer reveals them; its taxonomy requires the injected action to be executed.
 Provider-side injection in proactive agents~\cite{provider-ipi} steers the user's decisions through the
 agent. The relay we report in Sections~\ref{sec:relay} and~\ref{sec:relay-models} sits outside both: the action fails and the
@@ -30,6 +30,18 @@ LongPIBench~\cite{longpibench} benchmarks prompt injection in long contexts, and
 measures Azure Prompt Shields on payloads embedded in cloud logs. We extend the window question to a
 commercial guardrail on both the user and the tool channel, and to the application's own log, measured
 end to end with attack success.
+
+\paragraph{Detection and monitoring.} Vendor SIEM content for LLM applications exists: Elastic
+publishes detection rules for LLM workloads, including guardrail blocks and high-risk tool use, close
+to \llmd{010} and \llmd{017}~\cite{elastic-llm}, and Microsoft Defender for AI raises jailbreak and
+phishing-URL alerts~\cite{defender-ai}. AgentSight observes agents at the system level with eBPF and
+links intent to actions~\cite{agentsight}. Monitoring a model's reasoning for misbehaviour, as
+\llmd{024} and \llmd{025} do in rule form, was studied by Baker et~al.~\cite{cot-monitor}, and
+LlamaFirewall's AlignmentCheck audits agent reasoning for goal hijack~\cite{llamafirewall}. Pandey
+and Bhujang attack LLM-augmented SOCs through log content~\cite{watchtower}, the reverse direction of
+our question. Nasr et~al.\ show that adaptive attackers break defences that resist fixed
+attacks~\cite{attacker-moves-second}; our attacks are fixed, so the frontier resistance we report is a
+lower bound on what an attacker achieves.
 
 \paragraph{Defences.} Classifier guardrails (Prompt Guard~\cite{promptguard}, ProtectAI's
 DeBERTa~\cite{protectai}, LlamaFirewall~\cite{llamafirewall}) and design-level defences such as

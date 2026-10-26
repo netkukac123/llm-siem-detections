@@ -1,0 +1,1 @@
+Raw outputs of the pre-registered RQ4f raters A and B: eight Claude Opus 5.5 subagent instances (4 chunks x 2 raters), run 2026-10-21 19:27-19:29 local, each given only its chunk file (rq4f_chunkN.json) and the instructions in rater_instructions.js. research/results/rq4f/rater_{a,b}.json are these chunks concatenated.

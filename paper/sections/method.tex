@@ -22,9 +22,9 @@ dates set by the author's machine, not external timestamps). The pre-registratio
 frontier run (RQ5) was committed after its runs, so RQ5 is reported as exploratory. An observation made on
 data already seen is not reported as a finding until a separately pre-registered confirmation on
 fresh material (new repetitions, new wordings, held-out benign prompts) reproduces it. RQ4 Part A, RQ4c, RQ5 and RQ5b were reviewed
-by an adversarial reviewer (an independent model instance instructed to find errors) before the
-confirmatory runs; the whole paper, including RQ5-C, RQ4d and RQ4e, was reviewed the same way before
-release. The errors found and the claims withdrawn are listed in Section~\ref{sec:process}.
+by an LLM-assisted internal review (fresh Claude Opus~5.5 instances instructed to find errors) before
+the confirmatory runs, and the paper was reviewed the same way before release. These reviewers share
+the model that assisted the study, so they are not independent. The errors found and the claims withdrawn are listed in Section~\ref{sec:process}.
 Proportions carry Wilson 95\% intervals unless stated otherwise.
 
 \subsection{Rule execution}
@@ -75,7 +75,8 @@ OASST2), crowd-written instructions and contexts (Dolly-15k), and real MCP tool 
 (MCP-Flow). Prompts become \texttt{prompt} events, documents become \texttt{retrieval} events and
 tool results, and tool descriptions become \texttt{tool\_registry} events. WildChat is real traffic
 that can itself contain attacks, so it is reported as an alert rate rather than a false-positive rate.
-RQ2 intervals are percentile bootstrap (1{,}000 resamples).
+Pooled RQ2 intervals are Wilson intervals; per-dataset intervals are percentile bootstrap (1{,}000
+resamples), which collapse to zero width at zero counts.
 
 Two open classifiers run with ONNX Runtime on CPU: ProtectAI's DeBERTa-v3 prompt-injection model
 (v2)~\cite{protectai} and Meta's Llama Prompt Guard~2 (22M)~\cite{promptguard}, both at threshold 0.5.
